@@ -104,7 +104,7 @@ const RecentIssues = () => {
     return (
         <section
             aria-labelledby="recent-issues-heading"
-            className="mt-6 overflow-hidden rounded-xl border border-border bg-card shadow-sm animate-fadeInLeft"
+            className="mt-6 overflow-hidden rounded-xl border border-border bg-card shadow-sm animate-fadeInUp"
         >
             {/* Header */}
             <div

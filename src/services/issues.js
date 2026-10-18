@@ -44,6 +44,13 @@ export function updateIssueStatus(ticketNumber, status, options = {}) {
     });
 }
 
+export function deleteIssue(ticketNumber, options = {}) {
+    return api(`/api/issues/${encodeURIComponent(ticketNumber)}`, {
+        method: "DELETE",
+        signal: options.signal,
+    });
+}
+
 export function uploadIssueAttachment(ticketNumber, file, options = {}) {
     const formData = new FormData();
 

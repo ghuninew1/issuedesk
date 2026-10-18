@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
-import { getIssue, getIssueAttachmentUrl, getIssueAttachments, updateIssueStatus } from "../services/issues";
+import { Link, useNavigate, useParams } from 'react-router-dom'
+import { deleteIssue, getIssue, getIssueAttachmentUrl, getIssueAttachments, updateIssueStatus } from "../services/issues";
 import { cx } from '../utils/cx'
 import heic2any from "heic2any";
-import { Download, Copy, Check } from "lucide-react";
+import { Download, Copy, Check, Trash2 } from "lucide-react";
 
 const statusStyles = {
     Open: 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
@@ -171,6 +171,7 @@ const AttachmentImagePreview = ({ attachment, previewUrl }) => {
 
 const IssueDetail = () => {
     const { ticketNumber } = useParams()
+    const navigate = useNavigate()
 
     const [issue, setIssue] = useState(null)
     const [isLoading, setIsLoading] = useState(true)
@@ -181,6 +182,8 @@ const IssueDetail = () => {
     const [attachments, setAttachments] = useState([]);
     const [isLoadingAttachments, setIsLoadingAttachments] = useState(false);
     const [attachmentsError, setAttachmentsError] = useState("");
+    const [isDeleting, setIsDeleting] = useState(false)
+    const [deleteError, setDeleteError] = useState('')
 
     const fetchAttachments = useCallback(
         async (signal) => {
@@ -328,8 +331,30 @@ const IssueDetail = () => {
         }
     }
 
+    const handleDeleteIssue = async () => {
+        if (!issue || isDeleting || !window.confirm(`Delete issue ${issue.ticket_number}? This cannot be undone.`)) {
+            return
+        }
+
+        setIsDeleting(true)
+        setDeleteError('')
+
+        try {
+            const data = await deleteIssue(issue.ticket_number)
+
+            if (!data.success) {
+                throw new Error(data.message || 'Failed to delete issue')
+            }
+
+            navigate('/issues', { replace: true })
+        } catch (requestError) {
+            setDeleteError(requestError.message || 'Unable to delete issue. Please try again.')
+            setIsDeleting(false)
+        }
+    }
+
     return (
-        <div className="mx-auto max-w-5xl">
+        <div className="mx-auto max-w-5xl animate-fadeInUp">
             <Link
                 to="/issues"
                 className={cx(
@@ -457,6 +482,22 @@ const IssueDetail = () => {
                                 <Badge className={priorityStyles[issue.priority] || "bg-muted text-muted-foreground"}>
                                     {issue.priority} Priority
                                 </Badge>
+
+                                <button
+                                    type="button"
+                                    onClick={handleDeleteIssue}
+                                    disabled={isDeleting || isUpdatingStatus}
+                                    className={cx(
+                                        "inline-flex h-8 items-center justify-center gap-2 rounded-md",
+                                        "border border-destructive/30 px-3 text-xs font-medium text-destructive",
+                                        "transition-colors hover:bg-destructive/10",
+                                        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive/30",
+                                        "disabled:pointer-events-none disabled:opacity-50",
+                                    )}
+                                >
+                                    <Trash2 size={14} aria-hidden="true" />
+                                    {isDeleting ? 'Deleting...' : 'Delete issue'}
+                                </button>
                             </div>
 
                             {isUpdatingStatus && (
@@ -472,6 +513,12 @@ const IssueDetail = () => {
                             )}
                         </div>
                     </section>
+
+                    {deleteError && (
+                        <p className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive" role="alert">
+                            {deleteError}
+                        </p>
+                    )}
 
                     <section className="rounded-xl border border-border p-5 sm:p-6">
                         <h3 className="font-semibold">Issue Information</h3>

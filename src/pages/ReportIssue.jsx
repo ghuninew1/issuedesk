@@ -5,7 +5,7 @@ import { cx } from '../utils/cx'
 const ReportIssue = () => {
     return (
         <AppShell>
-            <div className="mx-auto max-w-4xl">
+            <div className="mx-auto max-w-4xl animate-fadeInUp">
                 <div className="mb-6">
                     <p className="text-sm font-medium text-primary">
                         IT Support
