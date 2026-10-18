@@ -1,0 +1,18 @@
+{
+    "$schema": "node_modules/wrangler/config-schema.json",
+    "name": "issuedesk",
+    "compatibility_date": "2026-10-06",
+    "pages_build_output_dir": "./dist",
+    "observability": {
+        "enabled": true,
+    },
+    "upload_source_maps": true,
+
+    "d1_databases": [
+        {
+            "binding": "DB",
+            "database_name": "issuedesk-db",
+            "database_id": "ffe5efd3-f34b-4976-a6ee-5f5fbce8df89",
+        },
+    ],
+}
