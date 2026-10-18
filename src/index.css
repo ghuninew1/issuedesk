@@ -232,3 +232,177 @@ body {
     @apply font-sans;
   }
 }
+
+@theme {
+  /* Font Family */
+  --font-font1: "font1", sans-serif;
+
+  /* Animation: Arrow */
+  --animate-arrow: arrow 1s ease-in-out infinite;
+
+  /* Animation: Fade */
+  --animate-fade: fade 1s ease-in-out;
+  --animate-fadeDelay: fade 1s ease-in-out 0.3s;
+
+  --animate-fadeOut: fadeOut 1s ease-out;
+  --animate-fadeOutDelay: fadeOut 1s ease-out 0.3s;
+
+  /* Animation: Zoom */
+  --animate-zoom: zoom 0.6s ease-in-out;
+  --animate-zoomDelay: zoom 0.6s ease-in-out 0.3s;
+
+  --animate-zoomIn: zoomIn 0.6s ease-in-out;
+  --animate-zoomInDelay: zoomIn 0.6s ease-in-out 0.3s;
+
+  --animate-zoomOut: zoomOut 0.8s ease-out;
+  --animate-zoomOutDelay: zoomOut 0.8s ease-out 0.3s;
+
+  /* Animation: Fade In Down */
+  --animate-fadeInDown: fadeInDown 0.8s ease-in-out;
+  --animate-fadeInDownDelay: fadeInDown 0.8s ease-in-out 0.3s;
+
+  /* Animation: Fade In Up */
+  --animate-fadeInUp: fadeInUp 0.8s ease-in-out;
+  --animate-fadeInUpDelay: fadeInUp 0.8s ease-in-out 0.3s;
+
+  /* Animation: Fade In Left */
+  --animate-fadeInLeft: fadeInLeft 0.8s ease-in-out;
+  --animate-fadeInLeftDelay: fadeInLeft 0.8s ease-in-out 0.3s;
+
+  /* Animation: Fade In Right */
+  --animate-fadeInRight: fadeInRight 0.8s ease-in-out;
+  --animate-fadeInRightDelay: fadeInRight 0.8s ease-in-out 0.3s;
+
+  /* Keyframes: Arrow */
+  @keyframes arrow {
+    0%,
+    100% {
+      transform: translateX(-25%);
+    }
+
+    50% {
+      transform: translateX(0);
+    }
+  }
+
+  /* Keyframes: Fade */
+  @keyframes fade {
+    0%,
+    20% {
+      opacity: 0;
+    }
+
+    100% {
+      opacity: 1;
+    }
+  }
+
+  @keyframes fadeOut {
+    0%,
+    30% {
+      opacity: 1;
+    }
+
+    100% {
+      opacity: 0;
+    }
+  }
+
+  /* Keyframes: Fade In Down */
+  @keyframes fadeInDown {
+    0%,
+    20% {
+      opacity: 0;
+      transform: translateY(-50%);
+    }
+
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Keyframes: Fade In Up */
+  @keyframes fadeInUp {
+    0%,
+    20% {
+      opacity: 0;
+      transform: translateY(50%);
+    }
+
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Keyframes: Fade In Left */
+  @keyframes fadeInLeft {
+    0%,
+    20% {
+      opacity: 0;
+      transform: translateX(-50%);
+    }
+
+    100% {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  /* Keyframes: Fade In Right */
+  @keyframes fadeInRight {
+    0%,
+    20% {
+      opacity: 0;
+      transform: translateX(50%);
+    }
+
+    100% {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  /* Keyframes: Zoom */
+  @keyframes zoom {
+    0%,
+    30% {
+      opacity: 0;
+      transform: scale(0);
+    }
+
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  /* Keyframes: Zoom In */
+  @keyframes zoomIn {
+    0%,
+    30% {
+      opacity: 0;
+      transform: scale(0) translateY(100%);
+    }
+
+    100% {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+  }
+
+  /* Keyframes: Zoom Out */
+  @keyframes zoomOut {
+    0%,
+    30% {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    100% {
+      opacity: 0;
+      transform: scale(0);
+    }
+  }
+}

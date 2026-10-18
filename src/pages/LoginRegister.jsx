@@ -106,7 +106,7 @@ export default function LoginRegister() {
             {/* Main Container Card */}
             <div className="w-full max-w-md z-10">
                 {/* Decorative Top Badge */}
-                <div className="flex justify-center mb-6">
+                <div className="flex justify-center mb-6 animate-fadeInDown">
                     <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-800/80 border border-slate-700/60 text-xs font-medium text-slate-300 backdrop-blur-md shadow-inner">
                         <ShieldCheck className="w-4 h-4 text-cyan-400" />
                         <span>Secure End-to-End Encryption</span>
@@ -129,7 +129,7 @@ export default function LoginRegister() {
 
                         {/* PAGE 1: LOGIN FORM */}
                         {page === "login" && (
-                            <div className="animate-fadeIn">
+                            <div className="animate-fadeInLeft">
                                 <div className="text-center mb-8">
                                     <h1 className="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-100 to-slate-400 bg-clip-text text-transparent">
                                         Welcome Back
@@ -284,7 +284,7 @@ export default function LoginRegister() {
 
                         {/* PAGE 2: REGISTER FORM */}
                         {page === "register" && (
-                            <div className="animate-fadeIn">
+                            <div className="animate-fadeInRight">
                                 <div className="text-center mb-8">
                                     <h1 className="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-100 to-slate-400 bg-clip-text text-transparent">
                                         Create Account
@@ -450,13 +450,13 @@ export default function LoginRegister() {
                 </ElectricBorder>
                 <Link
                     to="/"
-                    className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-blue-500 mt-4"
+                    className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-blue-500 mt-4 animate-fadeInLeft"
                 >
-                    <ArrowLeft size={16} className="animate-bounce animate-infinite transition-all"/>
+                    <ArrowLeft size={16} className="animate-bounce animate-infinite transition-all" />
                     กลับหน้าหลัก
                 </Link>
                 {/* Footer info */}
-                <div className="mt-6 text-center text-xs text-slate-500">
+                <div className="mt-6 text-center text-xs text-slate-500 animate-fadeInRight">
                     <p>© 2026 GhuniNew. All rights reserved.</p>
                 </div>
             </div>

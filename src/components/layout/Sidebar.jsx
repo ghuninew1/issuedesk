@@ -149,7 +149,7 @@ const Sidebar = ({ isCollapsed, isMobileOpen, onMobileClose }) => {
                 aria-label="Mobile navigation"
                 aria-hidden={!isMobileOpen}
                 className={cx(
-                    "fixed inset-y-0 left-0 z-50 flex w-64 flex-col",
+                    "fixed inset-y-0 left-0 z-50 flex w-64 flex-col animate-fadeInLeft",
                     "border-r border-sidebar-border bg-sidebar text-sidebar-foreground",
                     "transition-transform duration-200 ease-in-out",
                     "md:hidden",
@@ -164,7 +164,7 @@ const Sidebar = ({ isCollapsed, isMobileOpen, onMobileClose }) => {
             <aside
                 aria-label="Main sidebar"
                 className={cx(
-                    "hidden h-screen shrink-0 flex-col",
+                    "hidden h-screen shrink-0 flex-col animate-fadeInLeft",
                     "border-r border-sidebar-border bg-sidebar text-sidebar-foreground",
                     "transition-[width] duration-200 ease-in-out",
                     "md:sticky md:top-0 md:flex md:w-[72px]",

@@ -189,7 +189,7 @@ const ReportForm = () => {
     };
 
     return (
-        <form onSubmit={handleSubmit} onReset={handleReset} noValidate className="space-y-6">
+        <form onSubmit={handleSubmit} onReset={handleReset} noValidate className="space-y-6 animate-fadeInUp">
             {createdIssue && (
                 <div role="status" className={cx("rounded-lg border border-emerald-500/30", "bg-emerald-500/10 p-4")}>
                     <p className="text-sm font-medium text-emerald-700 dark:text-emerald-400">บันทึก Issue สำเร็จ</p>

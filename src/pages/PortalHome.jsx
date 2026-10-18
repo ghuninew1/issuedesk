@@ -69,7 +69,7 @@ const PortalHome = () => {
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-indigo-600/10 rounded-full blur-[120px] pointer-events-none" />
 
             {/* Header */}
-            <header className="border-b border-border bg-background">
+            <header className="border-b border-border bg-background animate-fadeInDown">
                 <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5 sm:px-8">
                     <Link to="/" className="flex items-center gap-3" aria-label="IssueDesk home">
                         <span className="flex size-10 items-center justify-center rounded-xl bg-primary text-primary-foreground">
@@ -102,7 +102,7 @@ const PortalHome = () => {
 
             {/* Main */}
             <section className="mx-auto max-w-6xl px-5 pb-16 pt-12 sm:px-8 sm:pt-20">
-                <div className="mx-auto max-w-2xl text-center">
+                <div className="mx-auto max-w-2xl text-center animate-fadeInDown">
                     <span
                         className={cx(
                             "inline-flex items-center gap-2 rounded-full",
@@ -134,6 +134,7 @@ const PortalHome = () => {
                         strands={1.5}
                         thickness={2}
                         borderRadius={30}
+                        className="animate-fadeInLeft"
                     >
                         <article
                             className={cx(
@@ -191,6 +192,7 @@ const PortalHome = () => {
                         strands={1.5}
                         thickness={2}
                         borderRadius={24}
+                        className="animate-fadeInRight"
                     >
                         <article
                             className={cx(
@@ -265,7 +267,7 @@ const PortalHome = () => {
                     </ElectricBorder>
                 </div>
                 {/* Callout */}
-                <div className="mx-auto mt-10 flex max-w-4xl items-start gap-3 rounded-xl border border-border bg-muted/30 p-4 sm:p-5">
+                <div className="mx-auto mt-10 flex max-w-4xl items-start gap-3 rounded-xl border border-border bg-muted/30 p-4 sm:p-5 animate-fadeInUp">
                     <LifeBuoy size={20} className="mt-0.5 shrink-0 text-muted-foreground" aria-hidden="true" />
                     <div>
                         <p className="text-sm font-medium">ไม่แน่ใจว่าต้องทำอย่างไร?</p>
@@ -275,7 +277,7 @@ const PortalHome = () => {
                     </div>
                 </div>
 
-                <footer className="mt-14 border-t border-border pt-6 text-center text-xs text-muted-foreground">
+                <footer className="mt-14 border-t border-border pt-6 text-center text-xs text-muted-foreground animate-fadeInUp">
                     IssueDesk · © 2026 GhuniNew. All rights reserved.
                 </footer>
             </section>

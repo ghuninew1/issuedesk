@@ -146,7 +146,7 @@ const DashboardStats = () => {
     ]
 
     return (
-        <section aria-label="Issue statistics">
+        <section aria-label="Issue statistics" className="animate-fadeInUp">
             {error ? (
                 <p
                     role="alert"

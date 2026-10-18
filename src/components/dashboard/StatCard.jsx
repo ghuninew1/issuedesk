@@ -4,7 +4,7 @@ const StatCard = ({ title, value, description, icon, accent }) => {
     return (
         <article
             className={cx(
-                'rounded-xl border border-border bg-card p-5',
+                'rounded-xl border border-border bg-card p-5 animate-fadeInUp',
                 'shadow-sm transition-shadow hover:shadow-md',
             )}
         >

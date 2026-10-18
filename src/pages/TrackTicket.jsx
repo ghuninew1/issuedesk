@@ -84,7 +84,7 @@ export default function TrackTicket() {
             <div className="pointer-events-none absolute -right-20 bottom-1/4 size-96 animate-pulse rounded-full bg-cyan-500/20 blur-3xl delay-1000" />
             <div className="pointer-events-none absolute left-1/2 top-1/2 size-[500px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-indigo-600/10 blur-[120px]" />
 
-            <header className="relative z-10 border-b border-border">
+            <header className="relative z-10 border-b border-border animate-fadeInDown">
                 <div className="mx-auto flex h-16 max-w-4xl items-center justify-between px-5 sm:px-8">
                     <Link to="/" className="flex items-center gap-3" aria-label="กลับหน้าหลัก IssueDesk">
                         <span className="flex size-10 items-center justify-center rounded-xl bg-primary text-primary-foreground">
@@ -99,7 +99,7 @@ export default function TrackTicket() {
                 </div>
             </header>
 
-            <section className="relative z-10 mx-auto max-w-2xl px-5 py-12 sm:px-8">
+            <section className="relative z-10 mx-auto max-w-2xl px-5 py-12 sm:px-8 animate-fadeInUp">
                 <Link to="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
                     <ArrowLeft size={16} aria-hidden="true" />
                     กลับหน้าหลัก

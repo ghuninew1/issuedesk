@@ -41,7 +41,7 @@ const AppShell = ({ children }) => {
                 onMobileClose={() => setIsMobileSidebarOpen(false)}
             />
 
-            <div className="flex min-w-0 flex-1 flex-col">
+            <div className="flex min-w-0 flex-1 flex-col animate-fade">
                 <Header
                     isSidebarCollapsed={isSidebarCollapsed}
                     onToggleSidebar={() => setIsSidebarCollapsed((previous) => !previous)}
