@@ -240,7 +240,7 @@ const ReportForm = () => {
                 <div>
                     <h3 className="text-base font-semibold">Issue Information</h3>
 
-                    <p className="mt-1 text-sm text-muted-foreground">กรอกข้อมูลปัญหาที่ต้องการแจ้งให้ทีม IT ทราบ</p>
+                    <p className="mt-1 text-sm text-muted-foreground">กรอกข้อมูลปัญหาที่ต้องการแจ้งให้T ทราบ</p>
                 </div>
 
                 <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
@@ -257,7 +257,7 @@ const ReportForm = () => {
                             maxLength={100}
                             value={form.reporter}
                             onChange={updateField}
-                            placeholder="ชื่อและนามสกุล"
+                            placeholder="ชื่อผู้แจ้งหรือชื่อเครื่อง เช่น brain101"
                             aria-invalid={Boolean(errors.reporter)}
                             aria-describedby={errors.reporter ? "reporter-error" : undefined}
                             className={fieldClassName}
