@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { User, Mail, Lock, Eye, EyeOff, ArrowRight, ShieldCheck, Sparkles } from "lucide-react";
+import { useNavigate, Link } from "react-router-dom";
+import { User, Mail, Lock, Eye, EyeOff, ArrowRight, ShieldCheck, Sparkles, ArrowLeft } from "lucide-react";
 import ElectricBorder from "../components/ElectricBorder";
 import { api } from "../utils/api";
 import { useAuth } from "../auth/useAuth";
@@ -169,7 +169,7 @@ export default function LoginRegister() {
                                             <button
                                                 type="button"
                                                 onClick={() => triggerToast("Password reset link sent to your email.")}
-                                                className="text-xs text-cyan-400 hover:text-cyan-300 transition-colors font-medium hover:underline"
+                                                className="text-xs text-cyan-400 hover:text-cyan-300 transition-colors font-medium hover:underline cursor-pointer"
                                             >
                                                 Forgot Password?
                                             </button>
@@ -188,7 +188,7 @@ export default function LoginRegister() {
                                             <button
                                                 type="button"
                                                 onClick={() => setShowLoginPassword(!showLoginPassword)}
-                                                className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-200 transition-colors"
+                                                className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-200 transition-colors cursor-pointer"
                                             >
                                                 {showLoginPassword ? (
                                                     <EyeOff className="w-5 h-5" />
@@ -203,7 +203,7 @@ export default function LoginRegister() {
                                     <button
                                         type="submit"
                                         disabled={isSubmitting}
-                                        className="w-full py-3.5 px-4 mt-2 bg-gradient-to-r from-cyan-500 via-indigo-500 to-purple-600 hover:from-cyan-400 hover:via-indigo-400 hover:to-purple-500 text-white font-semibold rounded-2xl shadow-lg shadow-cyan-500/25 hover:shadow-cyan-500/40 active:scale-[0.99] transition-all duration-200 flex items-center justify-center gap-2 group"
+                                        className="w-full py-3.5 px-4 mt-2 bg-gradient-to-r from-cyan-500 via-indigo-500 to-purple-600 hover:from-cyan-400 hover:via-indigo-400 hover:to-purple-500 text-white font-semibold rounded-2xl shadow-lg shadow-cyan-500/25 hover:shadow-cyan-500/40 active:scale-[0.99] transition-all duration-200 flex items-center justify-center gap-2 group cursor-pointer"
                                     >
                                         <span>{isSubmitting ? "PLEASE WAIT…" : "LOGIN"}</span>
                                         <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -228,7 +228,7 @@ export default function LoginRegister() {
                                     <button
                                         type="button"
                                         onClick={() => handleSocialAuth("Google")}
-                                        className="w-full py-3 px-4 bg-slate-950/50 hover:bg-slate-800/80 border border-slate-800 hover:border-slate-700 text-slate-200 font-medium rounded-2xl text-sm transition-all duration-200 flex items-center justify-center gap-3 group"
+                                        className="w-full py-3 px-4 bg-slate-950/50 hover:bg-slate-800/80 border border-slate-800 hover:border-slate-700 text-slate-200 font-medium rounded-2xl text-sm transition-all duration-200 flex items-center justify-center gap-3 group cursor-pointer"
                                     >
                                         {/* Google Custom SVG Icon */}
                                         <svg className="w-5 h-5" viewBox="0 0 24 24">
@@ -273,7 +273,7 @@ export default function LoginRegister() {
                                         <button
                                             type="button"
                                             onClick={() => setPage("register")}
-                                            className="text-cyan-400 font-semibold hover:text-cyan-300 hover:underline transition-colors ml-1"
+                                            className="text-cyan-400 font-semibold hover:text-cyan-300 hover:underline transition-colors ml-1 cursor-pointer"
                                         >
                                             Register
                                         </button>
@@ -355,7 +355,7 @@ export default function LoginRegister() {
                                             <button
                                                 type="button"
                                                 onClick={() => setShowRegPassword(!showRegPassword)}
-                                                className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-200 transition-colors"
+                                                className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-200 transition-colors cursor-pointer"
                                             >
                                                 {showRegPassword ? (
                                                     <EyeOff className="w-5 h-5" />
@@ -370,7 +370,7 @@ export default function LoginRegister() {
                                     <button
                                         type="submit"
                                         disabled={isSubmitting}
-                                        className="w-full py-3.5 px-4 mt-2 bg-gradient-to-r from-purple-600 via-indigo-500 to-cyan-500 hover:from-purple-500 hover:via-indigo-400 hover:to-cyan-400 text-white font-semibold rounded-2xl shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 active:scale-[0.99] transition-all duration-200 flex items-center justify-center gap-2 group"
+                                        className="w-full py-3.5 px-4 mt-2 bg-gradient-to-r from-purple-600 via-indigo-500 to-cyan-500 hover:from-purple-500 hover:via-indigo-400 hover:to-cyan-400 text-white font-semibold rounded-2xl shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 active:scale-[0.99] transition-all duration-200 flex items-center justify-center gap-2 group cursor-pointer"
                                     >
                                         <span>{isSubmitting ? "PLEASE WAIT…" : "REGISTER"}</span>
                                         <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -395,7 +395,7 @@ export default function LoginRegister() {
                                     <button
                                         type="button"
                                         onClick={() => handleSocialAuth("Google")}
-                                        className="w-full py-3 px-4 bg-slate-950/50 hover:bg-slate-800/80 border border-slate-800 hover:border-slate-700 text-slate-200 font-medium rounded-2xl text-sm transition-all duration-200 flex items-center justify-center gap-3 group"
+                                        className="w-full py-3 px-4 bg-slate-950/50 hover:bg-slate-800/80 border border-slate-800 hover:border-slate-700 text-slate-200 font-medium rounded-2xl text-sm transition-all duration-200 flex items-center justify-center gap-3 group cursor-pointer"
                                     >
                                         <svg className="w-5 h-5" viewBox="0 0 24 24">
                                             <path
@@ -422,7 +422,7 @@ export default function LoginRegister() {
                                     <button
                                         type="button"
                                         onClick={() => handleSocialAuth("Facebook")}
-                                        className="w-full py-3 px-4 bg-slate-950/50 hover:bg-slate-800/80 border border-slate-800 hover:border-slate-700 text-slate-200 font-medium rounded-2xl text-sm transition-all duration-200 flex items-center justify-center gap-3 group"
+                                        className="w-full py-3 px-4 bg-slate-950/50 hover:bg-slate-800/80 border border-slate-800 hover:border-slate-700 text-slate-200 font-medium rounded-2xl text-sm transition-all duration-200 flex items-center justify-center gap-3 group cursor-pointer"
                                     >
                                         <svg className="w-5 h-5 fill-[#1877F2]" viewBox="0 0 24 24">
                                             <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
@@ -438,7 +438,7 @@ export default function LoginRegister() {
                                         <button
                                             type="button"
                                             onClick={() => setPage("login")}
-                                            className="text-purple-400 font-semibold hover:text-purple-300 hover:underline transition-colors ml-1"
+                                            className="text-purple-400 font-semibold hover:text-purple-300 hover:underline transition-colors ml-1 cursor-pointer"
                                         >
                                             Login
                                         </button>
@@ -448,7 +448,13 @@ export default function LoginRegister() {
                         )}
                     </div>
                 </ElectricBorder>
-
+                <Link
+                    to="/"
+                    className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mt-4"
+                >
+                    <ArrowLeft size={16} />
+                    กลับหน้าหลัก
+                </Link>
                 {/* Footer info */}
                 <div className="mt-6 text-center text-xs text-slate-500">
                     <p>© 2026 Your Brand. All rights reserved.</p>

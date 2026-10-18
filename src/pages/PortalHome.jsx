@@ -72,7 +72,12 @@ const PortalHome = () => {
                     <span className="hidden items-center gap-5 text-sm text-muted-foreground sm:flex">
                         <ShieldCheck size={17} aria-hidden="true" />
                         Internal IT Support
-                        <button type="button" onClick={handleAccountAction} aria-label={user ? "Sign out" : "Sign in"} className="flex items-center gap-2 hover:text-foreground">
+                        <button
+                            type="button"
+                            onClick={handleAccountAction}
+                            aria-label={user ? "Sign out" : "Sign in"}
+                            className="flex items-center gap-2 hover:text-foreground cursor-pointer"
+                        >
                             {user ? <LogOut size={17} aria-hidden="true" /> : <LogIn size={17} aria-hidden="true" />}
                             <span>{user ? "ออกจากระบบ" : "เข้าสู่ระบบ"}</span>
                         </button>

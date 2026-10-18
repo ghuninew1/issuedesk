@@ -97,7 +97,10 @@ const Header = ({ isSidebarCollapsed, onToggleSidebar, onOpenMobileSidebar }) =>
                     <button
                         type="button"
                         onClick={handleLogout}
-                        className={cx("inline-flex h-10 items-center gap-2 rounded-lg px-3", "text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground")}
+                        className={cx(
+                            "inline-flex h-10 items-center gap-2 rounded-lg px-3",
+                            "text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground cursor-pointer",
+                        )}
                     >
                         <LogOut size={16} aria-hidden="true" />
                         <span className="hidden sm:inline">Sign out</span>
