@@ -450,14 +450,14 @@ export default function LoginRegister() {
                 </ElectricBorder>
                 <Link
                     to="/"
-                    className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mt-4"
+                    className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-blue-500 mt-4"
                 >
-                    <ArrowLeft size={16} />
+                    <ArrowLeft size={16} className="animate-bounce animate-infinite transition-all"/>
                     กลับหน้าหลัก
                 </Link>
                 {/* Footer info */}
                 <div className="mt-6 text-center text-xs text-slate-500">
-                    <p>© 2026 Your Brand. All rights reserved.</p>
+                    <p>© 2026 GhuniNew. All rights reserved.</p>
                 </div>
             </div>
         </div>

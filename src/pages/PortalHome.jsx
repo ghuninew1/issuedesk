@@ -108,6 +108,7 @@ const PortalHome = () => {
                             "inline-flex items-center gap-2 rounded-full",
                             "border border-border bg-muted/50 px-3 py-1.5",
                             "text-xs font-medium text-muted-foreground",
+                            "animate-bounce animate-infinite transition-all",
                         )}
                     >
                         <span className="size-2 rounded-full bg-emerald-500" />
@@ -170,7 +171,7 @@ const PortalHome = () => {
                                     "mt-8 inline-flex min-h-11 w-full items-center",
                                     "justify-center gap-2 rounded-lg px-4 py-3",
                                     "bg-primary text-sm font-medium text-primary-foreground",
-                                    "transition-opacity hover:opacity-90",
+                                    "transition-opacity hover:opacity-90 hover:bg-primary/90 hover:text-primary-foreground/90",
                                     "focus-visible:outline-none focus-visible:ring-2",
                                     "focus-visible:ring-ring focus-visible:ring-offset-2",
                                 )}
@@ -250,7 +251,7 @@ const PortalHome = () => {
                                         "mt-4 inline-flex min-h-11 w-full items-center",
                                         "justify-center gap-2 rounded-lg border border-input cursor-pointer",
                                         "bg-background px-4 py-3 text-sm font-medium",
-                                        "transition-colors hover:bg-muted",
+                                        "transition-colors hover:bg-muted hover:text-foreground hover:opacity-90",
                                         "focus-visible:outline-none focus-visible:ring-2",
                                         "focus-visible:ring-ring",
                                         "disabled:cursor-not-allowed disabled:opacity-50",
@@ -275,7 +276,7 @@ const PortalHome = () => {
                 </div>
 
                 <footer className="mt-14 border-t border-border pt-6 text-center text-xs text-muted-foreground">
-                    IssueDesk · GhuniNew Authors @2026
+                    IssueDesk · © 2026 GhuniNew. All rights reserved.
                 </footer>
             </section>
         </main>

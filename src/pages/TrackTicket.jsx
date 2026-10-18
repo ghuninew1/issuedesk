@@ -1,6 +1,16 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { ArrowLeft, CheckCircle2, Circle, Clock3, Headset, Search, ShieldCheck } from "lucide-react";
+import {
+    ArrowLeft,
+    CheckCircle2,
+    Headset,
+    Search,
+    ShieldCheck,
+    Tickets,
+    TicketsPlane,
+    TicketCheck,
+    TicketPercent,
+} from "lucide-react";
 import ThemeToggle from "../theme/ThemeToggle";
 import { api } from "../utils/api";
 import { cx } from "../utils/cx";
@@ -11,9 +21,28 @@ const STATUS_LABELS = {
     Resolved: "แก้ไขเรียบร้อย",
 };
 
+const PROGRESS_STEPS = [
+    { label: "รับเรื่องแล้ว", Icon: Tickets },
+    { label: "กำลังดำเนินการ", Icon: TicketsPlane },
+    { label: "แก้ไขปัญหา", Icon: TicketPercent },
+    { label: "เสร็จสิ้น", Icon: TicketCheck },
+];
+
+function parseDate(value) {
+    if (/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/.test(value)) {
+        return new Date(`${value.replace(" ", "T")}Z`);
+    }
+    return new Date(value);
+}
+
 function formatDate(value) {
     if (!value) return "—";
-    return new Intl.DateTimeFormat("th-TH", { dateStyle: "medium", timeStyle: "short" }).format(new Date(value));
+    return new Intl.DateTimeFormat("th-TH", { dateStyle: "medium", timeZone: "Asia/Bangkok" }).format(parseDate(value));
+}
+
+function formatTime(value) {
+    if (!value) return "";
+    return new Intl.DateTimeFormat("th-TH", { hour: "2-digit", minute: "2-digit", timeZone: "Asia/Bangkok" }).format(parseDate(value));
 }
 
 export default function TrackTicket() {
@@ -35,20 +64,31 @@ export default function TrackTicket() {
     const isLoading = lookup?.ticketNumber !== ticketNumber;
     const ticket = isLoading ? null : lookup.ticket;
     const error = isLoading ? "" : lookup.error;
-    const isResolved = ticket?.status === "Resolved";
-    const isInProgress = ticket?.status === "In Progress";
+    const currentStep = ticket?.status === "Resolved" ? 3 : ticket?.status === "In Progress" ? 1 : 0;
+    const currentStatusLabel = ticket ? STATUS_LABELS[ticket.status] ?? ticket.status : "";
+    const activity = ticket
+        ? [
+              { label: "ได้รับแจ้งปัญหาแล้ว", time: ticket.created_at },
+              ...(ticket.status === "In Progress"
+                  ? [{ label: "เจ้าหน้าที่กำลังดำเนินการตรวจสอบและแก้ไข", time: ticket.updated_at }]
+                  : []),
+              ...(ticket.status === "Resolved"
+                  ? [{ label: "ดำเนินการแก้ไขเรียบร้อยแล้ว", time: ticket.updated_at }]
+                  : []),
+          ]
+        : [];
 
     return (
-        <main className="min-h-screen bg-background text-foreground selection:bg-cyan-500 selection:text-white">
-            <div className="absolute top-1/4 -left-20 w-96 h-96 bg-purple-600/20 rounded-full blur-3xl animate-pulse pointer-events-none" />
-            <div className="absolute bottom-1/4 -right-20 w-96 h-96 bg-cyan-500/20 rounded-full blur-3xl animate-pulse delay-1000 pointer-events-none" />
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-indigo-600/10 rounded-full blur-[120px] pointer-events-none" />
+        <main className="relative min-h-screen overflow-hidden bg-background text-foreground selection:bg-cyan-500 selection:text-white">
+            <div className="pointer-events-none absolute -left-20 top-1/4 size-96 animate-pulse rounded-full bg-purple-600/20 blur-3xl" />
+            <div className="pointer-events-none absolute -right-20 bottom-1/4 size-96 animate-pulse rounded-full bg-cyan-500/20 blur-3xl delay-1000" />
+            <div className="pointer-events-none absolute left-1/2 top-1/2 size-[500px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-indigo-600/10 blur-[120px]" />
 
-            <header className="border-b border-border">
+            <header className="relative z-10 border-b border-border">
                 <div className="mx-auto flex h-16 max-w-4xl items-center justify-between px-5 sm:px-8">
                     <Link to="/" className="flex items-center gap-3" aria-label="กลับหน้าหลัก IssueDesk">
                         <span className="flex size-10 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-                            <Headset size={22} />
+                            <Headset size={22} aria-hidden="true" />
                         </span>
                         <span>
                             <span className="block text-base font-semibold">IssueDesk</span>
@@ -59,110 +99,102 @@ export default function TrackTicket() {
                 </div>
             </header>
 
-            <section className="mx-auto max-w-2xl px-5 py-12 sm:px-8">
-                <Link
-                    to="/"
-                    className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
-                >
-                    <ArrowLeft size={16} />
+            <section className="relative z-10 mx-auto max-w-2xl px-5 py-12 sm:px-8">
+                <Link to="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
+                    <ArrowLeft size={16} aria-hidden="true" />
                     กลับหน้าหลัก
                 </Link>
+
                 <div className="mt-6 rounded-2xl border border-border bg-card p-6 shadow-sm sm:p-8">
                     <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                        <Search size={18} />
+                        <Search size={18} aria-hidden="true" />
                         <span>ติดตาม Ticket</span>
-                        <ShieldCheck size={17} className="ml-auto" />
+                        <ShieldCheck size={17} className="ml-auto" aria-hidden="true" />
                     </div>
                     <h1 className="mt-4 text-2xl font-semibold">สถานะการแจ้งปัญหา</h1>
                     <p className="mt-2 text-sm text-muted-foreground">
                         Ticket Number: <span className="font-medium text-foreground">{ticketNumber}</span>
                     </p>
 
-                    {isLoading && (
-                        <p className="mt-8 text-sm text-muted-foreground" role="status">
-                            กำลังค้นหา Ticket…
-                        </p>
-                    )}
+                    {isLoading && <p className="mt-8 text-sm text-muted-foreground" role="status">กำลังค้นหา Ticket…</p>}
                     {error && (
-                        <p
-                            className="mt-8 rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive"
-                            role="alert"
-                        >
+                        <p className="mt-8 rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive" role="alert">
                             {error}
                         </p>
                     )}
 
                     {ticket && (
                         <>
-                            <div className="mt-8 flex items-center gap-3 rounded-xl border border-border bg-muted/30 p-4">
-                                <span
-                                    className={cx(
-                                        "flex size-11 items-center justify-center rounded-full",
-                                        isResolved
-                                            ? "bg-emerald-500/10 text-emerald-600"
-                                            : "bg-primary/10 text-primary",
-                                    )}
-                                >
-                                    {isResolved ? <CheckCircle2 size={22} /> : <Clock3 size={22} />}
-                                </span>
-                                <div>
-                                    <p className="text-xs text-muted-foreground">สถานะปัจจุบัน</p>
-                                    <p className="mt-1 font-semibold">
-                                        {STATUS_LABELS[ticket.status] ?? ticket.status}
-                                    </p>
-                                </div>
-                            </div>
+                            <section className="mt-8 rounded-xl border border-border bg-muted/30 px-3 pb-4 pt-5 sm:px-5" aria-label="ขั้นตอนการดำเนินงาน">
+                                <ol className="mx-auto flex items-start">
+                                    {PROGRESS_STEPS.map(({ label, Icon }, index) => {
+                                        const isComplete = index <= currentStep;
+                                        const isCurrent = index === currentStep;
 
-                            <ol className="mt-8 space-y-5" aria-label="ความคืบหน้า Ticket">
-                                <li className="flex gap-3">
-                                    <CheckCircle2 className="mt-0.5 size-5 shrink-0 text-emerald-600" />
-                                    <div>
-                                        <p className="text-sm font-medium">รับเรื่องแล้ว</p>
-                                        <p className="mt-1 text-xs text-muted-foreground">
-                                            {formatDate(ticket.created_at)}
-                                        </p>
-                                    </div>
-                                </li>
-                                <li className="flex gap-3">
-                                    {isInProgress || isResolved ? (
-                                        <CheckCircle2 className="mt-0.5 size-5 shrink-0 text-emerald-600" />
-                                    ) : (
-                                        <Circle className="mt-0.5 size-5 shrink-0 text-muted-foreground" />
-                                    )}
-                                    <div>
-                                        <p
-                                            className={cx(
-                                                "text-sm",
-                                                isInProgress || isResolved ? "font-medium" : "text-muted-foreground",
+                                        return (
+                                            <li
+                                                key={label}
+                                                className="relative flex min-w-0 flex-1 flex-col items-center text-center"
+                                            >
+                                                {index > 0 && (
+                                                    <span
+                                                        aria-hidden="true"
+                                                        className={cx(
+                                                            "absolute right-1/2 top-[21px] h-0.5 w-full",
+                                                            index <= currentStep
+                                                                ? "bg-green-500"
+                                                                : "bg-muted-foreground/30",
+                                                        )}
+                                                    />
+                                                )}
+                                                <span
+                                                    className={cx(
+                                                        "relative z-10 flex size-[42px] items-center justify-center rounded-full",
+                                                        isComplete
+                                                            ? "bg-green-500 text-primary-foreground"
+                                                            : "bg-muted-foreground/30 text-muted",
+                                                        isCurrent && "ring-4 ring-primary/15",
+                                                    )}
+                                                >
+                                                    <Icon size={23} strokeWidth={2.2} aria-hidden="true" />
+                                                </span>
+                                                <span
+                                                    className={cx(
+                                                        "mt-2 max-w-[76px] text-[11px] leading-4 sm:max-w-none sm:text-xs",
+                                                        isComplete ? "text-foreground" : "text-muted-foreground",
+                                                        isCurrent && "font-semibold",
+                                                    )}
+                                                >
+                                                    {label}
+                                                </span>
+                                            </li>
+                                        );
+                                    })}
+                                </ol>
+                                <p className="mx-auto mt-4 max-w-3xl text-right text-xs text-primary">
+                                    สถานะปัจจุบัน: {currentStatusLabel}
+                                </p>
+                            </section>
+
+                            <h2 className="mb-5 mt-8 text-sm font-medium text-muted-foreground">ความเคลื่อนไหวของ Ticket</h2>
+                            <ol className="space-y-0" aria-label="รายการแจ้งเตือน Ticket">
+                                {activity.map((item, index) => (
+                                    <li key={`${item.label}-${index}`} className="grid grid-cols-[76px_22px_minmax(0,1fr)] gap-2 sm:grid-cols-[100px_28px_minmax(0,1fr)] sm:gap-3">
+                                        <time dateTime={parseDate(item.time).toISOString()} className="pt-1 text-right text-xs leading-5 text-muted-foreground sm:text-sm">
+                                            <span className="block">{formatDate(item.time)}</span>
+                                            <span className="block">{formatTime(item.time)} น.</span>
+                                        </time>
+                                        <span className="relative flex justify-center">
+                                            {index < activity.length - 1 && (
+                                                <span aria-hidden="true" className="absolute bottom-0 top-5 border-l-2 border-dotted border-primary/50" />
                                             )}
-                                        >
-                                            กำลังดำเนินการ
-                                        </p>
-                                    </div>
-                                </li>
-                                <li className="flex gap-3">
-                                    {isResolved ? (
-                                        <CheckCircle2 className="mt-0.5 size-5 shrink-0 text-emerald-600" />
-                                    ) : (
-                                        <Circle className="mt-0.5 size-5 shrink-0 text-muted-foreground" />
-                                    )}
-                                    <div>
-                                        <p
-                                            className={cx(
-                                                "text-sm",
-                                                isResolved ? "font-medium" : "text-muted-foreground",
-                                            )}
-                                        >
-                                            แก้ไขเรียบร้อย
-                                        </p>
-                                        {isResolved && (
-                                            <p className="mt-1 text-xs text-muted-foreground">
-                                                อัปเดตล่าสุด {formatDate(ticket.updated_at)}
-                                            </p>
-                                        )}
-                                    </div>
-                                </li>
+                                            <CheckCircle2 size={20} className="relative z-10 mt-1 shrink-0 fill-primary text-primary-foreground" aria-hidden="true" />
+                                        </span>
+                                        <p className="pb-8 text-base leading-7 text-card-foreground sm:text-lg sm:leading-8">{item.label}</p>
+                                    </li>
+                                ))}
                             </ol>
+                            <p className="mt-2 text-right text-xs text-muted-foreground">เลข Ticket: {ticket.ticket_number}</p>
                         </>
                     )}
                 </div>
