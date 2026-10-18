@@ -10,6 +10,7 @@ import {
     TicketPlus,
     LogIn,
     LogOut,
+    ClipboardPaste,
 } from "lucide-react";
 import { cx } from "../utils/cx";
 import ThemeToggle from "../theme/ThemeToggle";
@@ -48,6 +49,18 @@ const PortalHome = () => {
         }
     };
 
+    const handlePaste = async () => {
+        try {
+            const text = await navigator.clipboard.readText();
+
+            if (text) {
+                setTicketNumber(text.trim());
+            }
+        } catch {
+            // แจ้งเตือนหากไม่สามารถเข้าถึง Clipboard ได้
+        }
+    };
+
     return (
         <main className="min-h-screen relative overflow-hidden selection:bg-cyan-500 selection:text-white">
             {/* Background Animated Gradient Blobs */}
@@ -75,6 +88,7 @@ const PortalHome = () => {
                         <button
                             type="button"
                             onClick={handleAccountAction}
+                            title={user ? "Sign out" : "Sign in"}
                             aria-label={user ? "Sign out" : "Sign in"}
                             className="flex items-center gap-2 hover:text-foreground cursor-pointer"
                         >
@@ -151,6 +165,7 @@ const PortalHome = () => {
 
                             <Link
                                 to="/report"
+                                title="แจ้งปัญหาใหม่"
                                 className={cx(
                                     "mt-8 inline-flex min-h-11 w-full items-center",
                                     "justify-center gap-2 rounded-lg px-4 py-3",
@@ -197,25 +212,36 @@ const PortalHome = () => {
                                 <label htmlFor="ticket-number" className="mb-2 block text-sm font-medium">
                                     เลขทิกเก็ต (Ticket Number)
                                 </label>
+                                <div className="relative">
+                                    <input
+                                        id="ticket-number"
+                                        type="text"
+                                        value={ticketNumber}
+                                        onChange={(event) => setTicketNumber(event.target.value)}
+                                        placeholder="เช่น IT-202610-0001"
+                                        autoComplete="off"
+                                        required
+                                        className={cx(
+                                            "h-11 w-full rounded-lg border border-input",
+                                            "bg-background px-3 text-sm",
+                                            "placeholder:text-muted-foreground",
+                                            "focus-visible:outline-none focus-visible:ring-2",
+                                            "focus-visible:ring-ring",
+                                        )}
+                                    />
 
-                                <input
-                                    id="ticket-number"
-                                    type="text"
-                                    value={ticketNumber}
-                                    onChange={(event) => setTicketNumber(event.target.value)}
-                                    placeholder="เช่น IT-202610-0001"
-                                    autoComplete="off"
-                                    required
-                                    className={cx(
-                                        "h-11 w-full rounded-lg border border-input",
-                                        "bg-background px-3 text-sm",
-                                        "placeholder:text-muted-foreground",
-                                        "focus-visible:outline-none focus-visible:ring-2",
-                                        "focus-visible:ring-ring",
-                                    )}
-                                />
-
-                                <p className="mt-2 text-xs text-muted-foreground">เลขทิกเก็ตที่ได้รับหลังแจ้งปัญหา</p>
+                                    <p className="mt-2 text-xs text-muted-foreground">
+                                        เลขทิกเก็ตที่ได้รับหลังแจ้งปัญหา
+                                    </p>
+                                    <button
+                                        type="button"
+                                        onClick={handlePaste}
+                                        title="Paste from clipboard"
+                                        className="absolute right-2 top-2 -translate-y-1 p-2 cursor-pointer hover:opacity-70"
+                                    >
+                                        <ClipboardPaste size={17} aria-hidden="true" />
+                                    </button>
+                                </div>
 
                                 <button
                                     type="submit"

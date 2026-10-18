@@ -390,8 +390,9 @@ const ReportForm = () => {
                 <button
                     type="reset"
                     disabled={isSubmitting}
+                    title={isSubmitting ? "กําลังล้าง..." : "ล้างฟอร์ม"}
                     className={cx(
-                        "rounded-lg border border-border px-4 py-2.5",
+                        "rounded-lg border border-border px-4 py-2.5 cursor-pointer",
                         "text-sm font-medium transition-colors",
                         "hover:bg-accent hover:text-accent-foreground",
                         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
@@ -404,8 +405,9 @@ const ReportForm = () => {
                 <button
                     type="submit"
                     disabled={isSubmitting}
+                    title={isSubmitting ? "กําลังบันทึก..." : "Submit Issue ถัดไป"}
                     className={cx(
-                        "rounded-lg bg-primary px-5 py-2.5",
+                        "rounded-lg bg-primary px-5 py-2.5 cursor-pointer",
                         "text-sm font-medium text-primary-foreground",
                         "transition-opacity hover:opacity-90",
                         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
