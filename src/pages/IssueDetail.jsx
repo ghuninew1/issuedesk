@@ -341,8 +341,10 @@ const IssueDetail = () => {
 
         try {
             const data = await deleteIssue(issue.ticket_number)
+            setIsDeleting(false)
 
             if (!data.success) {
+                setDeleteError(data.message || 'Unable to delete issue. Please try again.')
                 throw new Error(data.message || 'Failed to delete issue')
             }
 
@@ -488,7 +490,7 @@ const IssueDetail = () => {
                                     onClick={handleDeleteIssue}
                                     disabled={isDeleting || isUpdatingStatus}
                                     className={cx(
-                                        "inline-flex h-8 items-center justify-center gap-2 rounded-md",
+                                        "inline-flex h-8 items-center justify-center gap-2 rounded-md cursor-pointer",
                                         "border border-destructive/30 px-3 text-xs font-medium text-destructive",
                                         "transition-colors hover:bg-destructive/10",
                                         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive/30",

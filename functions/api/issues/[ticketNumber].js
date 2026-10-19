@@ -123,15 +123,51 @@ export async function onRequestDelete({ request, params, env }) {
                     return jsonResponse({ success: false, message: "Unable to contact Storage API" }, 502);
                 }
 
+                // A missing Storage file is already in the desired state. Continue
+                // so retries can clean up IssueDesk metadata after partial failures.
+                if (storageResponse.status === 404) {
+                    continue;
+                }
+
                 if (!storageResponse.ok) {
                     console.error("Storage delete failed:", storageResponse.status, attachment.id);
                     return jsonResponse(
-                        { success: false, message: "Storage API could not confirm attachment deletion" },
+                        {
+                            success: false,
+                            message: `Storage API could not delete attachment (${storageResponse.status})`,
+                        },
                         502,
                     );
                 }
+
+                const contentType = storageResponse.headers.get("content-type") || "";
+                if (contentType.includes("application/json")) {
+                    let storageResult;
+                    try {
+                        storageResult = await storageResponse.json();
+                    } catch {
+                        return jsonResponse(
+                            { success: false, message: "Storage API returned an invalid delete response" },
+                            502,
+                        );
+                    }
+
+                    if (storageResult?.success !== true) {
+                        console.error("Storage API did not confirm attachment deletion:", attachment.id);
+                        return jsonResponse(
+                            { success: false, message: "Storage API did not confirm attachment deletion" },
+                            502,
+                        );
+                    }
+                }
             }
         }
+
+        // Delete child rows explicitly instead of depending only on D1's
+        // foreign-key cascade behavior in every deployed database.
+        await env.DB.prepare("DELETE FROM issue_attachments WHERE issue_id = ?")
+            .bind(issue.id)
+            .run();
 
         const result = await env.DB.prepare("DELETE FROM issues WHERE id = ? AND ticket_number = ?")
             .bind(issue.id, issue.ticket_number)
