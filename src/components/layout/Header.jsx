@@ -106,7 +106,7 @@ const Header = ({ isSidebarCollapsed, onToggleSidebar, onOpenMobileSidebar }) =>
                 )}
 
                 <div className="min-w-0 flex items-center gap-2">
-                    <Headset size={24} aria-hidden="true" />
+                    <Headset size={24} aria-hidden="true" onClick={() => navigate("/")} className="cursor-pointer hover:scale-105" />
                     <div className="truncate text-sm font-medium">
                         <p className="truncate text-sm font-medium"> {currentPage.title}</p>
 
