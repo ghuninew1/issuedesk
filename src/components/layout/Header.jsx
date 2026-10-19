@@ -1,7 +1,7 @@
 import { useLocation, useNavigate, useMatch } from "react-router-dom";
 import ThemeToggle from "../../theme/ThemeToggle";
 import { cx } from "../../utils/cx";
-import { LogOut, Menu, PanelLeftClose, PanelLeftOpen, Headset } from "lucide-react";
+import { LogOut, Menu, PanelLeftClose, PanelLeftOpen, Headset, LogIn } from "lucide-react";
 import { api } from "../../utils/api";
 import { useAuth } from "../../auth/useAuth";
 
@@ -106,7 +106,12 @@ const Header = ({ isSidebarCollapsed, onToggleSidebar, onOpenMobileSidebar }) =>
                 )}
 
                 <div className="min-w-0 flex items-center gap-2">
-                    <Headset size={24} aria-hidden="true" onClick={() => navigate("/")} className="cursor-pointer hover:scale-105" />
+                    <Headset
+                        size={24}
+                        aria-hidden="true"
+                        onClick={() => navigate("/")}
+                        className="cursor-pointer hover:scale-105"
+                    />
                     <div className="truncate text-sm font-medium">
                         <p className="truncate text-sm font-medium"> {currentPage.title}</p>
 
@@ -118,7 +123,7 @@ const Header = ({ isSidebarCollapsed, onToggleSidebar, onOpenMobileSidebar }) =>
             </div>
 
             <div className="flex shrink-0 items-center gap-2">
-                {user && (
+                {user ? (
                     <button
                         type="button"
                         onClick={handleLogout}
@@ -129,6 +134,18 @@ const Header = ({ isSidebarCollapsed, onToggleSidebar, onOpenMobileSidebar }) =>
                     >
                         <LogOut size={16} aria-hidden="true" />
                         <span className="hidden sm:inline">Sign out</span>
+                    </button>
+                ) : (
+                    <button
+                        type="button"
+                        onClick={() => navigate("/login")}
+                        className={cx(
+                            "inline-flex h-10 items-center gap-2 rounded-lg px-3",
+                            "text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground cursor-pointer",
+                        )}
+                    >
+                        <LogIn size={16} aria-hidden="true" />
+                        <span className="hidden sm:inline">Sign in</span>
                     </button>
                 )}
                 <ThemeToggle />
