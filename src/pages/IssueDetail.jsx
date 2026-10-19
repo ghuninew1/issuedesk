@@ -9,7 +9,7 @@ import {
 } from "../services/issues";
 import { cx } from "../utils/cx";
 import heic2any from "heic2any";
-import { Download, Copy, Check, Trash2 } from "lucide-react";
+import { Download, Copy, Check, Trash2, Loader } from "lucide-react";
 import { useDocumentTitle } from "../hooks/useDocumentTitle";
 
 const statusStyles = {
@@ -374,9 +374,10 @@ const IssueDetail = () => {
 
             {isLoading ? (
                 <div
-                    className="rounded-xl border border-border p-8 text-center text-sm text-muted-foreground"
+                    className="rounded-xl border border-border p-8 text-center text-sm text-muted-foreground gap-2 flex items-center justify-center"
                     role="status"
                 >
+                    <Loader className="mr-2 inline h-4 w-4 animate-spin" />
                     Loading issue details...
                 </div>
             ) : error ? (
