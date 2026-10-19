@@ -13,6 +13,7 @@ import {
 import { api } from "../utils/api";
 import { cx } from "../utils/cx";
 import Header from "../components/layout/Header";
+import { useDocumentTitle } from "../hooks/useDocumentTitle";
 
 const STATUS_LABELS = {
     Open: "รับเรื่องแล้ว",
@@ -47,6 +48,8 @@ function formatTime(value) {
 export default function TrackTicket() {
     const { ticketNumber } = useParams();
     const [lookup, setLookup] = useState(null);
+
+    useDocumentTitle(ticketNumber ? `Track ${ticketNumber}` : "Issue Tracking");
 
     useEffect(() => {
         const controller = new AbortController();

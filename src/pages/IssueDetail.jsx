@@ -4,6 +4,7 @@ import { deleteIssue, getIssue, getIssueAttachmentUrl, getIssueAttachments, upda
 import { cx } from '../utils/cx'
 import heic2any from "heic2any";
 import { Download, Copy, Check, Trash2 } from "lucide-react";
+import { useDocumentTitle } from "../hooks/useDocumentTitle";
 
 const statusStyles = {
     Open: 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
@@ -184,6 +185,8 @@ const IssueDetail = () => {
     const [attachmentsError, setAttachmentsError] = useState("");
     const [isDeleting, setIsDeleting] = useState(false)
     const [deleteError, setDeleteError] = useState('')
+
+    useDocumentTitle(`Issue #${ticketNumber}`)
 
     const fetchAttachments = useCallback(
         async (signal) => {

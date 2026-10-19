@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { getIssues } from '../services/issues'
 import { cx } from '../utils/cx'
 import { RefreshCw, Loader } from "lucide-react";
+import { useDocumentTitle } from "../hooks/useDocumentTitle";
 
 const statusFilters = [
     { label: "All Issues", value: "All" },
@@ -60,6 +61,8 @@ const Issues = () => {
     const [error, setError] = useState('')
     const activeControllerRef = useRef(null)
     const isRequestInProgressRef = useRef(false)
+
+    useDocumentTitle('Issues');
 
     const fetchIssues = useCallback(async ({ controller, isInitialLoad = false } = {}) => {
         if (isRequestInProgressRef.current) {

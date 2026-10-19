@@ -1,8 +1,10 @@
 import AppShell from '../components/layout/AppShell'
 import ReportForm from '../components/report/ReportForm'
 import { cx } from '../utils/cx'
+import { useDocumentTitle } from "../hooks/useDocumentTitle";
 
 const ReportIssue = () => {
+    useDocumentTitle('Report Issue')
     return (
         <AppShell>
             <div className="mx-auto max-w-4xl animate-fadeInUp">

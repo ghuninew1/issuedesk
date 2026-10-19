@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import StatCard from './StatCard'
 import { cx } from '../../utils/cx'
 import { getIssueStats } from '../../services/issues'
+import { useDocumentTitle } from "../../hooks/useDocumentTitle";
 
 const DashboardStats = () => {
     const [statsData, setStatsData] = useState({
@@ -12,6 +13,8 @@ const DashboardStats = () => {
     })
     const [isLoading, setIsLoading] = useState(true)
     const [error, setError] = useState(false)
+
+    useDocumentTitle('Dashboard');
 
     useEffect(() => {
         const controller = new AbortController()

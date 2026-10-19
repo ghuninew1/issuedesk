@@ -1,4 +1,4 @@
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useMatch } from "react-router-dom";
 import ThemeToggle from "../../theme/ThemeToggle";
 import { cx } from "../../utils/cx";
 import { LogOut, Menu, PanelLeftClose, PanelLeftOpen, Headset } from "lucide-react";
@@ -13,6 +13,7 @@ const SidebarToggleIcon = ({ isCollapsed }) =>
 const Header = ({ isSidebarCollapsed, onToggleSidebar, onOpenMobileSidebar }) => {
     const { pathname } = useLocation();
     const navigate = useNavigate();
+    const trackMatch = useMatch("/track/:ticketNumber");
     const { setUser, user } = useAuth();
 
     const handleLogout = async () => {
@@ -47,16 +48,17 @@ const Header = ({ isSidebarCollapsed, onToggleSidebar, onOpenMobileSidebar }) =>
             title: "Login",
             description: "Sign in to your account",
         },
-        "/track/:ticketNumber": {
-            title: "Issue Tracking",
-            description: `Track the progress of an issue : ${pathname.split("/")[2]}`,
-        },
     };
 
-    const currentPage = pageInfo[pathname] ?? {
-        title: "IssueDesk",
-        description: "Internal IT Support",
-    };
+    const currentPage = trackMatch
+        ? {
+              title: "Issue Tracking",
+              description: `Track the progress of an issue: ${trackMatch.params.ticketNumber}`,
+          }
+        : (pageInfo[pathname] ?? {
+              title: "IssueDesk",
+              description: "Internal IT Support",
+          });
 
     return (
         <header
@@ -84,24 +86,24 @@ const Header = ({ isSidebarCollapsed, onToggleSidebar, onOpenMobileSidebar }) =>
                 </button>
 
                 {/* Desktop sidebar toggle */}
-                {user &&
-                <button
-                    type="button"
-                    onClick={onToggleSidebar}
-                    aria-label={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-                    aria-pressed={isSidebarCollapsed}
-                    title={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-                    className={cx(
-                        "hidden size-10 shrink-0 items-center justify-center rounded-lg",
-                        "text-muted-foreground transition-colors",
-                        "hover:bg-accent hover:text-accent-foreground",
-                        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                        "md:flex",
-                    )}
-                >
-                    <SidebarToggleIcon isCollapsed={isSidebarCollapsed} />
-                </button>
-                }
+                {user && (
+                    <button
+                        type="button"
+                        onClick={onToggleSidebar}
+                        aria-label={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+                        aria-pressed={isSidebarCollapsed}
+                        title={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+                        className={cx(
+                            "hidden size-10 shrink-0 items-center justify-center rounded-lg",
+                            "text-muted-foreground transition-colors",
+                            "hover:bg-accent hover:text-accent-foreground",
+                            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                            "md:flex",
+                        )}
+                    >
+                        <SidebarToggleIcon isCollapsed={isSidebarCollapsed} />
+                    </button>
+                )}
 
                 <div className="min-w-0 flex items-center gap-2">
                     <Headset size={24} aria-hidden="true" />

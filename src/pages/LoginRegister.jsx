@@ -4,10 +4,12 @@ import { User, Mail, Lock, Eye, EyeOff, ArrowRight, ShieldCheck, Sparkles, Arrow
 import ElectricBorder from "../components/ElectricBorder";
 import { api } from "../utils/api";
 import { useAuth } from "../auth/useAuth";
+import { useDocumentTitle } from "../hooks/useDocumentTitle";
 
 export default function LoginRegister() {
     const navigate = useNavigate();
     const { setUser } = useAuth();
+
     // Page mode: 'login' | 'register'
     const [page, setPage] = useState("login");
 
@@ -26,12 +28,14 @@ export default function LoginRegister() {
     const [toastMessage, setToastMessage] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
 
+    
     const triggerToast = (msg) => {
         setToastMessage(msg);
         setTimeout(() => {
             setToastMessage("");
         }, 3000);
     };
+    useDocumentTitle(page === "login" ? "Login" : "Register");
 
     const handleLoginSubmit = async (e) => {
         e.preventDefault();
