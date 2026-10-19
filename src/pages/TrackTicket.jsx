@@ -71,8 +71,8 @@ export default function TrackTicket() {
     const activity = ticket
         ? [
               { label: "ได้รับแจ้งปัญหาแล้ว", time: ticket.created_at },
-              ...(ticket.status === "In Progress"
-                  ? [{ label: "เจ้าหน้าที่กำลังดำเนินการตรวจสอบและแก้ไข", time: ticket.updated_at }]
+              ...(ticket.status === "In Progress" || ticket.status === "Resolved"
+                  ? [{ label: "กำลังดำเนินการตรวจสอบและแก้ไข", time: ticket.in_progress_at }]
                   : []),
               ...(ticket.status === "Resolved"
                   ? [{ label: "ดำเนินการแก้ไขเรียบร้อยแล้ว", time: ticket.updated_at }]
@@ -188,11 +188,17 @@ export default function TrackTicket() {
                                         className="grid grid-cols-[76px_22px_minmax(0,1fr)] gap-2 sm:grid-cols-[100px_28px_minmax(0,1fr)] sm:gap-3"
                                     >
                                         <time
-                                            dateTime={parseDate(item.time).toISOString()}
+                                            dateTime={item.time ? parseDate(item.time).toISOString() : undefined}
                                             className="pt-1 text-right text-xs leading-5 text-muted-foreground sm:text-sm"
                                         >
-                                            <span className="block">{formatDate(item.time)}</span>
-                                            <span className="block">{formatTime(item.time)} น.</span>
+                                            {item.time ? (
+                                                <>
+                                                    <span className="block">{formatDate(item.time)}</span>
+                                                    <span className="block">{formatTime(item.time)} น.</span>
+                                                </>
+                                            ) : (
+                                                <span className="block">ไม่พบเวลาบันทึก</span>
+                                            )}
                                         </time>
                                         <span className="relative flex justify-center">
                                             {index < activity.length - 1 && (

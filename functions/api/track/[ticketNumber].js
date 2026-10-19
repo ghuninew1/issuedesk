@@ -10,7 +10,7 @@ export async function onRequestGet({ params, env }) {
 
     try {
         const ticket = await env.DB.prepare(
-            "SELECT ticket_number, status, created_at, updated_at FROM issues WHERE ticket_number = ? LIMIT 1",
+            "SELECT ticket_number, status, created_at, updated_at, in_progress_at FROM issues WHERE ticket_number = ? LIMIT 1",
         ).bind(ticketNumber).first();
 
         if (!ticket) return jsonResponse({ success: false, message: "Ticket not found" }, 404);

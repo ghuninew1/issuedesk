@@ -230,12 +230,16 @@ export async function onRequestPatch({ request, params, env }) {
             `
                 UPDATE issues
                 SET
+                    in_progress_at = CASE
+                        WHEN ? = 'In Progress' AND status != 'In Progress' THEN datetime('now')
+                        ELSE in_progress_at
+                    END,
                     status = ?,
                     updated_at = datetime('now')
                 WHERE ticket_number = ?
             `,
         )
-            .bind(status, ticketNumber)
+            .bind(status, status, ticketNumber)
             .run();
 
         if (result.meta.changes === 0) {

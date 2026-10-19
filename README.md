@@ -84,6 +84,7 @@ Migrations ใน repository:
 | `0001_create_issues.sql` | `issues` |
 | `0002_create_issue_attachments.sql` | `issue_attachments` และ index ตาม Ticket |
 | `0003_create_auth_tables.sql` | `users`, `sessions`, `login_attempts` และ index ที่เกี่ยวข้อง |
+| `0004_add_issue_in_progress_at.sql` | เก็บเวลาที่ Ticket เริ่มดำเนินการ เพื่อแสดงประวัติบนหน้าติดตาม |
 
 ตรวจสอบหรือ apply migration บน remote:
 
