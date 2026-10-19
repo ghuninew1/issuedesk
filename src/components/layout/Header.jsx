@@ -1,7 +1,7 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import ThemeToggle from "../../theme/ThemeToggle";
 import { cx } from "../../utils/cx";
-import { LogOut, Menu, PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import { LogOut, Menu, PanelLeftClose, PanelLeftOpen, Headset } from "lucide-react";
 import { api } from "../../utils/api";
 import { useAuth } from "../../auth/useAuth";
 
@@ -34,6 +34,22 @@ const Header = ({ isSidebarCollapsed, onToggleSidebar, onOpenMobileSidebar }) =>
         "/report": {
             title: "Report an Issue",
             description: "Submit a new office IT issue",
+        },
+        "/issues": {
+            title: "Issues",
+            description: "View and manage office issues",
+        },
+        "/admin": {
+            title: "Admin",
+            description: "Manage users and settings",
+        },
+        "/login": {
+            title: "Login",
+            description: "Sign in to your account",
+        },
+        "/track/:ticketNumber": {
+            title: "Issue Tracking",
+            description: `Track the progress of an issue : ${pathname.split("/")[2]}`,
         },
     };
 
@@ -68,6 +84,7 @@ const Header = ({ isSidebarCollapsed, onToggleSidebar, onOpenMobileSidebar }) =>
                 </button>
 
                 {/* Desktop sidebar toggle */}
+                {user &&
                 <button
                     type="button"
                     onClick={onToggleSidebar}
@@ -84,11 +101,17 @@ const Header = ({ isSidebarCollapsed, onToggleSidebar, onOpenMobileSidebar }) =>
                 >
                     <SidebarToggleIcon isCollapsed={isSidebarCollapsed} />
                 </button>
+                }
 
-                <div className="min-w-0">
-                    <p className="truncate text-sm font-medium">{currentPage.title}</p>
+                <div className="min-w-0 flex items-center gap-2">
+                    <Headset size={24} aria-hidden="true" />
+                    <div className="truncate text-sm font-medium">
+                        <p className="truncate text-sm font-medium"> {currentPage.title}</p>
 
-                    <p className="hidden truncate text-xs text-muted-foreground sm:block">{currentPage.description}</p>
+                        <p className="hidden truncate text-xs text-muted-foreground sm:block">
+                            {currentPage.description}
+                        </p>
+                    </div>
                 </div>
             </div>
 

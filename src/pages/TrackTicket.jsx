@@ -3,7 +3,6 @@ import { Link, useParams } from "react-router-dom";
 import {
     ArrowLeft,
     CheckCircle2,
-    Headset,
     Search,
     ShieldCheck,
     Tickets,
@@ -11,9 +10,9 @@ import {
     TicketCheck,
     TicketPercent,
 } from "lucide-react";
-import ThemeToggle from "../theme/ThemeToggle";
 import { api } from "../utils/api";
 import { cx } from "../utils/cx";
+import Header from "../components/layout/Header";
 
 const STATUS_LABELS = {
     Open: "รับเรื่องแล้ว",
@@ -84,23 +83,13 @@ export default function TrackTicket() {
             <div className="pointer-events-none absolute -right-20 bottom-1/4 size-96 animate-pulse rounded-full bg-cyan-500/20 blur-3xl delay-1000" />
             <div className="pointer-events-none absolute left-1/2 top-1/2 size-[500px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-indigo-600/10 blur-[120px]" />
 
-            <header className="relative z-10 border-b border-border animate-fadeInDown">
-                <div className="mx-auto flex h-16 max-w-4xl items-center justify-between px-5 sm:px-8">
-                    <Link to="/" className="flex items-center gap-3" aria-label="กลับหน้าหลัก IssueDesk">
-                        <span className="flex size-10 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-                            <Headset size={22} aria-hidden="true" />
-                        </span>
-                        <span>
-                            <span className="block text-base font-semibold">IssueDesk</span>
-                            <span className="block text-xs text-muted-foreground">IT Support Center</span>
-                        </span>
-                    </Link>
-                    <ThemeToggle />
-                </div>
-            </header>
+            <Header isSidebarCollapsed={false} onToggleSidebar={() => {}} onOpenMobileSidebar={() => {}} />
 
             <section className="relative z-10 mx-auto max-w-2xl px-5 py-12 sm:px-8 animate-fadeInUp">
-                <Link to="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
+                <Link
+                    to="/"
+                    className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+                >
                     <ArrowLeft size={16} aria-hidden="true" />
                     กลับหน้าหลัก
                 </Link>
@@ -116,16 +105,26 @@ export default function TrackTicket() {
                         Ticket Number: <span className="font-medium text-foreground">{ticketNumber}</span>
                     </p>
 
-                    {isLoading && <p className="mt-8 text-sm text-muted-foreground" role="status">กำลังค้นหา Ticket…</p>}
+                    {isLoading && (
+                        <p className="mt-8 text-sm text-muted-foreground" role="status">
+                            กำลังค้นหา Ticket…
+                        </p>
+                    )}
                     {error && (
-                        <p className="mt-8 rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive" role="alert">
+                        <p
+                            className="mt-8 rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive"
+                            role="alert"
+                        >
                             {error}
                         </p>
                     )}
 
                     {ticket && (
                         <>
-                            <section className="mt-8 rounded-xl border border-border bg-muted/30 px-3 pb-4 pt-5 sm:px-5" aria-label="ขั้นตอนการดำเนินงาน">
+                            <section
+                                className="mt-8 rounded-xl border border-border bg-muted/30 px-3 pb-4 pt-5 sm:px-5"
+                                aria-label="ขั้นตอนการดำเนินงาน"
+                            >
                                 <ol className="mx-auto flex items-start">
                                     {PROGRESS_STEPS.map(({ label, Icon }, index) => {
                                         const isComplete = index <= currentStep;
@@ -176,25 +175,44 @@ export default function TrackTicket() {
                                 </p>
                             </section>
 
-                            <h2 className="mb-5 mt-8 text-sm font-medium text-muted-foreground">ความเคลื่อนไหวของ Ticket</h2>
+                            <h2 className="mb-5 mt-8 text-sm font-medium text-muted-foreground">
+                                ความเคลื่อนไหวของ Ticket
+                            </h2>
                             <ol className="space-y-0" aria-label="รายการแจ้งเตือน Ticket">
                                 {activity.map((item, index) => (
-                                    <li key={`${item.label}-${index}`} className="grid grid-cols-[76px_22px_minmax(0,1fr)] gap-2 sm:grid-cols-[100px_28px_minmax(0,1fr)] sm:gap-3">
-                                        <time dateTime={parseDate(item.time).toISOString()} className="pt-1 text-right text-xs leading-5 text-muted-foreground sm:text-sm">
+                                    <li
+                                        key={`${item.label}-${index}`}
+                                        className="grid grid-cols-[76px_22px_minmax(0,1fr)] gap-2 sm:grid-cols-[100px_28px_minmax(0,1fr)] sm:gap-3"
+                                    >
+                                        <time
+                                            dateTime={parseDate(item.time).toISOString()}
+                                            className="pt-1 text-right text-xs leading-5 text-muted-foreground sm:text-sm"
+                                        >
                                             <span className="block">{formatDate(item.time)}</span>
                                             <span className="block">{formatTime(item.time)} น.</span>
                                         </time>
                                         <span className="relative flex justify-center">
                                             {index < activity.length - 1 && (
-                                                <span aria-hidden="true" className="absolute bottom-0 top-5 border-l-2 border-dotted border-primary/50" />
+                                                <span
+                                                    aria-hidden="true"
+                                                    className="absolute bottom-0 top-5 border-l-2 border-dotted border-primary/50"
+                                                />
                                             )}
-                                            <CheckCircle2 size={20} className="relative z-10 mt-1 shrink-0 fill-primary text-primary-foreground" aria-hidden="true" />
+                                            <CheckCircle2
+                                                size={20}
+                                                className="relative z-10 mt-1 shrink-0 fill-primary text-primary-foreground"
+                                                aria-hidden="true"
+                                            />
                                         </span>
-                                        <p className="pb-8 text-base leading-7 text-card-foreground sm:text-lg sm:leading-8">{item.label}</p>
+                                        <p className="pb-8 text-base leading-7 text-card-foreground sm:text-lg sm:leading-8">
+                                            {item.label}
+                                        </p>
                                     </li>
                                 ))}
                             </ol>
-                            <p className="mt-2 text-right text-xs text-muted-foreground">เลข Ticket: {ticket.ticket_number}</p>
+                            <p className="mt-2 text-right text-xs text-muted-foreground">
+                                เลข Ticket: {ticket.ticket_number}
+                            </p>
                         </>
                     )}
                 </div>

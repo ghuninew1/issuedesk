@@ -3,25 +3,18 @@ import { Link, useNavigate } from "react-router-dom";
 import {
     ArrowRight,
     ClipboardCheck,
-    Headset,
     LifeBuoy,
     Search,
-    ShieldCheck,
     TicketPlus,
-    LogIn,
-    LogOut,
     ClipboardPaste,
 } from "lucide-react";
 import { cx } from "../utils/cx";
-import ThemeToggle from "../theme/ThemeToggle";
 import ElectricBorder from "../components/ElectricBorder";
-import { useAuth } from "../auth/useAuth";
-import { api } from "../utils/api";
+import Header from "../components/layout/Header";
 
 const PortalHome = () => {
     const [ticketNumber, setTicketNumber] = useState("");
     const navigate = useNavigate();
-    const { user, setUser } = useAuth();
 
     const handleTrackTicket = (event) => {
         event.preventDefault();
@@ -33,20 +26,6 @@ const PortalHome = () => {
         }
 
         navigate(`/track/${encodeURIComponent(value)}`);
-    };
-
-    const handleAccountAction = async () => {
-        if (!user) {
-            navigate("/login");
-            return;
-        }
-        try {
-            await api("/api/auth/logout", { method: "POST" });
-        } catch {
-            // Clear the local session state even when the request cannot reach the server.
-        } finally {
-            setUser(null);
-        }
     };
 
     const handlePaste = async () => {
@@ -69,36 +48,7 @@ const PortalHome = () => {
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-indigo-600/10 rounded-full blur-[120px] pointer-events-none" />
 
             {/* Header */}
-            <header className="border-b border-border bg-background animate-fadeInDown">
-                <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5 sm:px-8">
-                    <Link to="/" className="flex items-center gap-3" aria-label="IssueDesk home">
-                        <span className="flex size-10 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-                            <Headset size={22} aria-hidden="true" />
-                        </span>
-
-                        <span>
-                            <span className="block text-base font-semibold tracking-tight">IssueDesk</span>
-                            <span className="block text-xs text-muted-foreground">IT Support Center</span>
-                        </span>
-                    </Link>
-
-                    <span className="hidden items-center gap-5 text-sm text-muted-foreground sm:flex">
-                        <ShieldCheck size={17} aria-hidden="true" />
-                        Internal IT Support
-                        <button
-                            type="button"
-                            onClick={handleAccountAction}
-                            title={user ? "Sign out" : "Sign in"}
-                            aria-label={user ? "Sign out" : "Sign in"}
-                            className="flex items-center gap-2 hover:text-foreground cursor-pointer"
-                        >
-                            {user ? <LogOut size={17} aria-hidden="true" /> : <LogIn size={17} aria-hidden="true" />}
-                            <span>{user ? "ออกจากระบบ" : "เข้าสู่ระบบ"}</span>
-                        </button>
-                        <ThemeToggle />
-                    </span>
-                </div>
-            </header>
+            <Header isSidebarCollapsed={false} onToggleSidebar={() => {}} onOpenMobileSidebar={() => {}} />
 
             {/* Main */}
             <section className="mx-auto max-w-6xl px-5 pb-16 pt-12 sm:px-8 sm:pt-20">
