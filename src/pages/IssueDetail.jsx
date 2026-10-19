@@ -1,65 +1,61 @@
-import { useCallback, useEffect, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
-import { deleteIssue, getIssue, getIssueAttachmentUrl, getIssueAttachments, updateIssueStatus } from "../services/issues";
-import { cx } from '../utils/cx'
+import { useCallback, useEffect, useState } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import {
+    deleteIssue,
+    getIssue,
+    getIssueAttachmentUrl,
+    getIssueAttachments,
+    updateIssueStatus,
+} from "../services/issues";
+import { cx } from "../utils/cx";
 import heic2any from "heic2any";
-import { Download, Copy, Check, Trash2, ChevronDown } from "lucide-react";
+import { Download, Copy, Check, Trash2 } from "lucide-react";
 import { useDocumentTitle } from "../hooks/useDocumentTitle";
 
 const statusStyles = {
-    Open: 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
-    'In Progress':
-        'bg-amber-500/10 text-amber-700 dark:text-amber-400',
-    Resolved:
-        'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400',
-}
+    Open: "bg-yellow-500/10 text-yellow-600 dark:text-yellow-400",
+    "In Progress": "bg-blue-500/10 text-blue-700 dark:text-blue-400",
+    Resolved: "bg-green-500/10 text-green-700 dark:text-green-400",
+};
 
 const priorityStyles = {
-    Low: 'bg-muted text-muted-foreground',
-    Medium: 'bg-amber-500/10 text-amber-700 dark:text-amber-400',
-    High: 'bg-red-500/10 text-red-700 dark:text-red-400',
-}
+    Low: "bg-muted text-muted-foreground",
+    Medium: "bg-amber-500/10 text-amber-700 dark:text-amber-400",
+    High: "bg-red-500/10 text-red-700 dark:text-red-400",
+};
 
 const formatDate = (date) => {
     if (!date) {
-        return '—'
+        return "—";
     }
 
-    const parsedDate = new Date(date)
+    const parsedDate = new Date(date);
 
     if (Number.isNaN(parsedDate.getTime())) {
-        return '—'
+        return "—";
     }
 
-    return new Intl.DateTimeFormat('en-GB', {
-        day: '2-digit',
-        month: 'short',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-    }).format(parsedDate)
-}
+    return new Intl.DateTimeFormat("en-GB", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+    }).format(parsedDate);
+};
 
 const DetailField = ({ label, children }) => (
     <div>
         <dt className="text-sm text-muted-foreground">{label}</dt>
-        <dd className="mt-1 break-words text-sm font-medium">
-            {children || '—'}
-        </dd>
+        <dd className="mt-1 break-words text-sm font-medium">{children || "—"}</dd>
     </div>
-)
+);
 
 const Badge = ({ children, className }) => (
-    <span
-        className={cx(
-            'inline-flex whitespace-nowrap rounded-full px-2.5 py-1',
-            'text-xs font-medium',
-            className,
-        )}
-    >
+    <span className={cx("inline-flex whitespace-nowrap rounded-full px-2.5 py-1", "text-xs font-medium", className)}>
         {children}
     </span>
-)
+);
 
 const formatFileSize = (bytes) => {
     if (!Number.isFinite(bytes) || bytes < 0) {
@@ -171,22 +167,22 @@ const AttachmentImagePreview = ({ attachment, previewUrl }) => {
 };
 
 const IssueDetail = () => {
-    const { ticketNumber } = useParams()
-    const navigate = useNavigate()
+    const { ticketNumber } = useParams();
+    const navigate = useNavigate();
 
-    const [issue, setIssue] = useState(null)
-    const [isLoading, setIsLoading] = useState(true)
-    const [error, setError] = useState('')
-    const [isCopied, setIsCopied] = useState(false)
-    const [isUpdatingStatus, setIsUpdatingStatus] = useState(false)
-    const [statusError, setStatusError] = useState('')
+    const [issue, setIssue] = useState(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState("");
+    const [isCopied, setIsCopied] = useState(false);
+    const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+    const [statusError, setStatusError] = useState("");
     const [attachments, setAttachments] = useState([]);
     const [isLoadingAttachments, setIsLoadingAttachments] = useState(false);
     const [attachmentsError, setAttachmentsError] = useState("");
-    const [isDeleting, setIsDeleting] = useState(false)
-    const [deleteError, setDeleteError] = useState('')
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [deleteError, setDeleteError] = useState("");
 
-    useDocumentTitle(`Issue #${ticketNumber}`)
+    useDocumentTitle(`Issue #${ticketNumber}`);
 
     const fetchAttachments = useCallback(
         async (signal) => {
@@ -230,133 +226,127 @@ const IssueDetail = () => {
         };
     }, [fetchAttachments]);
 
-    const fetchIssue = useCallback(async (signal) => {
-        setIsLoading(true)
-        setError('')
-        setIssue(null)
+    const fetchIssue = useCallback(
+        async (signal) => {
+            setIsLoading(true);
+            setError("");
+            setIssue(null);
 
-        try {
-            const data = await getIssue(ticketNumber, { signal })
+            try {
+                const data = await getIssue(ticketNumber, { signal });
 
-            if (!data.success || !data.issue) {
-                throw new Error(data.message || 'Failed to fetch issue')
+                if (!data.success || !data.issue) {
+                    throw new Error(data.message || "Failed to fetch issue");
+                }
+
+                setIssue(data.issue);
+            } catch (requestError) {
+                if (requestError.name === "AbortError") {
+                    return;
+                }
+
+                setError(
+                    requestError.message === "Issue not found"
+                        ? "The requested issue could not be found."
+                        : "Unable to load issue details. Please try again.",
+                );
+            } finally {
+                if (!signal.aborted) {
+                    setIsLoading(false);
+                }
             }
-
-            setIssue(data.issue)
-        } catch (requestError) {
-            if (requestError.name === 'AbortError') {
-                return
-            }
-
-            setError(
-                requestError.message === 'Issue not found'
-                    ? 'The requested issue could not be found.'
-                    : 'Unable to load issue details. Please try again.',
-            )
-        } finally {
-            if (!signal.aborted) {
-                setIsLoading(false)
-            }
-        }
-    }, [ticketNumber])
+        },
+        [ticketNumber],
+    );
 
     useEffect(() => {
-        const controller = new AbortController()
+        const controller = new AbortController();
 
         const timeoutId = setTimeout(() => {
-            fetchIssue(controller.signal)
-        }, 0)
+            fetchIssue(controller.signal);
+        }, 0);
 
         return () => {
-            clearTimeout(timeoutId)
-            controller.abort()
-        }
-    }, [fetchIssue])
+            clearTimeout(timeoutId);
+            controller.abort();
+        };
+    }, [fetchIssue]);
 
     const handleRetry = () => {
-        const controller = new AbortController()
+        const controller = new AbortController();
 
-        fetchIssue(controller.signal)
-    }
+        fetchIssue(controller.signal);
+    };
 
     const handleStatusChange = async (event) => {
-        const nextStatus = event.target.value
+        const nextStatus = event.target.value;
 
         if (!issue || nextStatus === issue.status || isUpdatingStatus) {
-            return
+            return;
         }
 
-        const previousStatus = issue.status
+        const previousStatus = issue.status;
 
-        setIsUpdatingStatus(true)
-        setStatusError('')
+        setIsUpdatingStatus(true);
+        setStatusError("");
 
         try {
-            const data = await updateIssueStatus(
-                issue.ticket_number,
-                nextStatus,
-            )
+            const data = await updateIssueStatus(issue.ticket_number, nextStatus);
 
             if (!data.success || !data.issue) {
-                throw new Error(
-                    data.message || 'Failed to update issue status',
-                )
+                throw new Error(data.message || "Failed to update issue status");
             }
 
-            setIssue(data.issue)
+            setIssue(data.issue);
         } catch (requestError) {
             setStatusError(
-                requestError.message === 'Issue not found'
-                    ? 'This issue could not be found. Please reload the page.'
-                    : 'Unable to update status. Please try again.',
-            )
+                requestError.message === "Issue not found"
+                    ? "This issue could not be found. Please reload the page."
+                    : "Unable to update status. Please try again.",
+            );
 
-            setIssue((currentIssue) => (
-                currentIssue
-                    ? { ...currentIssue, status: previousStatus }
-                    : currentIssue
-            ))
+            setIssue((currentIssue) => (currentIssue ? { ...currentIssue, status: previousStatus } : currentIssue));
         } finally {
-            setIsUpdatingStatus(false)
+            setIsUpdatingStatus(false);
         }
-    }
+    };
 
     const handleCopyTicket = async () => {
         try {
-            await navigator.clipboard.writeText(issue.ticket_number)
-            setIsCopied(true)
+            await navigator.clipboard.writeText(issue.ticket_number);
+            setIsCopied(true);
 
             setTimeout(() => {
-                setIsCopied(false)
-            }, 2000)
+                setIsCopied(false);
+            }, 2000);
         } catch {
-            setError('Unable to copy ticket number. Please copy it manually.')
+            setError("Unable to copy ticket number. Please copy it manually.");
         }
-    }
+    };
 
     const handleDeleteIssue = async () => {
         if (!issue || isDeleting || !window.confirm(`Delete issue ${issue.ticket_number}? This cannot be undone.`)) {
-            return
+            return;
         }
 
-        setIsDeleting(true)
-        setDeleteError('')
+        setIsDeleting(true);
+        setDeleteError("");
 
         try {
-            const data = await deleteIssue(issue.ticket_number)
-            setIsDeleting(false)
+            const data = await deleteIssue(issue.ticket_number);
+            setIsDeleting(false);
 
             if (!data.success) {
-                setDeleteError(data.message || 'Unable to delete issue. Please try again.')
-                throw new Error(data.message || 'Failed to delete issue')
+                setDeleteError(data.message || "Unable to delete issue. Please try again.");
+                throw new Error(data.message || "Failed to delete issue");
             }
 
-            navigate('/issues', { replace: true })
+            navigate("/issues", { replace: true });
         } catch (requestError) {
-            setDeleteError(requestError.message || 'Unable to delete issue. Please try again.')
-            setIsDeleting(false)
+            setDeleteError(requestError.message || "Unable to delete issue. Please try again.");
+            setIsDeleting(false);
         }
-    }
+    };
 
     return (
         <div className="mx-auto max-w-5xl animate-fadeInUp">
@@ -463,36 +453,26 @@ const IssueDetail = () => {
                                     Issue status
                                 </label>
 
-                                <div className="relative">
-                                    <select
-                                        id="issue-status"
-                                        value={issue.status}
-                                        onChange={handleStatusChange}
-                                        disabled={isUpdatingStatus}
-                                        aria-describedby={statusError ? "status-error" : undefined}
-                                        className={cx(
-                                            "h-8 rounded-full border border-transparent px-3",
-                                            "text-xs font-medium appearance-none py-2 pl-3 pr-5",
-                                            "transition-colors",
-                                            "focus-visible:outline-none focus-visible:ring-2",
-                                            "focus-visible:ring-ring/50",
-                                            "disabled:cursor-wait disabled:opacity-60",
-                                            statusStyles[issue.status] || "bg-muted text-muted-foreground",
-                                        )}
-                                    >
-                                        <option value="Open">Open</option>
-                                        <option value="In Progress">In Progress</option>
-                                        <option value="Resolved">Resolved</option>
-                                    </select>
-                                    <ChevronDown
-                                        size={16}
-                                        aria-hidden="true"
-                                        className={cx(
-                                            "pointer-events-none absolute right-4 top-1/2",
-                                            "-translate-y-1/2 text-muted-foreground",
-                                        )}
-                                    />
-                                </div>
+                                <select
+                                    id="issue-status"
+                                    value={issue.status}
+                                    onChange={handleStatusChange}
+                                    disabled={isUpdatingStatus}
+                                    aria-describedby={statusError ? "status-error" : undefined}
+                                    className={cx(
+                                        "h-8 rounded-full border border-transparent px-4",
+                                        "text-xs font-medium py-2",
+                                        "transition-colors",
+                                        "focus-visible:outline-none focus-visible:ring-2",
+                                        "focus-visible:ring-ring/50",
+                                        "disabled:cursor-wait disabled:opacity-60",
+                                        statusStyles[issue.status] || "bg-muted text-muted-foreground",
+                                    )}
+                                >
+                                    <option value="Open">Open</option>
+                                    <option value="In Progress">In Progress</option>
+                                    <option value="Resolved">Resolved</option>
+                                </select>
 
                                 <Badge className={priorityStyles[issue.priority] || "bg-muted text-muted-foreground"}>
                                     {issue.priority} Priority
@@ -646,6 +626,6 @@ const IssueDetail = () => {
             ) : null}
         </div>
     );
-}
+};
 
-export default IssueDetail
+export default IssueDetail;
