@@ -456,7 +456,7 @@ export default function LoginRegister() {
                     to="/"
                     className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-blue-500 mt-4 animate-fadeInLeft"
                 >
-                    <ArrowLeft size={16} className="animate-bounce animate-infinite transition-all" />
+                    <ArrowLeft size={16} className="animate-bounceLeft transition-all" />
                     กลับหน้าหลัก
                 </Link>
                 {/* Footer info */}

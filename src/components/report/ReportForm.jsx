@@ -2,7 +2,8 @@ import { useState } from "react";
 import { createIssue, uploadIssueAttachment } from "../../services/issues";
 import { cx } from "../../utils/cx";
 import ImageUploader from "./ImageUploader";
-import { FileQuestionMark, ChevronDown } from "lucide-react";
+import { FileQuestionMark, ChevronDown, ArrowLeft } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const INITIAL_FORM = {
     reporter: "",
@@ -55,6 +56,8 @@ const ReportForm = () => {
     const [submitError, setSubmitError] = useState("");
     const [copied, setCopied] = useState(false);
     const [showFileQuestion, setShowFileQuestion] = useState(false);
+
+    const navigate = useNavigate();
 
     const updateField = (event) => {
         const { name, value } = event.target;
@@ -449,36 +452,51 @@ const ReportForm = () => {
                 <ImageUploader files={files} onChange={setFiles} />
             </section>
 
-            <div className="flex flex-col-reverse gap-3 border-t border-border pt-6 sm:flex-row sm:justify-end">
+            <div className="flex flex-col-reverse gap-3 border-t border-border pt-6 md:flex-row justify-between">
                 <button
-                    type="reset"
-                    disabled={isSubmitting}
-                    title={isSubmitting ? "กําลังล้าง..." : "ล้างฟอร์ม"}
                     className={cx(
-                        "rounded-lg border border-border px-4 py-2.5 cursor-pointer",
-                        "text-sm font-medium transition-colors",
-                        "hover:bg-accent hover:text-accent-foreground",
+                        "rounded-lg bg-primary px-5 py-2.5 cursor-pointer flex items-center gap-3 justify-center",
+                        "text-sm font-medium text-primary-foreground mt-2 md:mt-0",
+                        "transition-opacity hover:bg-primary/50",
                         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                         "disabled:cursor-not-allowed disabled:opacity-60",
                     )}
+                    onClick={(e) => e.preventDefault() || navigate("/")}
                 >
-                    Clear Form
+                    <ArrowLeft size={16} className="animate-bounceLeft transition-all" />
+                    Back
                 </button>
+                <div className="flex items-center md:flex-row justify-center gap-5 px-3 w-auto flex-col-reverse">
+                    <button
+                        type="reset"
+                        disabled={isSubmitting}
+                        title={isSubmitting ? "กําลังล้าง..." : "ล้างฟอร์ม"}
+                        className={cx(
+                            "rounded-lg border border-border px-6 py-3 cursor-pointer",
+                            "text-base font-medium transition-colors w-full md:w-auto ring-offset-1 bg-red-500 text-primary-foreground",
+                            "hover:bg-accent hover:text-accent-foreground",
+                            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                            "disabled:cursor-not-allowed disabled:opacity-60",
+                        )}
+                    >
+                        Clear
+                    </button>
 
-                <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    title={isSubmitting ? "กําลังบันทึก..." : "Submit Issue ถัดไป"}
-                    className={cx(
-                        "rounded-lg bg-primary px-5 py-2.5 cursor-pointer",
-                        "text-sm font-medium text-primary-foreground",
-                        "transition-opacity hover:opacity-90",
-                        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                        "disabled:cursor-not-allowed disabled:opacity-60",
-                    )}
-                >
-                    {isSubmitting ? "กำลังบันทึก..." : "Submit Issue"}
-                </button>
+                    <button
+                        type="submit"
+                        disabled={isSubmitting}
+                        title={isSubmitting ? "กําลังบันทึก..." : "Submit Issue ถัดไป"}
+                        className={cx(
+                            "rounded-lg border border-border px-10 py-3 cursor-pointer",
+                            "text-base font-medium transition-colors w-full md:w-auto ring-offset-1 bg-green-500 text-primary-foreground",
+                            "hover:bg-accent hover:text-accent-foreground",
+                            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                            "disabled:cursor-not-allowed disabled:opacity-60",
+                        )}
+                    >
+                        {isSubmitting ? "Submitting..." : "Submit"}
+                    </button>
+                </div>
             </div>
         </form>
     );

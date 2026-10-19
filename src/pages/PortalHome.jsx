@@ -131,7 +131,7 @@ const PortalHome = () => {
                                 )}
                             >
                                 แจ้งปัญหาใหม่
-                                <ArrowRight size={17} aria-hidden="true" />
+                                <ArrowRight size={17} aria-hidden="true" className="animate-bounceRight" />
                             </Link>
                         </article>
                     </ElectricBorder>
@@ -213,7 +213,7 @@ const PortalHome = () => {
                                     )}
                                 >
                                     ตรวจสอบสถานะ
-                                    <ArrowRight size={17} aria-hidden="true" />
+                                    <ArrowRight size={17} aria-hidden="true" className={cx(ticketNumber && "animate-bounceRight")} />
                                 </button>
                             </form>
                         </article>

@@ -93,7 +93,7 @@ export default function TrackTicket() {
                     to="/"
                     className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
                 >
-                    <ArrowLeft size={16} aria-hidden="true" />
+                    <ArrowLeft size={16} aria-hidden="true" className="animate-bounceLeft transition-all" />
                     กลับหน้าหลัก
                 </Link>
 
