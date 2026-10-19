@@ -281,6 +281,11 @@ body {
     --animate-bounceRight: bounceRight 1s ease-in-out infinite;
     --animate-bounceRightDelay: bounceRight 1s ease-in-out 0.3s infinite;
 
+    /* Animation: bounce Up */
+    --animate-bounceUp-15: bounceUp 1.5s ease-in-out infinite;
+    --animate-bounceUp: bounceUp 1s ease-in-out infinite;
+    --animate-bounceUpDelay: bounceUp 1s ease-in-out 0.3s infinite;
+
     /* Keyframes: Arrow */
     @keyframes arrow {
         0%,
@@ -431,6 +436,16 @@ body {
 
         50% {
             transform: translateX(7px);
+        }
+    }
+
+    @keyframes bounceUp {
+        0% {
+            transform: translateY(0);
+        }
+
+        50% {
+            transform: translateY(-5px);
         }
     }
 }
