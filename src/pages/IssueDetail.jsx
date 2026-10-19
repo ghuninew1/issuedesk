@@ -443,6 +443,10 @@ const IssueDetail = () => {
 
                                 <h3 className="mt-2 break-words text-xl font-semibold tracking-tight">{issue.title}</h3>
 
+                                <p className="mt-2 text-sm font-bold text-muted-foreground">{issue.category}</p>
+
+                                <p className="mt-2 text-sm text-muted-foreground">{issue.description}</p>
+
                                 <p className="mt-2 text-sm text-muted-foreground">
                                     Reported on {formatDate(issue.created_at)}
                                 </p>
