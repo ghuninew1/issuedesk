@@ -11,10 +11,13 @@ import {
 import { cx } from "../utils/cx";
 import ElectricBorder from "../components/ElectricBorder";
 import Header from "../components/layout/Header";
+import { useDocumentTitle } from "../hooks/useDocumentTitle";
 
 const PortalHome = () => {
     const [ticketNumber, setTicketNumber] = useState("");
     const navigate = useNavigate();
+
+    useDocumentTitle("Home");
 
     const handleTrackTicket = (event) => {
         event.preventDefault();

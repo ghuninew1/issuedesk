@@ -64,7 +64,7 @@ const RecentIssues = () => {
     const [isLoading, setIsLoading] = useState(true)
     const [error, setError] = useState('')
 
-    useDocumentTitle('Issues');
+    useDocumentTitle('Dashboard');
 
     useEffect(() => {
         const controller = new AbortController()

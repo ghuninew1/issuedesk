@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { cx } from "../../utils/cx";
 import heic2any from "heic2any";
+import { Images } from "lucide-react";
 
 const MAX_FILES = 5;
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
@@ -190,18 +191,7 @@ const ImageUploader = ({ files, onChange, disabled = false }) => {
                     isDragging ? "border-primary bg-accent" : "border-border hover:border-primary/50 hover:bg-muted/30",
                 )}
             >
-                <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.7"
-                    className="mb-3 size-8 text-muted-foreground"
-                    aria-hidden="true"
-                >
-                    <rect x="3" y="3" width="18" height="18" rx="2" />
-                    <circle cx="8.5" cy="8.5" r="1.5" />
-                    <path strokeLinecap="round" strokeLinejoin="round" d="m21 15-5-5L5 21" />
-                </svg>
+                <Images className="mb-3 size-10 text-muted-foreground" />
 
                 <span className="text-sm font-medium">คลิกเพื่อเลือกรูปภาพ หรือลากไฟล์มาวางที่นี่</span>
 

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { createIssue, uploadIssueAttachment } from "../../services/issues";
 import { cx } from "../../utils/cx";
 import ImageUploader from "./ImageUploader";
+import { FileQuestionMark, ChevronDown } from "lucide-react";
 
 const INITIAL_FORM = {
     reporter: "",
@@ -27,9 +28,10 @@ const priorities = [
 
 const fieldClassName = cx(
     "w-full rounded-lg border border-input bg-background px-3 py-2.5",
-    "text-sm text-foreground",
+    "text-sm text-foreground appearance-none",
     "placeholder:text-muted-foreground",
-    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+    "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+    "focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50",
 );
 
 const Label = ({ htmlFor, children, required = false }) => (
@@ -52,6 +54,7 @@ const ReportForm = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitError, setSubmitError] = useState("");
     const [copied, setCopied] = useState(false);
+    const [showFileQuestion, setShowFileQuestion] = useState(false);
 
     const updateField = (event) => {
         const { name, value } = event.target;
@@ -138,7 +141,7 @@ const ReportForm = () => {
 
             setCreatedIssue(issue);
             setCopied(false);
-            
+
             // Reset the form
             setForm(INITIAL_FORM);
             setFiles([]);
@@ -188,8 +191,39 @@ const ReportForm = () => {
         setCopied(false);
     };
 
+    const handleFileQuestion = () => {
+        setShowFileQuestion((prev) => !prev);
+    };
+
     return (
         <form onSubmit={handleSubmit} onReset={handleReset} noValidate className="space-y-6 animate-fadeInUp">
+            {/* File question */}
+            {showFileQuestion && (
+                <div
+                    role="button"
+                    tabIndex={0}
+                    aria-label="Close image"
+                    onClick={handleFileQuestion}
+                    onKeyDown={(event) => {
+                        if (event.key === "Escape" || event.key === "Enter") {
+                            handleFileQuestion();
+                        }
+                    }}
+                    className={cx(
+                        "fixed inset-0 z-50 flex items-center justify-center",
+                        "cursor-pointer bg-black/70 p-4 backdrop-blur-sm",
+                        "animate-fade",
+                    )}
+                >
+                    <img
+                        src="/check_pc_name.jpeg"
+                        alt="How to check PC name"
+                        className={cx("max-h-[90vh] max-w-full rounded-xl object-contain", "shadow-2xl")}
+                    />
+                </div>
+            )}
+
+            {/* Created issue */}
             {createdIssue && (
                 <div role="status" className={cx("rounded-lg border border-emerald-500/30", "bg-emerald-500/10 p-4")}>
                     <p className="text-sm font-medium text-emerald-700 dark:text-emerald-400">บันทึก Issue สำเร็จ</p>
@@ -223,7 +257,7 @@ const ReportForm = () => {
                     </div>
                 </div>
             )}
-
+            {/* Submit error */}
             {submitError && (
                 <div
                     role="alert"
@@ -236,6 +270,7 @@ const ReportForm = () => {
                 </div>
             )}
 
+            {/* Issue information */}
             <section className="space-y-4">
                 <div>
                     <h3 className="text-base font-semibold">Issue Information</h3>
@@ -245,9 +280,18 @@ const ReportForm = () => {
 
                 <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                     <div className="space-y-2">
-                        <Label htmlFor="reporter" required>
-                            Reporter Name
-                        </Label>
+                        <div className="flex justify-between items-center">
+                            <Label htmlFor="reporter" required>
+                                Reporter Name
+                            </Label>
+                            <div
+                                className="flex items-center cursor-pointer text-muted-foreground hover:text-primary"
+                                onClick={handleFileQuestion}
+                                title="วิธีดูชื่อเครื่อง"
+                            >
+                                <FileQuestionMark className="mr-3 inline-block h-4 w-4" />
+                            </div>
+                        </div>
 
                         <input
                             id="reporter"
@@ -274,24 +318,33 @@ const ReportForm = () => {
                         <Label htmlFor="category" required>
                             Category
                         </Label>
+                        <div className="relative">
+                            <select
+                                id="category"
+                                name="category"
+                                value={form.category}
+                                onChange={updateField}
+                                aria-invalid={Boolean(errors.category)}
+                                aria-describedby={errors.category ? "category-error" : undefined}
+                                className={fieldClassName}
+                            >
+                                <option value="">เลือกประเภทปัญหา</option>
 
-                        <select
-                            id="category"
-                            name="category"
-                            value={form.category}
-                            onChange={updateField}
-                            aria-invalid={Boolean(errors.category)}
-                            aria-describedby={errors.category ? "category-error" : undefined}
-                            className={fieldClassName}
-                        >
-                            <option value="">เลือกประเภทปัญหา</option>
-
-                            {categories.map((category) => (
-                                <option key={category.value} value={category.value}>
-                                    {category.label}
-                                </option>
-                            ))}
-                        </select>
+                                {categories.map((category) => (
+                                    <option key={category.value} value={category.value}>
+                                        {category.label}
+                                    </option>
+                                ))}
+                            </select>
+                            <ChevronDown
+                                size={16}
+                                aria-hidden="true"
+                                className={cx(
+                                    "pointer-events-none absolute right-4 top-1/2",
+                                    "-translate-y-1/2 text-muted-foreground",
+                                )}
+                            />
+                        </div>
 
                         {errors.category && (
                             <p id="category-error" className="text-sm text-destructive">
@@ -329,19 +382,29 @@ const ReportForm = () => {
                 <div className="space-y-2">
                     <Label htmlFor="priority">Priority</Label>
 
-                    <select
-                        id="priority"
-                        name="priority"
-                        value={form.priority}
-                        onChange={updateField}
-                        className={fieldClassName}
-                    >
-                        {priorities.map((priority) => (
-                            <option key={priority.value} value={priority.value}>
-                                {priority.label}
-                            </option>
-                        ))}
-                    </select>
+                    <div className="relative">
+                        <select
+                            id="priority"
+                            name="priority"
+                            value={form.priority}
+                            onChange={updateField}
+                            className={fieldClassName}
+                        >
+                            {priorities.map((priority) => (
+                                <option key={priority.value} value={priority.value}>
+                                    {priority.label}
+                                </option>
+                            ))}
+                        </select>
+                        <ChevronDown
+                            size={16}
+                            aria-hidden="true"
+                            className={cx(
+                                "pointer-events-none absolute right-4 top-1/2",
+                                "-translate-y-1/2 text-muted-foreground",
+                            )}
+                        />
+                    </div>
                 </div>
 
                 <div className="space-y-2">

@@ -3,7 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { deleteIssue, getIssue, getIssueAttachmentUrl, getIssueAttachments, updateIssueStatus } from "../services/issues";
 import { cx } from '../utils/cx'
 import heic2any from "heic2any";
-import { Download, Copy, Check, Trash2 } from "lucide-react";
+import { Download, Copy, Check, Trash2, ChevronDown } from "lucide-react";
 import { useDocumentTitle } from "../hooks/useDocumentTitle";
 
 const statusStyles = {
@@ -463,26 +463,36 @@ const IssueDetail = () => {
                                     Issue status
                                 </label>
 
-                                <select
-                                    id="issue-status"
-                                    value={issue.status}
-                                    onChange={handleStatusChange}
-                                    disabled={isUpdatingStatus}
-                                    aria-describedby={statusError ? "status-error" : undefined}
-                                    className={cx(
-                                        "h-8 rounded-full border border-transparent px-3",
-                                        "text-xs font-medium",
-                                        "transition-colors",
-                                        "focus-visible:outline-none focus-visible:ring-2",
-                                        "focus-visible:ring-ring/50",
-                                        "disabled:cursor-wait disabled:opacity-60",
-                                        statusStyles[issue.status] || "bg-muted text-muted-foreground",
-                                    )}
-                                >
-                                    <option value="Open">Open</option>
-                                    <option value="In Progress">In Progress</option>
-                                    <option value="Resolved">Resolved</option>
-                                </select>
+                                <div className="relative">
+                                    <select
+                                        id="issue-status"
+                                        value={issue.status}
+                                        onChange={handleStatusChange}
+                                        disabled={isUpdatingStatus}
+                                        aria-describedby={statusError ? "status-error" : undefined}
+                                        className={cx(
+                                            "h-8 rounded-full border border-transparent px-3",
+                                            "text-xs font-medium appearance-none py-2 pl-3 pr-5",
+                                            "transition-colors",
+                                            "focus-visible:outline-none focus-visible:ring-2",
+                                            "focus-visible:ring-ring/50",
+                                            "disabled:cursor-wait disabled:opacity-60",
+                                            statusStyles[issue.status] || "bg-muted text-muted-foreground",
+                                        )}
+                                    >
+                                        <option value="Open">Open</option>
+                                        <option value="In Progress">In Progress</option>
+                                        <option value="Resolved">Resolved</option>
+                                    </select>
+                                    <ChevronDown
+                                        size={16}
+                                        aria-hidden="true"
+                                        className={cx(
+                                            "pointer-events-none absolute right-4 top-1/2",
+                                            "-translate-y-1/2 text-muted-foreground",
+                                        )}
+                                    />
+                                </div>
 
                                 <Badge className={priorityStyles[issue.priority] || "bg-muted text-muted-foreground"}>
                                     {issue.priority} Priority
@@ -501,7 +511,7 @@ const IssueDetail = () => {
                                     )}
                                 >
                                     <Trash2 size={14} aria-hidden="true" />
-                                    {isDeleting ? 'Deleting...' : 'Delete issue'}
+                                    {isDeleting ? "Deleting..." : "Delete issue"}
                                 </button>
                             </div>
 
@@ -520,7 +530,10 @@ const IssueDetail = () => {
                     </section>
 
                     {deleteError && (
-                        <p className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive" role="alert">
+                        <p
+                            className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive"
+                            role="alert"
+                        >
                             {deleteError}
                         </p>
                     )}
