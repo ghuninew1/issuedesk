@@ -29,7 +29,7 @@ const SidebarContent = ({ isCollapsed, onNavigate }) => {
                     }
                 >
                     <span className="flex size-10 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-                        <Headset size={22} aria-hidden="true" />
+                        <Headset size={22} aria-hidden="true" className="cursor-pointer hover:scale-105" />
                     </span>
 
                     <div className={cx("min-w-0", "md:hidden", !isCollapsed && "lg:block")}>
