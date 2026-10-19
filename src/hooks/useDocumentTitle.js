@@ -1,8 +1,8 @@
 import { useEffect } from "react";
 
-const APP_NAME = "IssueDesk";
 
 export const useDocumentTitle = (title) => {
+    const APP_NAME = "IssueDesk";
     useEffect(() => {
         document.title = title ? `IssueDesk - ${title}` : APP_NAME;
     }, [title]);

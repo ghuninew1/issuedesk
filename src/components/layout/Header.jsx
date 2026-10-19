@@ -70,39 +70,41 @@ const Header = ({ isSidebarCollapsed, onToggleSidebar, onOpenMobileSidebar }) =>
         >
             <div className="flex min-w-0 items-center gap-3">
                 {/* Mobile menu */}
-                <button
-                    type="button"
-                    onClick={onOpenMobileSidebar}
-                    aria-label="Open navigation menu"
-                    className={cx(
-                        "flex size-10 shrink-0 items-center justify-center rounded-lg",
-                        "text-muted-foreground transition-colors",
-                        "hover:bg-accent hover:text-accent-foreground",
-                        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                        "md:hidden",
-                    )}
-                >
-                    <MenuIcon />
-                </button>
-
-                {/* Desktop sidebar toggle */}
                 {user && (
-                    <button
-                        type="button"
-                        onClick={onToggleSidebar}
-                        aria-label={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-                        aria-pressed={isSidebarCollapsed}
-                        title={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-                        className={cx(
-                            "hidden size-10 shrink-0 items-center justify-center rounded-lg",
-                            "text-muted-foreground transition-colors",
-                            "hover:bg-accent hover:text-accent-foreground",
-                            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                            "md:flex",
-                        )}
-                    >
-                        <SidebarToggleIcon isCollapsed={isSidebarCollapsed} />
-                    </button>
+                    <>
+                        <button
+                            type="button"
+                            onClick={onOpenMobileSidebar}
+                            aria-label="Open navigation menu"
+                            className={cx(
+                                "flex size-10 shrink-0 items-center justify-center rounded-lg",
+                                "text-muted-foreground transition-colors",
+                                "hover:bg-accent hover:text-accent-foreground",
+                                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                                "md:hidden",
+                            )}
+                        >
+                            <MenuIcon />
+                        </button>
+
+                        {/* Desktop sidebar toggle */}
+                        <button
+                            type="button"
+                            onClick={onToggleSidebar}
+                            aria-label={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+                            aria-pressed={isSidebarCollapsed}
+                            title={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+                            className={cx(
+                                "hidden size-10 shrink-0 items-center justify-center rounded-lg",
+                                "text-muted-foreground transition-colors",
+                                "hover:bg-accent hover:text-accent-foreground",
+                                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                                "md:flex",
+                            )}
+                        >
+                            <SidebarToggleIcon isCollapsed={isSidebarCollapsed} />
+                        </button>
+                    </>
                 )}
 
                 <div className="min-w-0 flex items-center gap-2">
