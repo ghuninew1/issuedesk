@@ -1,4 +1,4 @@
-import { Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes } from "react-router-dom";
 import AppShell from "./components/layout/AppShell";
 import DashboardStats from "./components/dashboard/DashboardStats";
 import RecentIssues from "./components/dashboard/RecentIssues";
@@ -7,9 +7,24 @@ import Issues from "./pages/Issues";
 import IssueDetail from "./pages/IssueDetail";
 import PortalHome from "./pages/PortalHome";
 import LoginRegister from "./pages/LoginRegister";
-import { LoaderIcon } from "lucide-react";
+import { Loader } from "lucide-react";
 import ProtectedRoute from "./auth/ProtectedRoute";
 import TrackTicket from "./pages/TrackTicket";
+import { useAuth } from "./auth/useAuth";
+
+function LoginRoute() {
+    const { user, isLoading } = useAuth();
+
+    if (isLoading) {
+        return <div className="min-h-screen bg-background p-8 text-sm text-muted-foreground" role="status"><Loader className="animate-spin" />Checking your session…</div>;
+    }
+
+    if (user) {
+        return <Navigate to={user.role === "admin" ? "/dashboard" : "/"} replace />;
+    }
+
+    return <LoginRegister />;
+}
 
 function DashboardPage() {
     return (
@@ -32,7 +47,7 @@ function DashboardPage() {
 function NotFoundPage() {
     return (
         <div className="mx-auto max-w-7xl">
-            <LoaderIcon className="animate-spin" />
+            <Loader className="animate-spin" />
             <h2 className="text-2xl font-semibold tracking-tight">Page not found</h2>
             <p className="mt-2 text-sm text-muted-foreground">The page you are looking for does not exist.</p>
         </div>
@@ -66,7 +81,7 @@ function App() {
                     <ProtectedRoute requiredRole="admin"><AppShell><IssueDetail /></AppShell></ProtectedRoute>
                 }
             />
-            <Route path="/login" element={<LoginRegister />} />
+            <Route path="/login" element={<LoginRoute />} />
 
             <Route path="/track/:ticketNumber" element={<TrackTicket />} />
 

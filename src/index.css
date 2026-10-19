@@ -286,6 +286,11 @@ body {
     --animate-bounceUp: bounceUp 1s ease-in-out infinite;
     --animate-bounceUpDelay: bounceUp 1s ease-in-out 0.3s infinite;
 
+    /* Animation: Turn */
+    --animate-turn: turn 1s ease-in-out infinite;
+    --animate-turnDelay: turn 1s ease-in-out 0.3s infinite;
+
+
     /* Keyframes: Arrow */
     @keyframes arrow {
         0%,
@@ -446,6 +451,16 @@ body {
 
         50% {
             transform: translateY(-5px);
+        }
+    }
+
+    @keyframes turn {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        50% {
+            transform: rotate(5deg);
         }
     }
 }
