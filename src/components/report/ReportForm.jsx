@@ -473,7 +473,7 @@ const ReportForm = () => {
                         title={isSubmitting ? "กําลังล้าง..." : "ล้างฟอร์ม"}
                         className={cx(
                             "rounded-lg border border-border px-6 py-3 cursor-pointer",
-                            "text-base font-medium transition-colors w-full md:w-auto ring-offset-1 bg-red-500 text-primary-foreground",
+                            "text-base font-medium transition-colors w-full md:w-auto ring-offset-1 dark:bg-amber-500/20 bg-amber-400 text-amber-800 dark:text-amber-400",
                             "hover:bg-accent hover:text-accent-foreground",
                             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                             "disabled:cursor-not-allowed disabled:opacity-60",
@@ -488,7 +488,7 @@ const ReportForm = () => {
                         title={isSubmitting ? "กําลังบันทึก..." : "Submit Issue ถัดไป"}
                         className={cx(
                             "rounded-lg border border-border px-10 py-3 cursor-pointer",
-                            "text-base font-medium transition-colors w-full md:w-auto ring-offset-1 bg-green-500 text-primary-foreground",
+                            "text-base font-medium transition-colors w-full md:w-auto ring-offset-1 dark:bg-emerald-500/20 bg-emerald-400 text-emerald-800 dark:text-emerald-400",
                             "hover:bg-accent hover:text-accent-foreground",
                             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                             "disabled:cursor-not-allowed disabled:opacity-60",
