@@ -21,7 +21,7 @@ const getStoredTheme = () => {
         // Ignore localStorage errors
     }
 
-    return THEMES.SYSTEM;
+    return THEMES.DARK;
 };
 
 const resolveTheme = (theme) => (theme === THEMES.SYSTEM ? getSystemTheme() : theme);
