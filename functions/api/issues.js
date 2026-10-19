@@ -241,21 +241,17 @@ export async function onRequestPost({ request, env }) {
             )
             .first();
 
+        try {
             await sendIssueNotification(issue, env);
-        
+
             console.info("Issue notification email sent:", issue.ticket_number);
-            
+        } catch (error) {
+            console.error("Failed to send issue notification email:", issue.ticket_number, error);
+        }
+        
         if (!issue) {
             throw new Error("Issue was not created");
         }
-
-        // try {
-        //     await sendIssueNotification(issue, env);
-
-        //     console.info("Issue notification email sent:", issue.ticket_number);
-        // } catch (error) {
-        //     console.error("Failed to send issue notification email:", issue.ticket_number, error);
-        // }
 
         return jsonResponse(
             {

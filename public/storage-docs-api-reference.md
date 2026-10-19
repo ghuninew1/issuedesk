@@ -27,12 +27,12 @@ Never place credentials in query parameters or frontend bundles.
 
 Returns a basic service health response.
 
-\`\`\`json
+```json
 {
   "success": true,
   "service": "storage-api"
 }
-\`\`\`
+```
 
 This endpoint does not test Garage writes or downloads.
 
@@ -51,11 +51,11 @@ Creates an application.
 
 Request:
 
-\`\`\`json
+```json
 {
   "name": "IssueDesk"
 }
-\`\`\`
+```
 
 The name is required and must not exceed 100 characters.
 
@@ -79,11 +79,11 @@ Creates a project for an active application.
 
 Request:
 
-\`\`\`json
+```json
 {
   "name": "attachments"
 }
-\`\`\`
+```
 
 The bucket is taken from `S3_BUCKET`.
 

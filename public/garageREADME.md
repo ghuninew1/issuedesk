@@ -20,7 +20,7 @@ QNAP project root:
 
 Directory structure:
 
-\`\`\`text
+```text
 /share/VHD/garage/
 ├── docker-compose.yml
 ├── garage.toml
@@ -37,7 +37,7 @@ Directory structure:
     │   └── db.js
     └── data/
         └── storage.db
-\`\`\`
+```
 
 The actual `.env` file contains secrets and must never be committed to Git.
 
@@ -74,28 +74,28 @@ Both Garage data and SQLite metadata must be backed up.
 
 Run on the QNAP:
 
-\`\`\`sh
+```sh
 cd /share/VHD/garage
 docker compose ps
 docker compose logs --tail=100 garage storage-api
-\`\`\`
+```
 
 ## Storage API Health Check
 
 From a machine that can access the QNAP LAN or VPN:
 
-\`\`\`sh
+```sh
 curl -i http://192.168.11.32:3000/health
-\`\`\`
+```
 
 A successful response contains:
 
-\`\`\`json
+```json
 {
   "success": true,
   "service": "storage-api"
 }
-\`\`\`
+```
 
 This checks whether the HTTP service responds. It does not verify
 the complete Garage upload/download path.
@@ -147,9 +147,9 @@ Before updating either service:
 
 For a Storage API code update:
 
-\`\`\`sh
+```sh
 docker compose up -d --build storage-api
-\`\`\`
+```
 
 Do not delete data directories as a routine troubleshooting step.
 

@@ -8,11 +8,11 @@ Run commands on the QNAP from:
 
 ## Inspect Services
 
-\`\`\`sh
+```sh
 cd /share/VHD/garage
 docker compose ps
 docker compose logs --tail=100 garage storage-api
-\`\`\`
+```
 
 Do not share output that contains secrets.
 
@@ -20,26 +20,26 @@ Do not share output that contains secrets.
 
 From a machine that can reach the QNAP:
 
-\`\`\`sh
+```sh
 curl -i http://192.168.11.32:3000/health
-\`\`\`
+```
 
 A successful response includes:
 
-\`\`\`json
+```json
 {
   "success": true,
   "service": "storage-api"
 }
-\`\`\`
+```
 
 This checks HTTP responsiveness only.
 
 ## Verify Legacy API Is Disabled
 
-\`\`\`sh
+```sh
 curl -i http://192.168.11.32:3000/api/files
-\`\`\`
+```
 
 When `ENABLE_LEGACY_API=false`, the expected status is `404`.
 
@@ -52,9 +52,9 @@ Do not enable the legacy API simply to make a test succeed.
 3. Confirm that no secret files are staged in Git.
 4. Rebuild the Storage API container:
 
-   \`\`\`sh
+   ```sh
    docker compose up -d --build storage-api
-   \`\`\`
+   ```
 
 5. Inspect service status and logs.
 6. Test health and authenticated V2 file operations.

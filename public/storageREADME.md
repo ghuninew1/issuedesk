@@ -49,16 +49,16 @@ The admin API returns `503` if `STORAGE_ADMIN_TOKEN` is not configured.
 
 Run from `/share/VHD/garage` on the QNAP:
 
-\`\`\`sh
+```sh
 docker compose ps
 docker compose logs --tail=100 storage-api
-\`\`\`
+```
 
 Health check:
 
-\`\`\`sh
+```sh
 curl -i http://192.168.11.32:3000/health
-\`\`\`
+```
 
 ## API Overview
 

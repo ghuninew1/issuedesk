@@ -2,7 +2,7 @@
 
 ## Components
 
-\`\`\`text
+```text
 Client / Application
         |
         | HTTP + Bearer credential
@@ -16,7 +16,7 @@ SQLite metadata         Garage S3 API
                              |
                              v
                         File objects
-\`\`\`
+```
 
 Storage API runs in Docker alongside Garage on the `storage-network`
 bridge network.
