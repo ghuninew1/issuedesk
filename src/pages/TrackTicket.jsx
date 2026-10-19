@@ -12,7 +12,6 @@ import {
 } from "lucide-react";
 import { api } from "../utils/api";
 import { cx } from "../utils/cx";
-import Header from "../components/layout/Header";
 import { useDocumentTitle } from "../hooks/useDocumentTitle";
 
 const STATUS_LABELS = {
@@ -81,13 +80,6 @@ export default function TrackTicket() {
         : [];
 
     return (
-        <main className="relative min-h-screen overflow-hidden bg-background text-foreground selection:bg-cyan-500 selection:text-white">
-            <div className="pointer-events-none absolute -left-20 top-1/4 size-96 animate-pulse rounded-full bg-purple-600/20 blur-3xl" />
-            <div className="pointer-events-none absolute -right-20 bottom-1/4 size-96 animate-pulse rounded-full bg-cyan-500/20 blur-3xl delay-1000" />
-            <div className="pointer-events-none absolute left-1/2 top-1/2 size-[500px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-indigo-600/10 blur-[120px]" />
-
-            <Header isSidebarCollapsed={false} onToggleSidebar={() => {}} onOpenMobileSidebar={() => {}} />
-
             <section className="relative z-10 mx-auto max-w-2xl px-5 py-12 sm:px-8 animate-fadeInUp">
                 <Link
                     to="/"
@@ -229,6 +221,5 @@ export default function TrackTicket() {
                     ข้อมูลนี้แสดงเฉพาะเลข Ticket และสถานะ โดยไม่เปิดเผยรายละเอียดที่ผู้แจ้งส่งมา
                 </p>
             </section>
-        </main>
     );
 }

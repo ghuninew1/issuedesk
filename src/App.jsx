@@ -16,7 +16,12 @@ function LoginRoute() {
     const { user, isLoading } = useAuth();
 
     if (isLoading) {
-        return <div className="min-h-screen bg-background p-8 text-sm text-muted-foreground" role="status"><Loader className="animate-spin" />Checking your session…</div>;
+        return (
+            <div className="min-h-screen bg-background p-8 text-sm text-muted-foreground" role="status">
+                <Loader className="animate-spin" />
+                Checking your session…
+            </div>
+        );
     }
 
     if (user) {
@@ -54,38 +59,69 @@ function NotFoundPage() {
     );
 }
 
-
 function App() {
-
     return (
         <Routes>
-            <Route path="/" element={<PortalHome />} />
+            <Route
+                path="/"
+                element={
+                    <AppShell>
+                        <PortalHome />
+                    </AppShell>
+                }
+            />
 
             <Route
                 path="/dashboard"
                 element={
-                    <ProtectedRoute requiredRole="admin"><AppShell><DashboardPage /></AppShell></ProtectedRoute>
+                    <ProtectedRoute requiredRole="admin">
+                        <AppShell>
+                            <DashboardPage />
+                        </AppShell>
+                    </ProtectedRoute>
                 }
             />
 
             <Route
                 path="/issues"
                 element={
-                    <ProtectedRoute requiredRole="admin"><AppShell><Issues /></AppShell></ProtectedRoute>
+                    <ProtectedRoute requiredRole="admin">
+                        <AppShell>
+                            <Issues />
+                        </AppShell>
+                    </ProtectedRoute>
                 }
             />
 
             <Route
                 path="/issues/:ticketNumber"
                 element={
-                    <ProtectedRoute requiredRole="admin"><AppShell><IssueDetail /></AppShell></ProtectedRoute>
+                    <ProtectedRoute requiredRole="admin">
+                        <AppShell>
+                            <IssueDetail />
+                        </AppShell>
+                    </ProtectedRoute>
                 }
             />
             <Route path="/login" element={<LoginRoute />} />
 
-            <Route path="/track/:ticketNumber" element={<TrackTicket />} />
+            <Route
+                path="/track/:ticketNumber"
+                element={
+                    <AppShell>
+                        <TrackTicket />
+                    </AppShell>
+                }
+            />
 
-            <Route path="/report" element={<ReportIssue />} />
+            <Route
+                path="/report"
+                element={
+                    <AppShell>
+                        <ReportIssue />{" "}
+                    </AppShell>
+                }
+            />
 
             <Route
                 path="*"
