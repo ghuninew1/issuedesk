@@ -33,11 +33,11 @@ const AppShell = ({ children }) => {
 
     return (
         <div className="flex min-h-screen bg-background text-foreground selection:bg-cyan-500 selection:text-white relative overflow-hidden font-sans antialiased">
-            <div className="absolute top-1/4 -left-20 w-96 h-96 bg-purple-500/0.5 rounded-full blur-3xl animate-pulse pointer-events-none" />
-            <div className="absolute bottom-1/4 -right-20 w-96 h-96 bg-cyan-400/0.5 rounded-full blur-3xl animate-pulse delay-1000 pointer-events-none" />
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-indigo-500/0.5 rounded-full blur-[120px] pointer-events-none" />
+            <div className="absolute top-1/4 -left-20 w-96 h-96 bg-green-500/1 rounded-full blur-3xl animate-pulse pointer-events-none" />
+            <div className="absolute bottom-1/4 -right-20 w-96 h-96 bg-red-400/1 rounded-full blur-3xl animate-pulse delay-1000 pointer-events-none" />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-cyan-500/1 rounded-full blur-[120px] pointer-events-none" />
             <div
-                className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-[0.01] pointer-events-none"
+                className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-[0.02] pointer-events-none"
                 style={{
                     backgroundImage: "url('/it-workspace-bg.jpg')",
                 }}
