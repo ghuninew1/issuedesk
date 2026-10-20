@@ -2,7 +2,7 @@ import { useState } from "react";
 import { createIssue, uploadIssueAttachment } from "../../services/issues";
 import { cx } from "../../utils/cx";
 import ImageUploader from "./ImageUploader";
-import { FileQuestionMark, ChevronDown, ArrowLeft } from "lucide-react";
+import { FileQuestionMark, ChevronDown, ArrowLeft, Copy, CopyCheck } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const INITIAL_FORM = {
@@ -247,7 +247,15 @@ const ReportForm = () => {
                                 "focus-visible:ring-2 focus-visible:ring-ring",
                             )}
                         >
-                            {copied ? "คัดลอกแล้ว" : "คัดลอกหมายเลข"}
+                            {copied ? (
+                                <>
+                                    <Copy className="mr-2 h-4 w-4" />, " คัดลอกแล้ว"{" "}
+                                </>
+                            ) : (
+                                <>
+                                    <CopyCheck className="mr-2 h-4 w-4" />, " คัดลอกหมายเลข"
+                                </>
+                            )}
                         </button>
                     </div>
 

@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import "./ElectricBorder.css";
 
 const ARCS = 4;
 const PULSES = 3;
@@ -435,7 +434,7 @@ const ElectricBorder = ({
         light: theme === "light",
     };
     const settingsRef = useRef(settings);
-
+    
     useEffect(() => {
         settingsRef.current = settings;
         wakeRef.current?.();
@@ -753,15 +752,11 @@ const ElectricBorder = ({
     }, [generation]);
 
     return (
-        <div
-            ref={containerRef}
-            className={`electric-border${className ? ` ${className}` : ""}`}
-            style={{ borderRadius, ...style }}
-        >
+        <div ref={containerRef} className={`relative isolate ${className}`.trim()} style={{ borderRadius, ...style }}>
             {children}
             <canvas
                 ref={canvasRef}
-                className="electric-border__canvas"
+                className="pointer-events-none absolute z-[1] block"
                 style={{ top: -MARGIN, left: -MARGIN }}
                 aria-hidden="true"
             />

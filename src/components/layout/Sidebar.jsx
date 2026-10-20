@@ -167,8 +167,8 @@ const Sidebar = ({ isCollapsed, isMobileOpen, onMobileClose }) => {
                     "hidden h-screen shrink-0 flex-col animate-fadeInLeft",
                     "border-r border-sidebar-border bg-sidebar text-sidebar-foreground",
                     "transition-[width] duration-200 ease-in-out",
-                    "md:sticky md:top-0 md:flex md:w-[72px]",
-                    isCollapsed ? "lg:w-[72px]" : "lg:w-64",
+                    "md:sticky md:top-0 md:flex md:w-[60px]",
+                    isCollapsed ? "lg:w-[60px]" : "lg:w-56",
                 )}
             >
                 <SidebarContent isCollapsed={isCollapsed} />
