@@ -120,12 +120,12 @@ export default function LoginRegister() {
                 {/* Card Body with Glassmorphism */}
                 <ElectricBorder
                     color="#4c00b0"
-                    speed={1}
-                    chaos={0.5}
-                    spread={0.6}
-                    strands={1.5}
-                    thickness={2}
-                    borderRadius={30}
+                    speed={1.2}
+                    chaos={0.7}
+                    spread={0.4}
+                    strands={0.3}
+                    thickness={1.2}
+                    borderRadius={24}
                 >
                     <div className="relative bg-slate-900/70 border border-slate-800/80 rounded-3xl p-8 backdrop-blur-xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] transition-all duration-500 hover:border-slate-700/80">
                         {/* Neon Top Edge Accent */}

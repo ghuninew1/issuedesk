@@ -63,12 +63,12 @@ const PortalHome = () => {
             <div className="mx-auto mt-10 grid max-w-4xl gap-5 md:grid-cols-2 md:gap-6">
                 <ElectricBorder
                     color="#4c00b0"
-                    speed={1}
-                    chaos={0.5}
-                    spread={0.6}
-                    strands={1.5}
-                    thickness={2}
-                    borderRadius={30}
+                    speed={1.2}
+                    chaos={0.7}
+                    spread={0.4}
+                    strands={0.3}
+                    thickness={1.2}
+                    borderRadius={24}
                     className="animate-fadeInLeft"
                 >
                     <article
@@ -121,11 +121,11 @@ const PortalHome = () => {
                 {/* Cards Right */}
                 <ElectricBorder
                     color="#bc2ed6"
-                    speed={1}
-                    chaos={0.5}
-                    spread={0.6}
-                    strands={1.5}
-                    thickness={2}
+                    speed={1.2}
+                    chaos={0.7}
+                    spread={0.4}
+                    strands={0.3}
+                    thickness={1.2}
                     borderRadius={24}
                     className="animate-fadeInRight"
                 >
@@ -213,7 +213,6 @@ const PortalHome = () => {
                     </p>
                 </div>
             </div>
-            
         </section>
     );
 };

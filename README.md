@@ -171,11 +171,12 @@ Pages Functions เข้าถึง private network ของ Storage API ไ�
 
 รายละเอียดเพิ่มเติมของระบบจัดเก็บอยู่ที่:
 
-- `public/storageREADME.md`
-- `public/storage-docs-architecture.md`
-- `public/storage-docs-api-reference.md`
-- `public/storage-docs-security.md`
-- `public/garageREADME.md`
+- `STORAGE_README.md`
+- `STORAGE_DOCS_ARCHITECTURE.md`
+- `STORAGE_DOCS_API_REFERENCE.md`
+- `STORAGE_DOCS_SECURITY.md`
+- `STORAGE_DOCS_OPERATIOINS.md`
+- `GARAGE_README.md`
 
 ## สิ่งที่ต้องเตรียม
 
