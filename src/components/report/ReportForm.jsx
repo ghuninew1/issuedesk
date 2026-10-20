@@ -243,18 +243,20 @@ const ReportForm = () => {
                                 "rounded-md border border-border px-3 py-1.5",
                                 "text-sm font-medium transition-colors",
                                 "hover:bg-accent hover:text-accent-foreground",
-                                "focus-visible:outline-none",
+                                "focus-visible:outline-none cursor-pointer",
                                 "focus-visible:ring-2 focus-visible:ring-ring",
                             )}
                         >
                             {copied ? (
-                                <>
-                                    <Copy className="mr-2 h-4 w-4" />, " คัดลอกแล้ว"{" "}
-                                </>
+                                <div className="flex items-center gap-2">
+                                    <CopyCheck className="mr-2 h-4 w-4" />
+                                    คัดลอกแล้ว
+                                </div>
                             ) : (
-                                <>
-                                    <CopyCheck className="mr-2 h-4 w-4" />, " คัดลอกหมายเลข"
-                                </>
+                                <div className="flex items-center gap-2">
+                                    <Copy className="mr-2 h-4 w-4" />
+                                    คัดลอกหมายเลข
+                                </div>
                             )}
                         </button>
                     </div>
