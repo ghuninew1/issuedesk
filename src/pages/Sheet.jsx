@@ -5,7 +5,7 @@ import {
     Monitor,
     Image as ImageIcon,
     X,
-    ChevronRight,
+    CircleX,
     PackageCheck,
     Boxes,
     UserRound,
@@ -98,7 +98,7 @@ export default function Sheet() {
     }
 
     return (
-        <div className="mx-auto max-w-7xl animate-fadeInUp">
+        <div className="mx-auto max-w-7xl animate-fadeInUp overflow-hidden">
             <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                 <div>
                     <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">คลังอุปกรณ์</h1>
@@ -107,7 +107,7 @@ export default function Sheet() {
                 <div className="text-sm text-muted-foreground">อัปเดตข้อมูลจาก Google Sheets</div>
             </div>
 
-            <section aria-label="ภาพรวมอุปกรณ์" className="mb-6 grid gap-3 sm:grid-cols-3">
+            <section aria-label="ภาพรวมอุปกรณ์" className="mb-6 grid gap-3 sm:grid-cols-4">
                 <div className="flex items-center gap-4 rounded-2xl border border-border bg-card p-4 shadow-sm">
                     <span className="flex size-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
                         <Boxes className="size-5" />
@@ -214,7 +214,10 @@ export default function Sheet() {
                             </thead>
                             <tbody className="divide-y divide-border">
                                 {filteredAssets.map((asset) => (
-                                    <tr key={asset.assetId} className="transition-colors hover:bg-muted/25">
+                                    <tr
+                                        key={asset.assetId}
+                                        className="transition-colors hover:bg-muted/25 flex md:table-row flex-col md:flex-row items-center mx-auto"
+                                    >
                                         <td className="px-5 py-4">
                                             <div className="flex items-center gap-3">
                                                 <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-muted text-muted-foreground">
@@ -318,10 +321,10 @@ export default function Sheet() {
                             <button
                                 type="button"
                                 onClick={() => setSelectedAsset(null)}
-                                className="inline-flex shrink-0 items-center gap-2 rounded-lg border border-input px-3 py-2 text-sm font-medium hover:bg-muted"
+                                className="inline-flex shrink-0 items-center gap-2 rounded-lg border border-input px-3 py-2 text-sm font-medium hover:bg-muted cursor-pointer"
                             >
                                 ปิด
-                                <ChevronRight className="size-4 rotate-180" />
+                                <CircleX className="size-4 rotate-180" />
                             </button>
                         </div>
                     </section>

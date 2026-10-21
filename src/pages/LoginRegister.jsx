@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { User, Mail, Lock, Eye, EyeOff, ArrowRight, ShieldCheck, Sparkles, ArrowLeft } from "lucide-react";
 import ElectricBorder from "../components/ElectricBorder";
@@ -29,13 +29,32 @@ export default function LoginRegister() {
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     
-    const triggerToast = (msg) => {
+    const triggerToast = useCallback((msg) => {
         setToastMessage(msg);
-        setTimeout(() => {
-            setToastMessage("");
-        }, 3000);
-    };
+        window.setTimeout(() => setToastMessage(""), 3000);
+    }, []);
     useDocumentTitle(page === "login" ? "Login" : "Register");
+
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        const reason = params.get("social_error");
+        if (!reason) return;
+        const messages = {
+            unconfigured: "Social sign-in is not configured yet. Please use email and password.",
+            cancelled: "Sign-in was cancelled.",
+            state: "Sign-in could not be verified. Please try again.",
+            email: "The provider did not return a verified email address.",
+            inactive: "This account is disabled. Contact an administrator.",
+            account_exists: "An account already uses this email. Sign in with your password first; social account linking is not enabled.",
+            provider: "This sign-in provider is not supported.",
+            token: "Could not verify your account with the provider. Please try again.",
+            profile: "Could not retrieve your provider profile. Please try again.",
+            failed: "Social sign-in failed. Please try again.",
+        };
+        const toastTimer = window.setTimeout(() => triggerToast(messages[reason] || messages.failed), 0);
+        window.history.replaceState({}, "", `${window.location.pathname}${window.location.hash}`);
+        return () => window.clearTimeout(toastTimer);
+    }, [triggerToast]);
 
     const handleLoginSubmit = async (e) => {
         e.preventDefault();
@@ -86,7 +105,14 @@ export default function LoginRegister() {
     };
 
     const handleSocialAuth = (provider) => {
-        triggerToast(`Connecting with ${provider}...`);
+        if (isSubmitting) return;
+        const normalizedProvider = provider.toLowerCase();
+        if (!["google", "facebook"].includes(normalizedProvider)) {
+            triggerToast("This sign-in provider is not supported.");
+            return;
+        }
+        setIsSubmitting(true);
+        window.location.assign(`/api/auth/oauth?provider=${normalizedProvider}`);
     };
 
     return (

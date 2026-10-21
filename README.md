@@ -304,9 +304,30 @@ CF_ACCESS_CLIENT_SECRET=
 RESEND_API_KEY=
 RESEND_FROM_EMAIL=
 ISSUE_NOTIFICATION_EMAIL=
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+FACEBOOK_CLIENT_ID=
+FACEBOOK_CLIENT_SECRET=
+# Optional; Facebook Graph API version, defaults to v26.0
+FACEBOOK_GRAPH_API_VERSION=
 ```
 
 อย่า commit `.dev.vars` หรือส่ง secrets ผ่าน source code, browser หรือ log ใน production ให้ตั้งค่าเดียวกันเป็น Cloudflare Pages secrets / environment variables ของโปรเจกต์ `issuedesk`
+
+### Social sign-in (Google และ Facebook)
+
+ตั้ง `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `FACEBOOK_CLIENT_ID` และ `FACEBOOK_CLIENT_SECRET` ใน `.dev.vars` และ Cloudflare Pages environments ที่ต้องการใช้ (production/preview แยกกัน) จากนั้นเพิ่ม Authorized redirect URI ในหน้า OAuth ของแต่ละ provider ให้ตรงกับ origin ของแอป:
+
+```text
+https://<your-issuedesk-domain>/api/auth/oauth/callback/google
+https://<your-issuedesk-domain>/api/auth/oauth/callback/facebook
+```
+
+สำหรับ local Pages preview ให้เพิ่ม callback URI ที่ใช้จริง เช่น `http://localhost:8788/api/auth/oauth/callback/google` และ Facebook callback ตามลำดับ Google ขอ scope `openid email profile`; Facebook ขอ `email,public_profile` บัญชีใหม่จะได้ role `user` และ identity ของ provider ถูกเก็บในตาราง `oauth_accounts` โดยไม่ผูกบัญชีเดิมอัตโนมัติด้วยอีเมล หากอีเมลมีบัญชีอยู่แล้ว ให้เข้าสู่ระบบด้วยรหัสผ่านก่อน (การเชื่อมบัญชียังไม่รองรับ)
+
+ใช้ Facebook Login app ที่เปิดใช้งานและอนุญาตสิทธิ์ email แล้ว หากตั้งค่า `FACEBOOK_GRAPH_API_VERSION` ให้เป็น Graph API version ที่แอป Meta ของคุณรองรับ; ถ้าไม่ตั้ง ระบบใช้ `v26.0` เป็นค่าเริ่มต้น ([Meta Graph API versions](https://developers.facebook.com/docs/graph-api/changelog/versions/)).
+
+Migration `0004_create_oauth_accounts.sql` ต้องถูกนำไปใช้กับ D1 ก่อนเปิด Social sign-in ใน environment นั้น
 
 ## คำสั่งที่ใช้บ่อย
 
@@ -367,6 +388,8 @@ pnpm migrate-apply
 | `POST` | `/api/auth/login` | ตรวจรหัสผ่านและออก Session Cookie |
 | `GET` | `/api/auth/me` | แสดงผู้ใช้ของ Session ปัจจุบัน |
 | `POST` | `/api/auth/logout` | ยกเลิก Session และล้าง Cookie |
+| `GET` | `/api/auth/oauth?provider=google\|facebook` | เริ่ม OAuth sign-in และตรวจ CSRF ด้วย state cookie |
+| `GET` | `/api/auth/oauth/callback/:provider` | ตรวจ callback, สร้าง/ค้นหาบัญชี OAuth และออก Session Cookie |
 | `POST` | `/api/issues` | สร้าง Ticket แล้วพยายามส่งอีเมลแจ้งทีม IT |
 | `GET` | `/api/issues` | รายการ Ticket; ต้องเป็น Admin |
 | `GET` | `/api/issues/stats` | สถิติ Ticket; ต้องเป็น Admin |

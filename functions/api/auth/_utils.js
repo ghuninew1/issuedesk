@@ -79,3 +79,16 @@ export async function verifyPassword(password, stored) {
 export function sessionCookie(token, maxAge = SESSION_SECONDS) {
     return `issuedesk_session=${encodeURIComponent(token)}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=${maxAge}`;
 }
+
+export async function createSession(env, userId) {
+    const tokenBytes = crypto.getRandomValues(new Uint8Array(32));
+    let tokenBinary = "";
+    for (const byte of tokenBytes) tokenBinary += String.fromCharCode(byte);
+    const token = btoa(tokenBinary).replaceAll("+", "-").replaceAll("/", "_").replaceAll("=", "");
+    const expiresAt = new Date(Date.now() + SESSION_SECONDS * 1000).toISOString();
+    await env.DB.prepare("INSERT INTO sessions (id, user_id, token_hash, expires_at) VALUES (?, ?, ?, ?)")
+        .bind(crypto.randomUUID(), userId, await sha256(token), expiresAt).run();
+    await env.DB.prepare("UPDATE users SET last_login_at = ?, updated_at = ? WHERE id = ?")
+        .bind(new Date().toISOString(), new Date().toISOString(), userId).run();
+    return token;
+}
