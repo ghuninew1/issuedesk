@@ -158,7 +158,9 @@ export default function StorageImages() {
                         </span>
                         <div>
                             <h2 className="text-2xl font-semibold tracking-tight">จัดการรูปภาพ</h2>
-                            <p className="mt-1 text-sm text-muted-foreground">อัปโหลด ดูตัวอย่าง ดาวน์โหลด และคัดลอกลิงก์จาก Storage</p>
+                            <p className="mt-1 text-sm text-muted-foreground">
+                                อัปโหลด ดูตัวอย่าง ดาวน์โหลด และคัดลอกลิงก์จาก Storage
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -172,11 +174,10 @@ export default function StorageImages() {
                             "inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-input px-3",
                             "text-sm font-medium transition-colors hover:bg-muted",
                             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30",
-                            "disabled:pointer-events-none disabled:opacity-50",
+                            "disabled:pointer-events-none disabled:opacity-50 cursor-pointer",
                         )}
                     >
                         <RefreshCw size={16} className={cx(isLoading && "animate-spin")} aria-hidden="true" />
-                        รีเฟรช
                     </button>
                     <button
                         type="button"
@@ -186,7 +187,7 @@ export default function StorageImages() {
                             "inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-primary px-4",
                             "text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90",
                             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30",
-                            "disabled:pointer-events-none disabled:opacity-50",
+                            "disabled:pointer-events-none disabled:opacity-50 cursor-pointer",
                         )}
                     >
                         {isUploading ? <LoaderCircle size={16} className="animate-spin" /> : <Upload size={16} />}
@@ -215,18 +216,27 @@ export default function StorageImages() {
             </div>
 
             {error && (
-                <div className="mb-4 rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive" role="alert">
+                <div
+                    className="mb-4 rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive"
+                    role="alert"
+                >
                     {error}
                 </div>
             )}
             {notice && (
-                <div className="mb-4 flex items-center gap-2 rounded-lg border border-emerald-500/30 bg-emerald-500/5 p-3 text-sm text-emerald-700 dark:text-emerald-400" role="status">
+                <div
+                    className="mb-4 flex items-center gap-2 rounded-lg border border-emerald-500/30 bg-emerald-500/5 p-3 text-sm text-emerald-700 dark:text-emerald-400"
+                    role="status"
+                >
                     <Check size={16} aria-hidden="true" />
                     {notice}
                 </div>
             )}
             {isTruncated && (
-                <div className="mb-4 rounded-lg border border-amber-500/30 bg-amber-500/5 p-3 text-sm text-amber-800 dark:text-amber-300" role="status">
+                <div
+                    className="mb-4 rounded-lg border border-amber-500/30 bg-amber-500/5 p-3 text-sm text-amber-800 dark:text-amber-300"
+                    role="status"
+                >
                     Storage API ส่งรายการล่าสุดมาได้สูงสุด 100 รูป จึงอาจมีรูปเก่ากว่านี้ที่ยังไม่แสดง
                 </div>
             )}
@@ -235,10 +245,16 @@ export default function StorageImages() {
                 <div className="flex flex-col gap-3 border-b border-border p-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                         <h3 className="font-semibold">คลังรูปภาพ</h3>
-                        <p className="mt-1 text-xs text-muted-foreground">แสดง {filteredImages.length} จาก {images.length} รูป</p>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                            แสดง {filteredImages.length} จาก {images.length} รูป
+                        </p>
                     </div>
                     <label className="relative block w-full sm:max-w-xs">
-                        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+                        <Search
+                            size={16}
+                            className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                            aria-hidden="true"
+                        />
                         <input
                             type="search"
                             value={search}
@@ -250,12 +266,17 @@ export default function StorageImages() {
                 </div>
 
                 {isLoading ? (
-                    <div className="flex items-center justify-center gap-2 p-12 text-sm text-muted-foreground" role="status">
+                    <div
+                        className="flex items-center justify-center gap-2 p-12 text-sm text-muted-foreground"
+                        role="status"
+                    >
                         <LoaderCircle size={18} className="animate-spin" aria-hidden="true" />
                         กำลังโหลดรูปภาพ…
                     </div>
                 ) : error && images.length === 0 ? (
-                    <div className="p-10 text-center text-sm text-muted-foreground">โหลดรายการไม่ได้ กรุณาลองรีเฟรช</div>
+                    <div className="p-10 text-center text-sm text-muted-foreground">
+                        โหลดรายการไม่ได้ กรุณาลองรีเฟรช
+                    </div>
                 ) : filteredImages.length === 0 ? (
                     <div className="flex flex-col items-center p-12 text-center">
                         <span className="flex size-12 items-center justify-center rounded-full bg-muted text-muted-foreground">
@@ -269,11 +290,21 @@ export default function StorageImages() {
                         <table className="w-full min-w-[760px] text-left text-sm">
                             <thead className="bg-muted/40 text-xs text-muted-foreground">
                                 <tr>
-                                    <th scope="col" className="px-4 py-3 font-medium">ตัวอย่าง</th>
-                                    <th scope="col" className="px-4 py-3 font-medium">ชื่อรูป</th>
-                                    <th scope="col" className="px-4 py-3 font-medium">รายละเอียด</th>
-                                    <th scope="col" className="px-4 py-3 font-medium">อัปโหลดเมื่อ</th>
-                                    <th scope="col" className="px-4 py-3 text-right font-medium">จัดการ</th>
+                                    <th scope="col" className="px-4 py-3 font-medium">
+                                        ตัวอย่าง
+                                    </th>
+                                    <th scope="col" className="px-4 py-3 font-medium">
+                                        ชื่อรูป
+                                    </th>
+                                    <th scope="col" className="px-4 py-3 font-medium">
+                                        รายละเอียด
+                                    </th>
+                                    <th scope="col" className="px-4 py-3 font-medium">
+                                        อัปโหลดเมื่อ
+                                    </th>
+                                    <th scope="col" className="px-4 py-3 text-right font-medium">
+                                        จัดการ
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-border">
@@ -286,21 +317,30 @@ export default function StorageImages() {
                                                 className="group relative block size-16 overflow-hidden rounded-lg border border-border bg-muted"
                                                 aria-label={`ดูตัวอย่าง ${image.file_name}`}
                                             >
-                                                <img src={getStorageImageUrl(image.id)} alt="" loading="lazy" className="size-full object-cover" />
+                                                <img
+                                                    src={getStorageImageUrl(image.id)}
+                                                    alt=""
+                                                    loading="lazy"
+                                                    className="size-full object-cover"
+                                                />
                                                 <span className="absolute inset-0 flex items-center justify-center bg-black/0 text-white opacity-0 transition group-hover:bg-black/35 group-hover:opacity-100">
                                                     <Eye size={18} aria-hidden="true" />
                                                 </span>
                                             </button>
                                         </td>
                                         <td className="max-w-[260px] px-4 py-3">
-                                            <p className="truncate font-medium" title={image.file_name}>{image.file_name}</p>
+                                            <p className="truncate font-medium" title={image.file_name}>
+                                                {image.file_name}
+                                            </p>
                                             <p className="mt-1 truncate text-xs text-muted-foreground">{image.id}</p>
                                         </td>
                                         <td className="px-4 py-3 text-xs text-muted-foreground">
                                             <p>{image.mime_type}</p>
                                             <p className="mt-1">{formatSize(image.file_size)}</p>
                                         </td>
-                                        <td className="whitespace-nowrap px-4 py-3 text-xs text-muted-foreground">{formatDate(image.uploaded_at)}</td>
+                                        <td className="whitespace-nowrap px-4 py-3 text-xs text-muted-foreground">
+                                            {formatDate(image.uploaded_at)}
+                                        </td>
                                         <td className="px-4 py-3">
                                             <div className="flex justify-end gap-2">
                                                 <IconButton label="คัดลอกลิงก์รูป" onClick={() => handleCopy(image)}>
@@ -320,7 +360,11 @@ export default function StorageImages() {
                                                     disabled={Boolean(deletingId)}
                                                     destructive
                                                 >
-                                                    {deletingId === image.id ? <LoaderCircle size={16} className="animate-spin" /> : <Trash2 size={16} aria-hidden="true" />}
+                                                    {deletingId === image.id ? (
+                                                        <LoaderCircle size={16} className="animate-spin" />
+                                                    ) : (
+                                                        <Trash2 size={16} aria-hidden="true" />
+                                                    )}
                                                 </IconButton>
                                             </div>
                                         </td>
@@ -339,11 +383,18 @@ export default function StorageImages() {
                         if (event.target === event.currentTarget) setSelectedImage(null);
                     }}
                 >
-                    <div role="dialog" aria-modal="true" aria-label={`ตัวอย่าง ${selectedImage.file_name}`} className="relative max-h-[90vh] w-full max-w-5xl overflow-hidden rounded-2xl border border-white/10 bg-card shadow-2xl">
+                    <div
+                        role="dialog"
+                        aria-modal="true"
+                        aria-label={`ตัวอย่าง ${selectedImage.file_name}`}
+                        className="relative max-h-[90vh] w-full max-w-5xl overflow-hidden rounded-2xl border border-white/10 bg-card shadow-2xl"
+                    >
                         <div className="flex items-center justify-between gap-4 border-b border-border px-4 py-3">
                             <div className="min-w-0">
                                 <p className="truncate text-sm font-medium">{selectedImage.file_name}</p>
-                                <p className="mt-1 text-xs text-muted-foreground">{formatSize(selectedImage.file_size)} · {selectedImage.mime_type}</p>
+                                <p className="mt-1 text-xs text-muted-foreground">
+                                    {formatSize(selectedImage.file_size)} · {selectedImage.mime_type}
+                                </p>
                             </div>
                             <button
                                 type="button"
@@ -355,7 +406,11 @@ export default function StorageImages() {
                             </button>
                         </div>
                         <div className="flex max-h-[calc(90vh-64px)] min-h-48 items-center justify-center bg-black/5 p-3 dark:bg-black/30">
-                            <img src={getStorageImageUrl(selectedImage.id)} alt={selectedImage.file_name} className="max-h-[calc(90vh-90px)] max-w-full object-contain" />
+                            <img
+                                src={getStorageImageUrl(selectedImage.id)}
+                                alt={selectedImage.file_name}
+                                className="max-h-[calc(90vh-90px)] max-w-full object-contain"
+                            />
                         </div>
                     </div>
                 </div>

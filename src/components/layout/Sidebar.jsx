@@ -1,6 +1,14 @@
 import { NavLink } from "react-router-dom";
 import { cx } from "../../utils/cx";
-import { LayoutDashboard, ClipboardList, Plus, Headset, Images } from "lucide-react";
+import { LayoutDashboard, ClipboardList, Plus, Headset, Images, FileSpreadsheet } from "lucide-react";
+
+const navLinks = [
+    { icon: LayoutDashboard, label: "Dashboard", to: "/dashboard" },
+    { icon: ClipboardList, label: "Issues", to: "/issues" },
+    { icon: Plus, label: "Report", to: "/report" },
+    { icon: Images, label: "Storage", to: "/storage/images" },
+    { icon: FileSpreadsheet, label: "Sheet", to: "/sheet" },
+];
 
 const SidebarContent = ({ isCollapsed, onNavigate }) => {
     return (
@@ -53,88 +61,31 @@ const SidebarContent = ({ isCollapsed, onNavigate }) => {
                     Workspace
                 </p>
 
-                <NavLink
-                    to="/dashboard"
-                    title={isCollapsed ? "Dashboard" : undefined}
-                    onClick={onNavigate}
-                    className={({ isActive }) =>
-                        cx(
-                            "flex min-h-11 items-center gap-3 rounded-lg px-3 py-2.5",
-                            "transition-colors",
-                            "md:justify-center md:px-0",
-                            !isCollapsed && "lg:justify-start lg:px-3",
-                            isActive
-                                ? "bg-sidebar-accent font-medium text-sidebar-accent-foreground"
-                                : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-                        )
-                    }
-                >
-                    <LayoutDashboard className="size-5 shrink-0" aria-hidden="true" />
+                {/* Navigation links */}
+                {navLinks.map((link) => (
+                    <NavLink
+                        key={link.to}
+                        to={link.to}
+                        title={isCollapsed ? link.label : undefined}
+                        onClick={onNavigate}
+                        className={({ isActive }) =>
+                            cx(
+                                "flex min-h-11 items-center gap-3 rounded-lg px-3 py-2.5",
+                                "transition-colors",
+                                "md:justify-center md:px-0",
+                                !isCollapsed && "lg:justify-start lg:px-3",
+                                isActive
+                                    ? "bg-sidebar-accent font-medium text-sidebar-accent-foreground"
+                                    : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                            )
+                        }
+                    >
+                        <link.icon className="size-5 shrink-0" aria-hidden="true" />
 
-                    <span className={cx("text-sm", "md:hidden", !isCollapsed && "lg:inline")}>Dashboard</span>
-                </NavLink>
+                        <span className={cx("text-sm", "md:hidden", !isCollapsed && "lg:inline")}>{link.label}</span>
+                    </NavLink>
+                ))}
 
-                <NavLink
-                    to="/issues"
-                    title={isCollapsed ? "All Issues" : undefined}
-                    onClick={onNavigate}
-                    className={({ isActive }) =>
-                        cx(
-                            "flex min-h-11 items-center gap-3 rounded-lg px-3 py-2.5",
-                            "transition-colors",
-                            "md:justify-center md:px-0",
-                            !isCollapsed && "lg:justify-start lg:px-3",
-                            isActive
-                                ? "bg-sidebar-accent font-medium text-sidebar-accent-foreground"
-                                : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-                        )
-                    }
-                >
-                    <ClipboardList className="size-5 shrink-0" aria-hidden="true" />
-
-                    <span className={cx("text-sm", "md:hidden", !isCollapsed && "lg:inline")}>All Issues</span>
-                </NavLink>
-
-                <NavLink
-                    to="/report"
-                    title={isCollapsed ? "Report an Issue" : undefined}
-                    onClick={onNavigate}
-                    className={({ isActive }) =>
-                        cx(
-                            "flex min-h-11 items-center gap-3 rounded-lg px-3 py-2.5",
-                            "transition-colors",
-                            "md:justify-center md:px-0",
-                            !isCollapsed && "lg:justify-start lg:px-3",
-                            isActive
-                                ? "bg-sidebar-accent font-medium text-sidebar-accent-foreground"
-                                : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-                        )
-                    }
-                >
-                    <Plus className="size-5 shrink-0" aria-hidden="true" />
-
-                    <span className={cx("text-sm", "md:hidden", !isCollapsed && "lg:inline")}>Report an Issue</span>
-                </NavLink>
-
-                <NavLink
-                    to="/storage/images"
-                    title={isCollapsed ? "Image Storage" : undefined}
-                    onClick={onNavigate}
-                    className={({ isActive }) =>
-                        cx(
-                            "flex min-h-11 items-center gap-3 rounded-lg px-3 py-2.5",
-                            "transition-colors",
-                            "md:justify-center md:px-0",
-                            !isCollapsed && "lg:justify-start lg:px-3",
-                            isActive
-                                ? "bg-sidebar-accent font-medium text-sidebar-accent-foreground"
-                                : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-                        )
-                    }
-                >
-                    <Images className="size-5 shrink-0" aria-hidden="true" />
-                    <span className={cx("text-sm", "md:hidden", !isCollapsed && "lg:inline")}>Image Storage</span>
-                </NavLink>
             </nav>
 
             {/* Footer */}

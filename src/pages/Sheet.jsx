@@ -1,5 +1,17 @@
 import { useMemo, useState } from "react";
-import { Search, RefreshCw, Monitor, Image as ImageIcon, X, ChevronRight, PackageCheck, Boxes, UserRound, Building2 } from "lucide-react";
+import {
+    Search,
+    RefreshCw,
+    Monitor,
+    Image as ImageIcon,
+    X,
+    ChevronRight,
+    PackageCheck,
+    Boxes,
+    UserRound,
+    MonitorOff,
+    MonitorPc,
+} from "lucide-react";
 import { useGoogleSheet } from "../hooks/useGoogleSheet";
 import { cx } from "../utils/cx";
 import { useDocumentTitle } from "../hooks/useDocumentTitle";
@@ -16,6 +28,8 @@ const imageFields = [
 const statusStyles = {
     Active: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400",
     Available: "bg-sky-500/10 text-sky-700 dark:text-sky-400",
+    Damaged: "bg-red-500/10 text-red-700 dark:text-red-400",
+    Unknown: "bg-amber-500/10 text-amber-700 dark:text-amber-400",
 };
 
 function Status({ status }) {
@@ -67,6 +81,7 @@ export default function Sheet() {
     }, [data, search, statusFilter]);
     const activeCount = data.filter((asset) => asset.status === "Active").length;
     const availableCount = data.filter((asset) => asset.status === "Available").length;
+    const damagedCount = data.filter((asset) => asset.status === "Damaged").length;
 
     if (loading) {
         return <div className="mx-auto max-w-7xl animate-pulse space-y-5" role="status" aria-label="กำลังโหลดข้อมูล">
@@ -94,16 +109,40 @@ export default function Sheet() {
 
             <section aria-label="ภาพรวมอุปกรณ์" className="mb-6 grid gap-3 sm:grid-cols-3">
                 <div className="flex items-center gap-4 rounded-2xl border border-border bg-card p-4 shadow-sm">
-                    <span className="flex size-11 items-center justify-center rounded-xl bg-primary/10 text-primary"><Boxes className="size-5" /></span>
-                    <div><p className="text-sm text-muted-foreground">อุปกรณ์ทั้งหมด</p><p className="mt-0.5 text-2xl font-semibold tabular-nums">{data.length}</p></div>
+                    <span className="flex size-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                        <Boxes className="size-5" />
+                    </span>
+                    <div>
+                        <p className="text-sm text-muted-foreground">อุปกรณ์ทั้งหมด</p>
+                        <p className="mt-0.5 text-2xl font-semibold tabular-nums">{data.length}</p>
+                    </div>
                 </div>
                 <div className="flex items-center gap-4 rounded-2xl border border-border bg-card p-4 shadow-sm">
-                    <span className="flex size-11 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600"><PackageCheck className="size-5" /></span>
-                    <div><p className="text-sm text-muted-foreground">กำลังใช้งาน</p><p className="mt-0.5 text-2xl font-semibold tabular-nums">{activeCount}</p></div>
+                    <span className="flex size-11 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600">
+                        <PackageCheck className="size-5" />
+                    </span>
+                    <div>
+                        <p className="text-sm text-muted-foreground">กำลังใช้งาน</p>
+                        <p className="mt-0.5 text-2xl font-semibold tabular-nums">{activeCount}</p>
+                    </div>
                 </div>
                 <div className="flex items-center gap-4 rounded-2xl border border-border bg-card p-4 shadow-sm">
-                    <span className="flex size-11 items-center justify-center rounded-xl bg-sky-500/10 text-sky-600"><Monitor className="size-5" /></span>
-                    <div><p className="text-sm text-muted-foreground">พร้อมใช้งาน</p><p className="mt-0.5 text-2xl font-semibold tabular-nums">{availableCount}</p></div>
+                    <span className="flex size-11 items-center justify-center rounded-xl bg-sky-500/10 text-sky-600">
+                        <Monitor className="size-5" />
+                    </span>
+                    <div>
+                        <p className="text-sm text-muted-foreground">พร้อมใช้งาน</p>
+                        <p className="mt-0.5 text-2xl font-semibold tabular-nums">{availableCount}</p>
+                    </div>
+                </div>
+                <div className="flex items-center gap-4 rounded-2xl border border-border bg-card p-4 shadow-sm">
+                    <span className="flex size-11 items-center justify-center rounded-xl bg-rose-500/10 text-rose-600">
+                        <MonitorOff className="size-5" />
+                    </span>
+                    <div>
+                        <p className="text-sm text-muted-foreground">ใช้งานไม่ได้</p>
+                        <p className="mt-0.5 text-2xl font-semibold tabular-nums">{damagedCount}</p>
+                    </div>
                 </div>
             </section>
 
@@ -111,15 +150,33 @@ export default function Sheet() {
                 <div className="flex flex-col gap-3 border-b border-border p-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
                     <div>
                         <h2 className="font-semibold">รายการอุปกรณ์</h2>
-                        <p className="mt-1 text-xs text-muted-foreground">แสดง {filteredAssets.length} จาก {data.length} รายการ</p>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                            แสดง {filteredAssets.length} จาก {data.length} รายการ
+                        </p>
                     </div>
                     <div className="flex flex-col gap-2 sm:flex-row">
                         <label className="relative block sm:w-64">
                             <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-                            <input type="search" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="ค้นหารหัส ชื่อ หรือแผนก" aria-label="ค้นหาอุปกรณ์" className="h-10 w-full rounded-lg border border-input bg-background pl-9 pr-3 text-sm outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/20" />
+                            <input
+                                type="search"
+                                value={search}
+                                onChange={(event) => setSearch(event.target.value)}
+                                placeholder="ค้นหารหัส ชื่อ หรือแผนก"
+                                aria-label="ค้นหาอุปกรณ์"
+                                className="h-10 w-full rounded-lg border border-input bg-background pl-9 pr-3 text-sm outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/20"
+                            />
                         </label>
-                        <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)} aria-label="กรองตามสถานะ" className="h-10 rounded-lg border border-input bg-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/20">
-                            {statuses.map((status) => <option key={status} value={status}>{status}</option>)}
+                        <select
+                            value={statusFilter}
+                            onChange={(event) => setStatusFilter(event.target.value)}
+                            aria-label="กรองตามสถานะ"
+                            className="h-10 rounded-lg border border-input bg-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/20"
+                        >
+                            {statuses.map((status) => (
+                                <option key={status} value={status}>
+                                    {status}
+                                </option>
+                            ))}
                         </select>
                     </div>
                 </div>
@@ -135,12 +192,24 @@ export default function Sheet() {
                         <table className="w-full min-w-[950px] text-left text-sm">
                             <thead className="bg-muted/40 text-xs font-medium text-muted-foreground">
                                 <tr>
-                                    <th scope="col" className="px-5 py-3">อุปกรณ์ / รหัส</th>
-                                    <th scope="col" className="px-4 py-3">ผู้ใช้งาน</th>
-                                    <th scope="col" className="px-4 py-3">แผนก</th>
-                                    <th scope="col" className="px-4 py-3">สถานะ</th>
-                                    <th scope="col" className="px-4 py-3">รูปอุปกรณ์</th>
-                                    <th scope="col" className="px-5 py-3">หมายเหตุ</th>
+                                    <th scope="col" className="px-5 py-3">
+                                        อุปกรณ์ / รหัส
+                                    </th>
+                                    <th scope="col" className="px-4 py-3">
+                                        ผู้ใช้งาน
+                                    </th>
+                                    <th scope="col" className="px-4 py-3">
+                                        รายละเอียด
+                                    </th>
+                                    <th scope="col" className="px-4 py-3">
+                                        สถานะ
+                                    </th>
+                                    <th scope="col" className="px-4 py-3">
+                                        รูปอุปกรณ์
+                                    </th>
+                                    <th scope="col" className="px-5 py-3">
+                                        หมายเหตุ
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-border">
@@ -148,20 +217,53 @@ export default function Sheet() {
                                     <tr key={asset.assetId} className="transition-colors hover:bg-muted/25">
                                         <td className="px-5 py-4">
                                             <div className="flex items-center gap-3">
-                                                <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-muted text-muted-foreground"><Monitor className="size-5" /></div>
-                                                <div className="min-w-0"><p className="font-medium">{asset.computerName || "ไม่ระบุชื่อเครื่อง"}</p><p className="mt-0.5 text-xs text-muted-foreground">{asset.assetId || "—"}</p></div>
+                                                <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-muted text-muted-foreground">
+                                                    <Monitor className="size-5" />
+                                                </div>
+                                                <div className="min-w-0">
+                                                    <p className="font-medium">
+                                                        {asset.computerName || "ไม่ระบุชื่อเครื่อง"}
+                                                    </p>
+                                                    <p className="mt-0.5 text-xs text-muted-foreground">
+                                                        {asset.assetId || "—"}
+                                                    </p>
+                                                </div>
                                             </div>
                                         </td>
-                                        <td className="px-4 py-4"><span className="inline-flex items-center gap-2"><UserRound className="size-4 text-muted-foreground" />{asset.employeeName || "—"}</span></td>
-                                        <td className="px-4 py-4"><span className="inline-flex items-center gap-2 text-muted-foreground"><Building2 className="size-4" />{asset.department || "—"}</span></td>
-                                        <td className="px-4 py-4"><Status status={asset.status} /></td>
+                                        <td className="px-4 py-4">
+                                            <span className="inline-flex items-center gap-2">
+                                                <UserRound className="size-4 text-muted-foreground" />
+                                                {asset.employeeName || "—"}
+                                            </span>
+                                        </td>
+                                        <td className="px-4 py-4">
+                                            <span className="inline-flex items-center gap-2 text-muted-foreground">
+                                                <MonitorPc className="size-4" />
+                                                {asset.details || "—"}
+                                            </span>
+                                        </td>
+                                        <td className="px-4 py-4">
+                                            <Status status={asset.status} />
+                                        </td>
                                         <td className="px-4 py-4">
                                             <div className="flex w-52 gap-2">
-                                                {imageFields.map((field) => <div key={field.key} className="w-9 shrink-0"><ImageTile src={asset[field.key]} label={field.label} onClick={() => setSelectedAsset({ asset, field })} /></div>)}
+                                                {imageFields.map((field) => (
+                                                    <div key={field.key} className="w-9 shrink-0 cursor-pointer">
+                                                        <ImageTile
+                                                            src={asset[field.key]}
+                                                            label={field.label}
+                                                            onClick={() => setSelectedAsset({ asset, field })}
+                                                        />
+                                                    </div>
+                                                ))}
                                             </div>
-                                            <span className="sr-only">เรียงตาม Computer, Monitor 1, Monitor 2, Mouse, Keyboard, Wacom</span>
+                                            <span className="sr-only">
+                                                เรียงตาม Computer, Monitor 1, Monitor 2, Mouse, Keyboard, Wacom
+                                            </span>
                                         </td>
-                                        <td className="max-w-52 px-5 py-4 text-muted-foreground"><span className="line-clamp-2">{asset.notes || "—"}</span></td>
+                                        <td className="max-w-52 px-5 py-4 text-muted-foreground">
+                                            <span className="line-clamp-2">{asset.notes || "—"}</span>
+                                        </td>
                                     </tr>
                                 ))}
                             </tbody>
@@ -171,18 +273,56 @@ export default function Sheet() {
             </section>
 
             {selectedAsset && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setSelectedAsset(null); }}>
-                    <section role="dialog" aria-modal="true" aria-labelledby="asset-image-title" className="w-full max-w-3xl overflow-hidden rounded-2xl border border-border bg-card shadow-2xl">
+                <div
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
+                    role="presentation"
+                    onMouseDown={(event) => {
+                        if (event.target === event.currentTarget) setSelectedAsset(null);
+                    }}
+                >
+                    <section
+                        role="dialog"
+                        aria-modal="true"
+                        aria-labelledby="asset-image-title"
+                        className="w-full max-w-3xl overflow-hidden rounded-2xl border border-border bg-card shadow-2xl"
+                    >
                         <div className="flex items-start justify-between gap-4 border-b border-border p-4 sm:p-5">
-                            <div className="min-w-0"><p className="text-xs text-muted-foreground">{selectedAsset.asset.assetId} · {selectedAsset.field.label}</p><h2 id="asset-image-title" className="mt-1 truncate text-lg font-semibold">{selectedAsset.asset.computerName || selectedAsset.asset.employeeName || "อุปกรณ์"}</h2></div>
-                            <button type="button" onClick={() => setSelectedAsset(null)} aria-label="ปิดภาพ" className="rounded-lg p-2 text-muted-foreground transition hover:bg-muted hover:text-foreground"><X className="size-5" /></button>
+                            <div className="min-w-0">
+                                <p className="text-xs text-muted-foreground">
+                                    {selectedAsset.asset.assetId} · {selectedAsset.field.label}
+                                </p>
+                                <h2 id="asset-image-title" className="mt-1 truncate text-lg font-semibold">
+                                    {selectedAsset.asset.computerName || selectedAsset.asset.employeeName || "อุปกรณ์"}
+                                </h2>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => setSelectedAsset(null)}
+                                aria-label="ปิดภาพ"
+                                className="rounded-lg p-2 text-muted-foreground transition hover:bg-muted hover:text-foreground"
+                            >
+                                <X className="size-5" />
+                            </button>
                         </div>
                         <div className="flex max-h-[72vh] min-h-64 items-center justify-center bg-muted/35 p-3 sm:p-6">
-                            <img src={selectedAsset.asset[selectedAsset.field.key]} alt={`${selectedAsset.field.label} — ${selectedAsset.asset.computerName || selectedAsset.asset.assetId}`} className="max-h-[65vh] max-w-full rounded-lg object-contain" />
+                            <img
+                                src={selectedAsset.asset[selectedAsset.field.key]}
+                                alt={`${selectedAsset.field.label} — ${selectedAsset.asset.computerName || selectedAsset.asset.assetId}`}
+                                className="max-h-[65vh] max-w-full rounded-lg object-contain"
+                            />
                         </div>
                         <div className="flex items-center justify-between gap-3 border-t border-border px-4 py-3 sm:px-5">
-                            <p className="truncate text-sm text-muted-foreground">{selectedAsset.asset.employeeName} · {selectedAsset.asset.department}</p>
-                            <button type="button" onClick={() => setSelectedAsset(null)} className="inline-flex shrink-0 items-center gap-2 rounded-lg border border-input px-3 py-2 text-sm font-medium hover:bg-muted">ปิด<ChevronRight className="size-4 rotate-180" /></button>
+                            <p className="truncate text-sm text-muted-foreground">
+                                {selectedAsset.asset.employeeName} · {selectedAsset.asset.department}
+                            </p>
+                            <button
+                                type="button"
+                                onClick={() => setSelectedAsset(null)}
+                                className="inline-flex shrink-0 items-center gap-2 rounded-lg border border-input px-3 py-2 text-sm font-medium hover:bg-muted"
+                            >
+                                ปิด
+                                <ChevronRight className="size-4 rotate-180" />
+                            </button>
                         </div>
                     </section>
                 </div>
