@@ -1,6 +1,6 @@
 import { NavLink } from "react-router-dom";
 import { cx } from "../../utils/cx";
-import { LayoutDashboard, ClipboardList, Plus, Headset } from "lucide-react";
+import { LayoutDashboard, ClipboardList, Plus, Headset, Images } from "lucide-react";
 
 const SidebarContent = ({ isCollapsed, onNavigate }) => {
     return (
@@ -114,6 +114,26 @@ const SidebarContent = ({ isCollapsed, onNavigate }) => {
                     <Plus className="size-5 shrink-0" aria-hidden="true" />
 
                     <span className={cx("text-sm", "md:hidden", !isCollapsed && "lg:inline")}>Report an Issue</span>
+                </NavLink>
+
+                <NavLink
+                    to="/storage/images"
+                    title={isCollapsed ? "Image Storage" : undefined}
+                    onClick={onNavigate}
+                    className={({ isActive }) =>
+                        cx(
+                            "flex min-h-11 items-center gap-3 rounded-lg px-3 py-2.5",
+                            "transition-colors",
+                            "md:justify-center md:px-0",
+                            !isCollapsed && "lg:justify-start lg:px-3",
+                            isActive
+                                ? "bg-sidebar-accent font-medium text-sidebar-accent-foreground"
+                                : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                        )
+                    }
+                >
+                    <Images className="size-5 shrink-0" aria-hidden="true" />
+                    <span className={cx("text-sm", "md:hidden", !isCollapsed && "lg:inline")}>Image Storage</span>
                 </NavLink>
             </nav>
 

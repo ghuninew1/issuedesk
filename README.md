@@ -113,6 +113,99 @@ issuedesk/
 | `/dashboard` | Admin | สถิติและ Ticket ล่าสุด |
 | `/issues` | Admin | รายการ ค้นหา กรองสถานะ/ความสำคัญ |
 | `/issues/:ticketNumber` | Admin | รายละเอียด เปลี่ยนสถานะ ไฟล์แนบ ลบ Ticket |
+| `/storage/images` | Admin | จัดการภาพใน Storage: ดูตัวอย่าง อัปโหลด ดาวน์โหลด ลบ และคัดลอกลิงก์ |
+
+## Image Storage API
+
+API กลุ่มนี้เป็น proxy ของ IssueDesk ไปยัง Storage API ใช้ Cookie session ของ IssueDesk และอนุญาตเฉพาะ Admin ทุกคำขอจากหน้าเว็บควรเรียก API ผ่าน `src/services/storage.js` เพื่อให้แนบ session cookie แบบ same-origin โดยอัตโนมัติ ค่า credential ของ Storage และ Cloudflare Access อยู่ฝั่ง Pages Functions เท่านั้น
+
+| Method | Endpoint | การทำงาน |
+| --- | --- | --- |
+| `GET` | `/api/storage/files` | แสดงรายการรูป รองรับ JPEG, PNG, WebP, GIF และ AVIF; อาจคืนได้สูงสุด 100 รายการ |
+| `POST` | `/api/storage/files` | อัปโหลดรูปด้วย `multipart/form-data` field ชื่อ `file` |
+| `GET` | `/api/storage/files/:fileId` | แสดงรูปแบบ inline สำหรับ preview |
+| `GET` | `/api/storage/files/:fileId?download=1&name=:fileName` | ดาวน์โหลดรูปเป็นไฟล์แนบ |
+| `DELETE` | `/api/storage/files/:fileId` | ลบรูปจาก Storage และล้างแถว `issue_attachments` ที่อ้างถึงไฟล์นั้นใน D1 |
+
+### ตัวอย่างเรียก API
+
+แสดงรายการ (ผู้ใช้ต้องมี session Admin ที่ยังใช้งานได้):
+
+```http
+GET /api/storage/files
+```
+
+ตัวอย่าง response:
+
+```json
+{
+  "success": true,
+  "files": [
+    {
+      "id": "<file-id>",
+      "file_name": "screen.png",
+      "mime_type": "image/png",
+      "file_size": 24576,
+      "uploaded_at": "2026-10-21T09:30:00.000Z"
+    }
+  ],
+  "isTruncated": false
+}
+```
+
+อัปโหลดจากเบราว์เซอร์:
+
+```js
+const form = new FormData();
+form.append("file", imageFile);
+const response = await fetch("/api/storage/files", { method: "POST", body: form });
+const result = await response.json();
+```
+
+รองรับ JPEG, PNG, WebP, GIF และ AVIF ขนาดมากกว่า 0 และไม่เกิน 10 MiB; server เป็นผู้ตรวจชนิดและขนาดไฟล์อีกครั้ง ตัวอย่าง response (HTTP `201`):
+
+```json
+{
+  "success": true,
+  "file": {
+    "id": "<file-id>",
+    "file_name": "screen.png",
+    "mime_type": "image/png",
+    "file_size": 24576,
+    "uploaded_at": "2026-10-21T09:30:00.000Z"
+  }
+}
+```
+
+เปิด URL `/api/storage/files/:fileId` ในแท็ก `<img>` เพื่อ preview หรือใช้ query `download=1` เพื่อดาวน์โหลด ชื่อไฟล์ส่งผ่าน `name` ได้ โดย server กรองอักขระเส้นทางและขึ้นบรรทัดใหม่ก่อนใช้เป็นชื่อดาวน์โหลด การคัดลอกลิงก์จากหน้า `/storage/images` จะได้ URL ของ proxy นี้ ซึ่งยังต้องใช้ session Admin จึงจะเปิดได้ ไม่ใช่ public link สำหรับบุคคลทั่วไป
+
+ลบไฟล์:
+
+```http
+DELETE /api/storage/files/:fileId
+```
+
+```json
+{
+  "success": true,
+  "message": "Image deleted successfully"
+}
+```
+
+เมื่อ Storage แจ้งว่าไม่พบไฟล์ (404) ระบบถือว่าไฟล์ถูกลบแล้วและยังดำเนินการล้างข้อมูลแนบใน D1 ต่อ หากลบไฟล์สำเร็จแต่ล้าง D1 ไม่สำเร็จ API ตอบ `500` พร้อมข้อความแจ้งว่าลบจาก Storage แล้วแต่ล้างข้อมูลที่เชื่อมโยงไม่สำเร็จ
+
+### รหัสตอบกลับที่พบบ่อย
+
+| HTTP | ความหมาย |
+| --- | --- |
+| `400` | ขาดไฟล์หรือ request ไม่ถูกต้อง |
+| `401` | ไม่มี session หรือ session หมดอายุ |
+| `403` | ผู้ใช้ไม่มี role Admin |
+| `404` | ไม่พบรูป |
+| `413` | รูปใหญ่กว่า 10 MiB |
+| `415` | ชนิดไฟล์ไม่รองรับ หรือ preview ไม่ใช่รูป raster ที่อนุญาต |
+| `500` | ตั้งค่า Storage ไม่ครบ หรือเกิดปัญหาล้างข้อมูลอ้างอิงใน D1 |
+| `502` | Storage API ติดต่อไม่ได้หรือตอบกลับผิดพลาด |
 
 ## สถานะ Ticket
 
@@ -284,6 +377,8 @@ pnpm migrate-apply
 | `POST` | `/api/issues/:ticketNumber/attachments` | อัปโหลดไฟล์แนบของ Ticket |
 | `GET` | `/api/issues/:ticketNumber/attachments/:attachmentId` | ดาวน์โหลดหรือแสดงไฟล์; ต้องเป็น Admin |
 | `DELETE` | `/api/issues/:ticketNumber/attachments/:attachmentId` | ลบไฟล์แนบ; ต้องเป็น Admin |
+| `GET` / `POST` | `/api/storage/files` | แสดงรายการรูปและอัปโหลดรูปไปยัง Storage API; ต้องเป็น Admin |
+| `GET` / `DELETE` | `/api/storage/files/:fileId` | แสดงตัวอย่าง/ดาวน์โหลด หรือลบรูปจาก Storage API; ต้องเป็น Admin |
 | `GET` | `/api/track/:ticketNumber` | ติดตามสาธารณะ; คืนเฉพาะหมายเลข สถานะ และเวลา |
 
 ## สร้าง Admin คนแรก

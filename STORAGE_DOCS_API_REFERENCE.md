@@ -123,6 +123,74 @@ The response uses private/no-store caching and `X-Content-Type-Options: nosniff`
 
 Deletes the Garage object and corresponding metadata.
 
+## IssueDesk Image Management API
+
+These endpoints are Cloudflare Pages Functions in the IssueDesk application. They proxy the Storage API for the Admin image management page at `/storage/images`; they are distinct from the Storage service's `/v2/*` routes documented above.
+
+All routes require an active IssueDesk session with the `admin` role. The browser must call these same-origin endpoints with its session cookie. Storage app credentials and Cloudflare Access service credentials are read only by Pages Functions and must not be sent by the browser.
+
+### `GET /api/storage/files`
+
+Lists images from the configured Storage project. The response is limited to the first 100 Storage API results and includes `isTruncated`; the API does not currently provide pagination. Only JPEG, PNG, WebP, GIF, and AVIF files are returned.
+
+```json
+{
+  "success": true,
+  "files": [
+    {
+      "id": "<file-id>",
+      "file_name": "screen.png",
+      "mime_type": "image/png",
+      "file_size": 24576,
+      "uploaded_at": "2026-10-21T09:30:00.000Z"
+    }
+  ],
+  "isTruncated": false
+}
+```
+
+### `POST /api/storage/files`
+
+Uploads a single image as `multipart/form-data` with required field `file`. Accepted content types are `image/jpeg`, `image/png`, `image/webp`, `image/gif`, and `image/avif`. Empty files are rejected; maximum size is 10 MiB. Returns HTTP `201` and the normalized file metadata on success.
+
+```json
+{
+  "success": true,
+  "file": {
+    "id": "<file-id>",
+    "file_name": "screen.png",
+    "mime_type": "image/png",
+    "file_size": 24576,
+    "uploaded_at": "2026-10-21T09:30:00.000Z"
+  }
+}
+```
+
+### `GET /api/storage/files/:fileId`
+
+Streams the image through the authenticated IssueDesk proxy for inline preview. Only the allowed raster image MIME types can be previewed. Responses use `Cache-Control: private, no-store` and `X-Content-Type-Options: nosniff`.
+
+To download instead, request:
+
+`GET /api/storage/files/:fileId?download=1&name=screen.png`
+
+The response uses `Content-Disposition: attachment`; filename path separators, NUL, and line breaks are sanitized. The resulting URL is not public: opening it requires a valid Admin session.
+
+### `DELETE /api/storage/files/:fileId`
+
+Deletes the file from Storage and removes matching `issue_attachments` rows by `storage_file_id` from IssueDesk D1. If Storage already returns `404`, the route treats the object as absent and still attempts D1 cleanup.
+
+```json
+{
+  "success": true,
+  "message": "Image deleted successfully"
+}
+```
+
+If the Storage deletion succeeds but D1 cleanup fails, the route returns HTTP `500` and reports that the image was removed but linked IssueDesk records could not be cleaned.
+
+IssueDesk proxy routes commonly return `400` for invalid input, `401` for a missing/expired session, `403` for a non-Admin user, `404` for an absent image, `413` for files over 10 MiB, `415` for unsupported image types, and `502` for Storage API failures.
+
 ## Legacy API
 
 Legacy routes are disabled unless `ENABLE_LEGACY_API=true`.

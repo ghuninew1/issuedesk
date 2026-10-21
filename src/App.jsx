@@ -11,6 +11,8 @@ import { Loader } from "lucide-react";
 import ProtectedRoute from "./auth/ProtectedRoute";
 import TrackTicket from "./pages/TrackTicket";
 import { useAuth } from "./auth/useAuth";
+import Sheet from "./pages/Sheet";
+import StorageImages from "./pages/StorageImages";
 
 function LoginRoute() {
     const { user, isLoading } = useAuth();
@@ -103,6 +105,16 @@ function App() {
                     </ProtectedRoute>
                 }
             />
+            <Route
+                path="/storage/images"
+                element={
+                    <ProtectedRoute requiredRole="admin">
+                        <AppShell>
+                            <StorageImages />
+                        </AppShell>
+                     </ProtectedRoute>
+                }
+            />
             <Route path="/login" element={<LoginRoute />} />
 
             <Route
@@ -118,8 +130,19 @@ function App() {
                 path="/report"
                 element={
                     <AppShell>
-                        <ReportIssue />{" "}
+                        <ReportIssue />
                     </AppShell>
+                }
+            />
+            <Route
+                path="/sheet"
+                element={
+                        <ProtectedRoute requiredRole="admin">
+                        <AppShell>
+                            <Sheet />
+                        </AppShell>
+                     </ProtectedRoute>
+
                 }
             />
 
