@@ -409,6 +409,7 @@ export default function StorageImages() {
                             <img
                                 src={getStorageImageUrl(selectedImage.id)}
                                 alt={selectedImage.file_name}
+                                loading="lazy"
                                 className="max-h-[calc(90vh-90px)] max-w-full object-contain"
                             />
                         </div>

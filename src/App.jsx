@@ -112,7 +112,7 @@ function App() {
                         <AppShell>
                             <StorageImages />
                         </AppShell>
-                     </ProtectedRoute>
+                    </ProtectedRoute>
                 }
             />
             <Route path="/login" element={<LoginRoute />} />
@@ -137,12 +137,11 @@ function App() {
             <Route
                 path="/sheet"
                 element={
-                        <ProtectedRoute requiredRole="admin">
+                    <ProtectedRoute requiredRole="admin">
                         <AppShell>
                             <Sheet />
                         </AppShell>
-                     </ProtectedRoute>
-
+                    </ProtectedRoute>
                 }
             />
 

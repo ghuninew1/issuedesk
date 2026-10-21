@@ -11,6 +11,7 @@ import {
     UserRound,
     MonitorOff,
     MonitorPc,
+    Image,
 } from "lucide-react";
 import { useGoogleSheet } from "../hooks/useGoogleSheet";
 import { cx } from "../utils/cx";
@@ -51,7 +52,7 @@ function ImageTile({ src, label, onClick }) {
             className={cx(
                 "group relative flex aspect-square w-full items-center justify-center overflow-hidden rounded-xl border border-border bg-muted/50",
                 "transition hover:border-primary/40 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30",
-                "disabled:cursor-default disabled:hover:border-border",
+                "disabled:cursor-default disabled:hover:border-border cursor-pointer",
             )}
         >
             {src ? (
@@ -188,8 +189,8 @@ export default function Sheet() {
                         <p className="mt-1 text-sm text-muted-foreground">ลองเปลี่ยนคำค้นหาหรือตัวกรองสถานะ</p>
                     </div>
                 ) : (
-                    <div className="overflow-x-auto w-full">
-                        <table className="w-full min-w-[950px] text-left text-sm">
+                    <div className="relative w-full">
+                        <table className="w-full min-w-[950px] text-left text-sm hidden md:table">
                             <thead className="bg-muted/40 text-xs font-medium text-muted-foreground">
                                 <tr>
                                     <th scope="col" className="px-5 py-3">
@@ -302,7 +303,7 @@ export default function Sheet() {
                                 type="button"
                                 onClick={() => setSelectedAsset(null)}
                                 aria-label="ปิดภาพ"
-                                className="rounded-lg p-2 text-muted-foreground transition hover:bg-muted hover:text-foreground"
+                                className="rounded-lg p-2 text-muted-foreground transition hover:bg-muted hover:text-foreground cursor-pointer"
                             >
                                 <X className="size-5" />
                             </button>
@@ -311,13 +312,23 @@ export default function Sheet() {
                             <img
                                 src={selectedAsset.asset[selectedAsset.field.key]}
                                 alt={`${selectedAsset.field.label} — ${selectedAsset.asset.computerName || selectedAsset.asset.assetId}`}
+                                loading="lazy"
                                 className="max-h-[65vh] max-w-full rounded-lg object-contain"
                             />
                         </div>
                         <div className="flex items-center justify-between gap-3 border-t border-border px-4 py-3 sm:px-5">
                             <p className="truncate text-sm text-muted-foreground">
-                                {selectedAsset.asset.employeeName} · {selectedAsset.asset.department}
+                                {selectedAsset.asset.employeeName} · {selectedAsset.asset.details}
                             </p>
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    window.open(selectedAsset.asset[selectedAsset.field.key], "_blank");}}
+                                className="inline-flex shrink-0 items-center gap-2 rounded-lg border border-input px-3 py-2 text-sm font-medium hover:bg-muted cursor-pointer"
+                            >
+                                view
+                                <Image className="size-4 rotate-180" />
+                            </button>
                             <button
                                 type="button"
                                 onClick={() => setSelectedAsset(null)}

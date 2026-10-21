@@ -48,6 +48,14 @@ const Header = ({ isSidebarCollapsed, onToggleSidebar, onOpenMobileSidebar }) =>
             title: "Login",
             description: "Sign in to your account",
         },
+        "/sheet": {
+            title: "Sheet",
+            description: "View and manage office issues",
+        },
+        "/storage/images": {
+            title: "Storage",
+            description: "Add and manage office images",
+        },
     };
 
     const currentPage = trackMatch
@@ -63,12 +71,12 @@ const Header = ({ isSidebarCollapsed, onToggleSidebar, onOpenMobileSidebar }) =>
     return (
         <header
             className={cx(
-                "flex h-16 shrink-0 items-center justify-between gap-3",
+                "flex h-15 shrink-0 items-center justify-between gap-3",
                 "border-b border-border bg-background",
                 "px-4 sm:px-5 lg:px-6 animate-fadeInDown",
             )}
         >
-            <div className="flex min-w-0 items-center gap-3">
+            <div className="flex min-w-0 items-center gap-2">
                 {/* Mobile menu */}
                 {user && (
                     <>

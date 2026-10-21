@@ -1,11 +1,11 @@
 import { NavLink } from "react-router-dom";
 import { cx } from "../../utils/cx";
-import { LayoutDashboard, ClipboardList, Plus, Headset, Images, FileSpreadsheet } from "lucide-react";
+import { LayoutDashboard, ClipboardList, ClipboardPlus, Headset, Images, FileSpreadsheet } from "lucide-react";
 
 const navLinks = [
     { icon: LayoutDashboard, label: "Dashboard", to: "/dashboard" },
     { icon: ClipboardList, label: "Issues", to: "/issues" },
-    { icon: Plus, label: "Report", to: "/report" },
+    { icon: ClipboardPlus, label: "Report", to: "/report" },
     { icon: Images, label: "Storage", to: "/storage/images" },
     { icon: FileSpreadsheet, label: "Sheet", to: "/sheet" },
 ];
