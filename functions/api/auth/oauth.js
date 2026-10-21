@@ -17,6 +17,9 @@ export async function onRequestGet({ request, env }) {
     const state = Array.from(crypto.getRandomValues(new Uint8Array(32)), (byte) => byte.toString(16).padStart(2, "0")).join("");
     const callback = `${url.origin}/api/auth/oauth/callback/${provider}`;
     const graphVersion = env.FACEBOOK_GRAPH_API_VERSION || "v26.0";
+    if (provider === "facebook" && !/^v\d+\.\d+$/.test(graphVersion)) {
+        return Response.redirect(new URL("/login?social_error=configuration", url.origin), 302);
+    }
     const authorization = new URL(provider === "google" ? "https://accounts.google.com/o/oauth2/v2/auth" : `https://www.facebook.com/${graphVersion}/dialog/oauth`);
     authorization.search = new URLSearchParams({
         client_id: clientId,

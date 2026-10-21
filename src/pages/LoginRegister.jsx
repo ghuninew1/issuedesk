@@ -41,6 +41,7 @@ export default function LoginRegister() {
         if (!reason) return;
         const messages = {
             unconfigured: "Social sign-in is not configured yet. Please use email and password.",
+            configuration: "Facebook Graph API version is invalid. Set it to a version such as v26.0.",
             cancelled: "Sign-in was cancelled.",
             state: "Sign-in could not be verified. Please try again.",
             email: "The provider did not return a verified email address.",
@@ -49,6 +50,7 @@ export default function LoginRegister() {
             provider: "This sign-in provider is not supported.",
             token: "Could not verify your account with the provider. Please try again.",
             profile: "Could not retrieve your provider profile. Please try again.",
+            provider_error: "Facebook rejected the sign-in request. Check the Facebook Login app settings and callback URL.",
             failed: "Social sign-in failed. Please try again.",
         };
         const toastTimer = window.setTimeout(() => triggerToast(messages[reason] || messages.failed), 0);

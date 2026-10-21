@@ -146,7 +146,7 @@ export default function Sheet() {
                 </div>
             </section>
 
-            <section className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+            <section className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm w-full max-w-7xl">
                 <div className="flex flex-col gap-3 border-b border-border p-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
                     <div>
                         <h2 className="font-semibold">รายการอุปกรณ์</h2>
@@ -188,7 +188,7 @@ export default function Sheet() {
                         <p className="mt-1 text-sm text-muted-foreground">ลองเปลี่ยนคำค้นหาหรือตัวกรองสถานะ</p>
                     </div>
                 ) : (
-                    <div className="overflow-x-auto">
+                    <div className="overflow-x-auto w-full">
                         <table className="w-full min-w-[950px] text-left text-sm">
                             <thead className="bg-muted/40 text-xs font-medium text-muted-foreground">
                                 <tr>

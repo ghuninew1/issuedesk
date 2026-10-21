@@ -27,7 +27,11 @@ export async function onRequestGet({ request, params, env }) {
     const state = url.searchParams.get("state");
     const expectedState = readCookie(request, STATE_COOKIE);
     if (!state || !expectedState || state !== expectedState) return failure(request, "state");
-    if (url.searchParams.has("error") || !url.searchParams.get("code")) return failure(request, "cancelled");
+    if (url.searchParams.has("error")) {
+        const providerError = url.searchParams.get("error");
+        return failure(request, providerError === "access_denied" ? "cancelled" : "provider_error");
+    }
+    if (!url.searchParams.get("code")) return failure(request, "cancelled");
 
     const prefix = provider.toUpperCase();
     const clientId = env[`${prefix}_CLIENT_ID`];
@@ -36,9 +40,11 @@ export async function onRequestGet({ request, params, env }) {
 
     try {
         const callback = `${url.origin}/api/auth/oauth/callback/${provider}`;
+        const graphVersion = env.FACEBOOK_GRAPH_API_VERSION || "v26.0";
+        if (provider === "facebook" && !/^v\d+\.\d+$/.test(graphVersion)) return failure(request, "configuration");
         const tokenEndpoint = provider === "google"
             ? "https://oauth2.googleapis.com/token"
-            : `https://graph.facebook.com/${env.FACEBOOK_GRAPH_API_VERSION || "v26.0"}/oauth/access_token`;
+            : `https://graph.facebook.com/${graphVersion}/oauth/access_token`;
         const tokenParams = new URLSearchParams({
             client_id: clientId,
             client_secret: clientSecret,
@@ -59,7 +65,7 @@ export async function onRequestGet({ request, params, env }) {
 
         const profileUrl = provider === "google"
             ? "https://openidconnect.googleapis.com/v1/userinfo"
-            : `https://graph.facebook.com/${env.FACEBOOK_GRAPH_API_VERSION || "v26.0"}/me?fields=id,name,email`;
+            : `https://graph.facebook.com/${graphVersion}/me?fields=id,name,email`;
         const profileResponse = await fetch(profileUrl, { headers: { Authorization: `Bearer ${token.access_token}`, Accept: "application/json" } });
         if (!profileResponse.ok) return failure(request, "profile");
         const profile = await profileResponse.json();
