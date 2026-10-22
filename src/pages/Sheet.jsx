@@ -11,7 +11,6 @@ import {
     UserRound,
     MonitorOff,
     MonitorPc,
-    Image,
     Computer,
     Mouse,
     Keyboard,
@@ -401,7 +400,7 @@ export default function Sheet() {
                         <div className="flex items-start justify-between gap-4 border-b border-border p-4 sm:p-5">
                             <div className="min-w-0">
                                 <p className="text-xs text-muted-foreground">
-                                    {selectedAsset.asset.assetId} · {selectedAsset.field.label}
+                                    {selectedAsset.asset.assetId} · รูปอุปกรณ์ {imageFields.filter((field) => selectedAsset.asset[field.key]).length} รูป
                                 </p>
                                 <h2 id="asset-image-title" className="mt-1 truncate text-lg font-semibold">
                                     {selectedAsset.asset.computerName || selectedAsset.asset.employeeName || "อุปกรณ์"}
@@ -416,16 +415,8 @@ export default function Sheet() {
                                 <X className="size-5" />
                             </button>
                         </div>
-                        <div className="flex max-h-[72vh] min-h-64 items-center justify-center bg-muted/35 p-3 sm:p-6">
-                            <img
-                                src={selectedAsset.asset[selectedAsset.field.key]}
-                                alt={`${selectedAsset.field.label} — ${selectedAsset.asset.computerName || selectedAsset.asset.assetId}`}
-                                loading="lazy"
-                                decoding="async"
-                                className="max-h-[65vh] max-w-full rounded-lg object-contain"
-                            />
-                        </div>
-                        <div className="flex gap-2 overflow-x-auto border-t border-border px-4 py-3 sm:px-5">
+                        <div className="max-h-[72vh] overflow-y-auto bg-muted/35 p-4 sm:p-6">
+                            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                             {imageFields.filter((field) => selectedAsset.asset[field.key]).map((field) => (
                                 <button
                                     key={field.key}
@@ -433,28 +424,28 @@ export default function Sheet() {
                                     onClick={() => setSelectedAsset((selected) => ({ ...selected, field }))}
                                     aria-pressed={selectedAsset.field.key === field.key}
                                     className={cx(
-                                        "shrink-0 rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors",
-                                        selectedAsset.field.key === field.key ? "border-primary bg-primary/10 text-primary" : "border-input text-muted-foreground hover:bg-muted",
+                                        "group overflow-hidden rounded-xl border bg-card text-left transition-colors hover:border-primary/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30",
+                                        selectedAsset.field.key === field.key ? "border-primary ring-2 ring-primary/20" : "border-border",
                                     )}
                                 >
-                                    {field.label}
+                                    <span className="flex aspect-[4/3] items-center justify-center bg-muted">
+                                        <img
+                                            src={selectedAsset.asset[field.key]}
+                                            alt={field.label}
+                                            loading="lazy"
+                                            decoding="async"
+                                            className="size-full object-contain transition-transform group-hover:scale-[1.03]"
+                                        />
+                                    </span>
+                                    <span className="block truncate px-2.5 py-2 text-xs font-medium">{field.label}</span>
                                 </button>
                             ))}
+                            </div>
                         </div>
                         <div className="flex items-center justify-between gap-3 border-t border-border px-4 py-3 sm:px-5">
                             <p className="truncate text-sm text-muted-foreground">
                                 {selectedAsset.asset.employeeName} · {selectedAsset.asset.details}
                             </p>
-                            <button
-                                type="button"
-                                onClick={() => {
-                                    window.open(selectedAsset.asset[selectedAsset.field.key], "_blank");
-                                }}
-                                className="inline-flex shrink-0 items-center gap-2 rounded-lg border border-input px-3 py-2 text-sm font-medium hover:bg-muted cursor-pointer"
-                            >
-                                view
-                                <Image className="size-4 rotate-180" />
-                            </button>
                             <button
                                 type="button"
                                 onClick={() => setSelectedAsset(null)}
@@ -463,6 +454,47 @@ export default function Sheet() {
                                 ปิด
                                 <CircleX className="size-4 rotate-180" />
                             </button>
+                        </div>
+                    </section>
+                </div>
+            )}
+            {selectedAsset && (
+                <div
+                    className="fixed inset-0 z-[60] flex items-center justify-center bg-black/85 p-4 backdrop-blur-sm"
+                    role="presentation"
+                    onMouseDown={(event) => {
+                        if (event.target === event.currentTarget) setSelectedAsset(null);
+                    }}
+                >
+                    <section
+                        role="dialog"
+                        aria-modal="true"
+                        aria-label={`ภาพขนาดใหญ่ ${selectedAsset.field.label}`}
+                        className="relative flex max-h-[95vh] w-full max-w-6xl flex-col overflow-hidden rounded-2xl border border-white/10 bg-card shadow-2xl"
+                    >
+                        <div className="flex items-center justify-between gap-4 border-b border-border px-4 py-3">
+                            <div className="min-w-0">
+                                <p className="truncate text-sm font-medium">{selectedAsset.field.label}</p>
+                                <p className="mt-1 truncate text-xs text-muted-foreground">
+                                    {selectedAsset.asset.computerName || selectedAsset.asset.assetId}
+                                </p>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => setSelectedAsset(null)}
+                                aria-label="ปิดภาพขนาดใหญ่"
+                                className="inline-flex size-9 shrink-0 items-center justify-center rounded-lg border border-border text-muted-foreground hover:bg-muted hover:text-foreground"
+                            >
+                                <X className="size-5" />
+                            </button>
+                        </div>
+                        <div className="flex min-h-48 flex-1 items-center justify-center bg-black/5 p-3 dark:bg-black/30">
+                            <img
+                                src={selectedAsset.asset[selectedAsset.field.key]}
+                                alt={`${selectedAsset.field.label} — ${selectedAsset.asset.computerName || selectedAsset.asset.assetId}`}
+                                decoding="async"
+                                className="max-h-[calc(95vh-72px)] max-w-full rounded-lg object-contain"
+                            />
                         </div>
                     </section>
                 </div>
