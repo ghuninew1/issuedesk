@@ -107,7 +107,11 @@ const RecentIssues = () => {
     return (
         <section
             aria-labelledby="recent-issues-heading"
-            className="mt-6 overflow-hidden rounded-xl border border-border bg-card shadow-sm animate-fadeInUp"
+            className={cx(
+                "glass-surface mt-6 overflow-hidden rounded-xl",
+                "border border-border/70 shadow-sm",
+                "animate-fadeInUp",
+            )}
         >
             {/* Header */}
             <div
@@ -148,7 +152,7 @@ const RecentIssues = () => {
             {!isLoading && !error && issues.length > 0 && (
                 <div className="hidden overflow-x-auto md:block">
                     <table className="w-full text-left text-sm">
-                        <thead className="bg-muted/50 text-xs text-muted-foreground">
+                        <thead className="bg-muted/30 text-xs text-muted-foreground">
                             <tr>
                                 <th scope="col" className="px-5 py-3 font-medium">
                                     Issue
@@ -251,7 +255,7 @@ const RecentIssues = () => {
                             <div className="grid grid-cols-2 gap-4 text-sm">
                                 <div>
                                     <p className="text-xs text-muted-foreground">Reporter</p>
-                                    <p className="mt-1">{issue.reporter}</p>
+                                    <p className="mt-1">{issue.reporter_name}</p>
                                 </div>
 
                                 <div>

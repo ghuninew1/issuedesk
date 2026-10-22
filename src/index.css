@@ -129,6 +129,88 @@
     --sidebar-ring: oklch(0.556 0 0);
 }
 
+
+:root {
+    /* Liquid Glass — Light fallback */
+    --glass-surface: oklch(1 0 0 / 72%);
+    --glass-surface-hover: oklch(1 0 0 / 86%);
+    --glass-border: oklch(0 0 0 / 8%);
+    --glass-highlight: oklch(1 0 0 / 75%);
+    --glass-shadow: 0 8px 32px oklch(0 0 0 / 6%);
+    --glass-blur: 16px;
+}
+
+.dark {
+    /* Liquid Glass — Dark */
+    --glass-surface: oklch(0.22 0.01 260 / 72%);
+    --glass-surface-hover: oklch(0.28 0.01 260 / 84%);
+    --glass-border: oklch(1 0 0 / 10%);
+    --glass-highlight: oklch(1 0 0 / 8%);
+    --glass-shadow: 0 8px 32px oklch(0 0 0 / 18%);
+    --glass-blur: 16px;
+}
+
+/* Shared Liquid Glass surfaces */
+@layer components {
+    .glass-surface {
+        background: var(--glass-surface);
+        border: 1px solid var(--glass-border);
+        box-shadow:
+            inset 0 1px 0 var(--glass-highlight),
+            var(--glass-shadow);
+    }
+
+    .glass-header {
+        background: var(--glass-surface);
+        border-bottom: 1px solid var(--glass-border);
+        box-shadow: 0 4px 20px oklch(0 0 0 / 3%);
+    }
+
+    .glass-sidebar {
+        background: var(--glass-surface);
+        border-color: var(--glass-border);
+    }
+
+    .glass-nav-active {
+        background: var(--glass-surface-hover);
+        box-shadow: inset 0 1px 0 var(--glass-highlight);
+    }
+
+    .glass-nav-link:hover {
+    background: var(--glass-surface-hover);
+}
+}
+
+@supports (backdrop-filter: blur(1px)) {
+    .glass-surface,
+    .glass-header,
+    .glass-sidebar {
+        -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(150%);
+        backdrop-filter: blur(var(--glass-blur)) saturate(150%);
+    }
+}
+
+@supports (backdrop-filter: blur(1px)) {
+    @layer components {
+        .glass-surface,
+        .glass-header,
+        .glass-sidebar {
+            -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(150%);
+            backdrop-filter: blur(var(--glass-blur)) saturate(150%);
+        }
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .glass-surface,
+    .glass-header,
+    .glass-sidebar {
+        scroll-behavior: auto;
+        transition: none;
+    }
+}
+
+
 @theme inline {
     --color-background: var(--background);
     --color-foreground: var(--foreground);
@@ -311,7 +393,6 @@ body {
     --animate-turn: turn 1s ease-in-out infinite;
     --animate-turnDelay: turn 1s ease-in-out 0.3s infinite;
 
-
     /* Keyframes: Arrow */
     @keyframes arrow {
         0%,
@@ -483,5 +564,44 @@ body {
         50% {
             transform: rotate(5deg);
         }
+    }
+}
+
+@media print {
+    @page {
+        size: A4 landscape;
+        margin: 10mm;
+    }
+
+    /* ซ่อนส่วนควบคุมของแอป */
+    .no-print,
+    aside,
+    nav,
+    button {
+        display: none !important;
+    }
+
+    /* ให้พื้นที่ตารางใช้หน้ากระดาษได้เต็ม */
+    main {
+        width: 100% !important;
+        max-width: none !important;
+        overflow: visible !important;
+    }
+
+    /* จำกัดขนาดรูปสำหรับเอกสาร */
+    img {
+        max-width: 100%;
+        max-height: 35mm;
+        object-fit: contain;
+    }
+
+    /* ลดเอฟเฟกต์ที่ไม่จำเป็น */
+    *,
+    *::before,
+    *::after {
+        box-shadow: none !important;
+        text-shadow: none !important;
+        animation: none !important;
+        transition: none !important;
     }
 }

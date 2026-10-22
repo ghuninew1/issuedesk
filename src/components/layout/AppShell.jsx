@@ -62,18 +62,18 @@ const AppShell = ({ children }) => {
     }, [isMobileSidebarOpen]);
 
     return (
-        <div className="relative flex min-h-screen overflow-x-clip bg-background font-sans text-foreground antialiased selection:bg-cyan-500 selection:text-white">
-            <div className="absolute top-1/4 -left-20 w-96 h-96 bg-green-500/1 rounded-full blur-3xl animate-pulse pointer-events-none" />
-            <div className="absolute bottom-1/4 -right-20 w-96 h-96 bg-red-400/1 rounded-full blur-3xl animate-pulse delay-1000 pointer-events-none" />
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-cyan-500/1 rounded-full blur-[120px] pointer-events-none" />
+        <div className="relative isolate flex min-h-screen overflow-x-clip bg-background font-sans text-foreground antialiased selection:bg-cyan-500 selection:text-white">
+            <div className="pointer-events-none absolute top-1/4 -left-20 z-0 size-96 rounded-full bg-green-500/5 blur-3xl" />
+            <div className="pointer-events-none absolute right-0 bottom-1/4 z-0 size-96 rounded-full bg-red-400/5 blur-3xl" />
+            <div className="pointer-events-none absolute top-1/2 left-1/2 z-0 size-[500px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-cyan-500/5 blur-[120px]" />
             <div
-                className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-[0.02] pointer-events-none"
+                className="pointer-events-none absolute inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-[0.02]"
                 style={{
                     backgroundImage: "url('/it-workspace-bg.jpg')",
                 }}
             />
 
-            {user && (
+            {!user && (
                 <Sidebar
                     isCollapsed={isSidebarCollapsed}
                     isMobileOpen={isMobileSidebarOpen}
@@ -84,7 +84,7 @@ const AppShell = ({ children }) => {
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-indigo-600/10 rounded-full blur-[120px] pointer-events-none" />
             )}
 
-            <div className="flex min-w-0 flex-1 flex-col animate-fade">
+            <div className="relative z-10 flex min-w-0 flex-1 flex-col animate-fade">
                 <Header
                     isSidebarCollapsed={isSidebarCollapsed}
                     isHeaderVisible={isHeaderVisible || isMobileSidebarOpen}

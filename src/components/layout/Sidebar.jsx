@@ -29,10 +29,12 @@ const SidebarContent = ({ isCollapsed, onNavigate }) => {
                         cx(
                             "transition-colors flex items-center gap-3 rounded-lg px-3 py-2.5",
                             "md:justify-center md:px-0",
+                            "focus-visible:outline-none focus-visible:ring-2",
+                            "focus-visible:ring-inset focus-visible:ring-ring/50",
                             !isCollapsed && "lg:justify-start lg:px-3",
                             isActive
-                                ? "bg-sidebar-accent font-medium text-sidebar-accent-foreground"
-                                : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                                ? "glass-nav-active font-medium text-sidebar-accent-foreground"
+                                : "text-muted-foreground hover:text-sidebar-accent-foreground glass-nav-link",
                         )
                     }
                 >
@@ -73,10 +75,12 @@ const SidebarContent = ({ isCollapsed, onNavigate }) => {
                                 "flex min-h-11 items-center gap-3 rounded-lg px-3 py-2.5",
                                 "transition-colors",
                                 "md:justify-center md:px-0",
+                                "focus-visible:outline-none focus-visible:ring-2",
+                                "focus-visible:ring-inset focus-visible:ring-ring/50",
                                 !isCollapsed && "lg:justify-start lg:px-3",
                                 isActive
-                                    ? "bg-sidebar-accent font-medium text-sidebar-accent-foreground"
-                                    : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                                    ? "glass-nav-active font-medium text-sidebar-accent-foreground"
+                                    : "text-muted-foreground hover:text-sidebar-accent-foreground glass-nav-link",
                             )
                         }
                     >
@@ -85,7 +89,6 @@ const SidebarContent = ({ isCollapsed, onNavigate }) => {
                         <span className={cx("text-sm", "md:hidden", !isCollapsed && "lg:inline")}>{link.label}</span>
                     </NavLink>
                 ))}
-
             </nav>
 
             {/* Footer */}
@@ -121,7 +124,7 @@ const Sidebar = ({ isCollapsed, isMobileOpen, onMobileClose }) => {
                 aria-hidden={!isMobileOpen}
                 className={cx(
                     "fixed inset-y-0 left-0 z-50 flex w-64 flex-col animate-fadeInLeft",
-                    "border-r border-sidebar-border bg-sidebar text-sidebar-foreground",
+                    "glass-sidebar border-r text-sidebar-foreground",
                     "transition-transform duration-200 ease-in-out",
                     "md:hidden",
                     isMobileOpen ? "translate-x-0" : "-translate-x-full",
@@ -135,8 +138,9 @@ const Sidebar = ({ isCollapsed, isMobileOpen, onMobileClose }) => {
             <aside
                 aria-label="Main sidebar"
                 className={cx(
+                    "glass-sidebar relative z-20",
                     "hidden h-screen shrink-0 flex-col animate-fadeInLeft",
-                    "border-r border-sidebar-border bg-sidebar text-sidebar-foreground",
+                    "border-r text-sidebar-foreground",
                     "transition-[width] duration-200 ease-in-out",
                     "md:sticky md:top-0 md:flex md:w-[60px]",
                     isCollapsed ? "lg:w-[60px]" : "lg:w-56",

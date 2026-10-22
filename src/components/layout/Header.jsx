@@ -71,9 +71,10 @@ const Header = ({ isSidebarCollapsed, isHeaderVisible = true, onToggleSidebar, o
     return (
         <header
             className={cx(
+                "glass-header sticky top-0 z-30",
                 "flex h-15 shrink-0 items-center justify-between gap-3",
-                "border-b border-border bg-background",
-                "sticky top-0 z-30 px-4 shadow-sm transition-transform duration-300 ease-out sm:px-5 lg:px-6",
+                "px-4 sm:px-5 lg:px-6",
+                "transition-transform duration-300 ease-out",
                 "motion-reduce:transition-none",
                 isHeaderVisible ? "translate-y-0" : "-translate-y-full",
             )}
@@ -118,12 +119,19 @@ const Header = ({ isSidebarCollapsed, isHeaderVisible = true, onToggleSidebar, o
                 )}
 
                 <div className="min-w-0 flex items-center gap-2">
-                    <Headset
-                        size={24}
-                        aria-hidden="true"
+                    <button
+                        type="button"
                         onClick={() => navigate("/")}
-                        className="cursor-pointer hover:scale-105"
-                    />
+                        aria-label="Go to home"
+                        className={cx(
+                            "flex size-10 shrink-0 items-center justify-center rounded-lg",
+                            "text-foreground transition-colors",
+                            "hover:bg-accent hover:text-accent-foreground",
+                            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                        )}
+                    >
+                        <Headset size={24} aria-hidden="true" />
+                    </button>
                     <div className="truncate text-sm font-medium">
                         <p className="truncate text-sm font-medium"> {currentPage.title}</p>
 
@@ -142,6 +150,9 @@ const Header = ({ isSidebarCollapsed, isHeaderVisible = true, onToggleSidebar, o
                         className={cx(
                             "inline-flex h-10 items-center gap-2 rounded-lg px-3",
                             "text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground cursor-pointer",
+                            "transition-colors",
+                            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                            "motion-reduce:transition-none",
                         )}
                     >
                         <LogOut size={16} aria-hidden="true" />
@@ -154,6 +165,9 @@ const Header = ({ isSidebarCollapsed, isHeaderVisible = true, onToggleSidebar, o
                         className={cx(
                             "inline-flex h-10 items-center gap-2 rounded-lg px-3",
                             "text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground cursor-pointer",
+                            "transition-colors",
+                            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                            "motion-reduce:transition-none",
                         )}
                     >
                         <LogIn size={16} aria-hidden="true" />
