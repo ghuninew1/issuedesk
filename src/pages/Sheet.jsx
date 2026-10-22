@@ -425,7 +425,7 @@ export default function Sheet() {
                                 className="max-h-[65vh] max-w-full rounded-lg object-contain"
                             />
                         </div>
-                        <div className="flex gap-2 overflow-x-auto border-t border-border px-4 py-3 sm:px-5">
+                        <div className="flex gap-2 overflow-hidden border-t border-border px-4 py-3 sm:px-5">
                             {imageFields.filter((field) => selectedAsset.asset[field.key]).map((field) => (
                                 <button
                                     key={field.key}
