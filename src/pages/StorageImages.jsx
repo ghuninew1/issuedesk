@@ -255,7 +255,9 @@ export default function StorageImages() {
                 </div>
                 <div className="rounded-xl border border-border bg-card p-4 sm:col-span-2">
                     <p className="text-xs font-medium text-muted-foreground">ชนิดและขนาดไฟล์ที่รองรับ</p>
-                    <p className="mt-1 text-sm">รูปภาพ, PDF, Office/iWork, ZIP/RAR/7z, TXT/CSV/JSON/XML, เสียง และวิดีโอ · ไม่เกิน 10 MB ต่อไฟล์</p>
+                    <p className="mt-1 text-sm">
+                        รูปภาพ, PDF, Office/iWork, ZIP/RAR/7z, TXT/CSV/JSON/XML, เสียง และวิดีโอ · ไม่เกิน 10 MB ต่อไฟล์
+                    </p>
                 </div>
             </div>
 
@@ -290,7 +292,8 @@ export default function StorageImages() {
                     <div>
                         <h3 className="font-semibold">คลังไฟล์</h3>
                         <p className="mt-1 text-xs text-muted-foreground">
-                            แสดง {filteredImages.length === 0 ? 0 : (displayPage - 1) * PAGE_SIZE + 1}–{Math.min(displayPage * PAGE_SIZE, filteredImages.length)} จาก {filteredImages.length} ไฟล์
+                            แสดง {filteredImages.length === 0 ? 0 : (displayPage - 1) * PAGE_SIZE + 1}–
+                            {Math.min(displayPage * PAGE_SIZE, filteredImages.length)} จาก {filteredImages.length} ไฟล์
                         </p>
                     </div>
                     <label className="relative block w-full sm:max-w-xs">
@@ -302,7 +305,10 @@ export default function StorageImages() {
                         <input
                             type="search"
                             value={search}
-                            onChange={(event) => { setSearch(event.target.value); setCurrentPage(1); }}
+                            onChange={(event) => {
+                                setSearch(event.target.value);
+                                setCurrentPage(1);
+                            }}
                             placeholder="ค้นหาชื่อรูป…"
                             className="h-10 w-full rounded-lg border border-input bg-background pl-9 pr-3 text-sm outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/20"
                         />
@@ -360,15 +366,20 @@ export default function StorageImages() {
                                                     <button
                                                         type="button"
                                                         onClick={() => setSelectedImage(image)}
-                                                        className="group relative block size-16 overflow-hidden rounded-lg border border-border bg-muted cursor-pointer"
+                                                        className="group relative flex size-16 overflow-hidden rounded-lg border border-border bg-muted cursor-pointer items-center justify-center p-2"
                                                         aria-label={`ดูตัวอย่าง ${image.file_name}`}
                                                     >
-                                                        <Image size={20}/>
+                                                        <Image />
                                                         {/* <img src={getStorageImageUrl(image.id)} alt="" loading="lazy" decoding="async" className="size-full object-cover" /> */}
-                                                        <span className="absolute inset-0 flex items-center justify-center bg-black/0 text-white opacity-0 transition group-hover:bg-black/35 group-hover:opacity-100"><Eye size={18} aria-hidden="true" /></span>
+                                                        <span className="absolute inset-0 flex items-center justify-center bg-black/0 text-white opacity-0 transition group-hover:bg-black/35 group-hover:opacity-100">
+                                                            <Eye size={18} aria-hidden="true" />
+                                                        </span>
                                                     </button>
                                                 ) : (
-                                                    <span className="flex size-16 items-center justify-center rounded-lg border border-border bg-muted text-muted-foreground" title={image.mime_type}>
+                                                    <span
+                                                        className="flex size-16 items-center justify-center rounded-lg border border-border bg-muted text-muted-foreground"
+                                                        title={image.mime_type}
+                                                    >
                                                         <FileIcon size={22} aria-hidden="true" />
                                                     </span>
                                                 )}
@@ -424,16 +435,34 @@ export default function StorageImages() {
                             </table>
                         </div>
                         <div className="divide-y divide-border md:hidden">
-                                            {visibleImages.map((image) => (
+                            {visibleImages.map((image) => (
                                 <article key={image.id} className="space-y-3 p-4">
                                     <div className="flex min-w-0 items-start gap-3">
-                                                        {isPreviewableImage(image) ? (
-                                                            <button type="button" onClick={() => setSelectedImage(image)} className="size-16 shrink-0 overflow-hidden rounded-lg border border-border bg-muted" aria-label={`ดูตัวอย่าง ${image.file_name}`}>
-                                                                <img src={getStorageImageUrl(image.id)} alt="" loading="lazy" decoding="async" className="size-full object-cover" />
-                                                            </button>
-                                                        ) : (
-                                                            <span className="flex size-16 shrink-0 items-center justify-center rounded-lg border border-border bg-muted text-muted-foreground" title={image.mime_type}><FileIcon size={22} aria-hidden="true" /></span>
-                                                        )}
+                                        {isPreviewableImage(image) ? (
+                                            <button
+                                                type="button"
+                                                onClick={() => setSelectedImage(image)}
+                                                className="size-16 shrink-0 overflow-hidden rounded-lg border border-border bg-muted"
+                                                aria-label={`ดูตัวอย่าง ${image.file_name}`}
+                                            >
+                                                {image.id && (
+                                                    <img
+                                                        src={getStorageImageUrl(image.id)}
+                                                        alt=""
+                                                        loading="lazy"
+                                                        decoding="async"
+                                                        className="size-full object-cover"
+                                                    />
+                                                )}
+                                            </button>
+                                        ) : (
+                                            <span
+                                                className="flex size-16 shrink-0 items-center justify-center rounded-lg border border-border bg-muted text-muted-foreground"
+                                                title={image.mime_type}
+                                            >
+                                                <FileIcon size={22} aria-hidden="true" />
+                                            </span>
+                                        )}
                                         <div className="min-w-0 flex-1">
                                             <h4 className="break-all text-sm font-medium">{image.file_name}</h4>
                                             <p className="mt-1 break-all text-xs text-muted-foreground">{image.id}</p>
@@ -477,13 +506,28 @@ export default function StorageImages() {
                             ))}
                         </div>
                         {pageCount > 1 && (
-                            <nav className="flex flex-col gap-3 border-t border-border px-4 py-3 sm:flex-row sm:items-center sm:justify-between" aria-label="แบ่งหน้ารูปภาพ">
-                                <p className="text-xs text-muted-foreground">หน้า {displayPage} จาก {pageCount} · {PAGE_SIZE} รูปต่อหน้า</p>
+                            <nav
+                                className="flex flex-col gap-3 border-t border-border px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
+                                aria-label="แบ่งหน้ารูปภาพ"
+                            >
+                                <p className="text-xs text-muted-foreground">
+                                    หน้า {displayPage} จาก {pageCount} · {PAGE_SIZE} รูปต่อหน้า
+                                </p>
                                 <div className="flex items-center gap-2">
-                                    <button type="button" onClick={() => setCurrentPage((page) => Math.max(1, page - 1))} disabled={displayPage === 1} className="inline-flex h-9 items-center gap-1 rounded-lg border border-input px-3 text-sm font-medium hover:bg-muted disabled:pointer-events-none disabled:opacity-50">
+                                    <button
+                                        type="button"
+                                        onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
+                                        disabled={displayPage === 1}
+                                        className="inline-flex h-9 items-center gap-1 rounded-lg border border-input px-3 text-sm font-medium hover:bg-muted disabled:pointer-events-none disabled:opacity-50"
+                                    >
                                         <ChevronLeft size={16} aria-hidden="true" /> ก่อนหน้า
                                     </button>
-                                    <button type="button" onClick={() => setCurrentPage((page) => Math.min(pageCount, page + 1))} disabled={displayPage === pageCount} className="inline-flex h-9 items-center gap-1 rounded-lg border border-input px-3 text-sm font-medium hover:bg-muted disabled:pointer-events-none disabled:opacity-50">
+                                    <button
+                                        type="button"
+                                        onClick={() => setCurrentPage((page) => Math.min(pageCount, page + 1))}
+                                        disabled={displayPage === pageCount}
+                                        className="inline-flex h-9 items-center gap-1 rounded-lg border border-input px-3 text-sm font-medium hover:bg-muted disabled:pointer-events-none disabled:opacity-50"
+                                    >
                                         ถัดไป <ChevronRight size={16} aria-hidden="true" />
                                     </button>
                                 </div>
@@ -523,12 +567,14 @@ export default function StorageImages() {
                             </button>
                         </div>
                         <div className="flex max-h-[calc(90vh-64px)] min-h-48 items-center justify-center bg-black/5 p-3 dark:bg-black/30">
+                            {getStorageImageUrl(selectedImage.id) && 
                             <img
                                 src={getStorageImageUrl(selectedImage.id)}
                                 alt={selectedImage.file_name}
                                 loading="lazy"
+                                decoding="async"
                                 className="max-h-[calc(90vh-90px)] max-w-full object-contain"
-                            />
+                            />}
                         </div>
                     </div>
                 </div>

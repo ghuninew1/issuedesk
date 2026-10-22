@@ -226,7 +226,7 @@ export default function Sheet() {
                         </select>
                     </div>
                 </div>
-                
+
                 {/* Desktop  */}
                 {filteredAssets.length === 0 ? (
                     <div className="px-5 py-16 text-center">
@@ -443,7 +443,7 @@ export default function Sheet() {
                 )}
             </section>
 
-                {/*  */}
+            {/*  */}
             {selectedAsset && (
                 <div
                     className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
@@ -496,15 +496,17 @@ export default function Sheet() {
                                             )}
                                         >
                                             <span className="flex aspect-[4/3] items-center justify-center bg-muted">
-                                                <img
-                                                    src={selectedAsset.asset[field.key]}
-                                                    alt={field.label}
-                                                    loading="lazy"
-                                                    decoding="async"
-                                                    width={80}
-                                                    height={80}
-                                                    className="size-full object-contain transition-transform group-hover:scale-[1.03]"
-                                                />
+                                                {selectedAsset.asset[field.key] && (
+                                                    <img
+                                                        src={selectedAsset.asset[field.key]}
+                                                        alt={field.label}
+                                                        loading="lazy"
+                                                        decoding="async"
+                                                        width={80}
+                                                        height={80}
+                                                        className="size-full object-contain transition-transform group-hover:scale-[1.03]"
+                                                    />
+                                                )}
                                             </span>
                                             <span className="block truncate px-2.5 py-2 text-xs font-medium">
                                                 {field.label}
@@ -563,13 +565,14 @@ export default function Sheet() {
                             </button>
                         </div>
                         <div className="flex min-h-48 flex-1 items-center justify-center bg-black/5 p-3 dark:bg-black/30">
+                            {selectedAsset.asset[selectedAsset.enlargedField.key] &&
                             <img
                                 src={selectedAsset.asset[selectedAsset.enlargedField.key]}
                                 alt={`${selectedAsset.enlargedField.label} — ${selectedAsset.asset.computerName || selectedAsset.asset.assetId}`}
                                 decoding="async"
                                 loading="lazy"
                                 className="max-h-[calc(95vh-72px)] max-w-full rounded-lg object-contain"
-                            />
+                            />}
                         </div>
                     </section>
                 </div>
