@@ -1,4 +1,4 @@
-import { Navigate, Route, Routes } from "react-router-dom";
+import { Navigate, Outlet, Route, Routes } from "react-router-dom";
 import AppShell from "./components/layout/AppShell";
 import DashboardStats from "./components/dashboard/DashboardStats";
 import RecentIssues from "./components/dashboard/RecentIssues";
@@ -61,98 +61,64 @@ function NotFoundPage() {
     );
 }
 
+function AppLayout() {
+    return (
+        <AppShell>
+            <Outlet />
+        </AppShell>
+    );
+}
+
 function App() {
     return (
         <Routes>
-            <Route
-                path="/"
-                element={
-                    <AppShell>
-                        <PortalHome />
-                    </AppShell>
-                }
-            />
-
-            <Route
-                path="/dashboard"
-                element={
-                    <ProtectedRoute requiredRole="admin">
-                        <AppShell>
-                            <DashboardPage />
-                        </AppShell>
-                    </ProtectedRoute>
-                }
-            />
-
-            <Route
-                path="/issues"
-                element={
-                    <ProtectedRoute requiredRole="admin">
-                        <AppShell>
-                            <Issues />
-                        </AppShell>
-                    </ProtectedRoute>
-                }
-            />
-
-            <Route
-                path="/issues/:ticketNumber"
-                element={
-                    <ProtectedRoute requiredRole="admin">
-                        <AppShell>
-                            <IssueDetail />
-                        </AppShell>
-                    </ProtectedRoute>
-                }
-            />
-            <Route
-                path="/storage/images"
-                element={
-                    <ProtectedRoute requiredRole="admin">
-                        <AppShell>
-                            <StorageImages />
-                        </AppShell>
-                    </ProtectedRoute>
-                }
-            />
             <Route path="/login" element={<LoginRoute />} />
-
-            <Route
-                path="/track/:ticketNumber"
-                element={
-                    <AppShell>
-                        <TrackTicket />
-                    </AppShell>
-                }
-            />
-
-            <Route
-                path="/report"
-                element={
-                    <AppShell>
-                        <ReportIssue />
-                    </AppShell>
-                }
-            />
-            <Route
-                path="/sheet"
-                element={
-                    <ProtectedRoute requiredRole="admin">
-                        <AppShell>
+            <Route element={<AppLayout />}>
+                <Route path="/" element={<PortalHome />} />
+                <Route
+                    path="/dashboard"
+                    element={
+                        <ProtectedRoute requiredRole="admin">
+                            <DashboardPage />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/issues"
+                    element={
+                        <ProtectedRoute requiredRole="admin">
+                            <Issues />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/issues/:ticketNumber"
+                    element={
+                        <ProtectedRoute requiredRole="admin">
+                            <IssueDetail />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/storage/images"
+                    element={
+                        <ProtectedRoute requiredRole="admin">
+                            <StorageImages />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route path="/track/:ticketNumber" element={<TrackTicket />} />
+                <Route path="/report" element={<ReportIssue />} />
+                <Route
+                    path="/sheet"
+                    element={
+                        <ProtectedRoute requiredRole="admin">
                             <Sheet />
-                        </AppShell>
-                    </ProtectedRoute>
-                }
-            />
-
-            <Route
-                path="*"
-                element={
-                    <AppShell>
-                        <NotFoundPage />
-                    </AppShell>
-                }
-            />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route path="*" element={<NotFoundPage />} />
+            </Route>
         </Routes>
     );
 }
