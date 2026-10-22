@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Check, ChevronLeft, ChevronRight, Copy, Download, Eye, File as FileIcon, ImagePlus, LoaderCircle, RefreshCw, Search, Trash2, Upload, X } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, Copy, Download, Eye, File as FileIcon, ImagePlus,Image, LoaderCircle, RefreshCw, Search, Trash2, Upload, X } from "lucide-react";
 import { useDocumentTitle } from "../hooks/useDocumentTitle";
 import { deleteStorageImage, getStorageImageUrl, getStorageImages, uploadStorageFiles } from "../services/storage";
 import { cx } from "../utils/cx";
@@ -363,7 +363,8 @@ export default function StorageImages() {
                                                         className="group relative block size-16 overflow-hidden rounded-lg border border-border bg-muted cursor-pointer"
                                                         aria-label={`ดูตัวอย่าง ${image.file_name}`}
                                                     >
-                                                        <img src={getStorageImageUrl(image.id)} alt="" loading="lazy" decoding="async" className="size-full object-cover" />
+                                                        <Image size={20}/>
+                                                        {/* <img src={getStorageImageUrl(image.id)} alt="" loading="lazy" decoding="async" className="size-full object-cover" /> */}
                                                         <span className="absolute inset-0 flex items-center justify-center bg-black/0 text-white opacity-0 transition group-hover:bg-black/35 group-hover:opacity-100"><Eye size={18} aria-hidden="true" /></span>
                                                     </button>
                                                 ) : (

@@ -308,15 +308,28 @@ export default function Sheet() {
                                                 );
                                                 const coverField = fieldsWithImages[0];
                                                 return coverField ? (
-                                                    <div className="w-9 shrink-0">
-                                                        <ImageTile
+                                                    <div
+                                                        className={cx(
+                                                            "w-9 shrink-0 group relative flex aspect-square items-center justify-center overflow-hidden rounded-xl border border-border bg-muted/50",
+                                                            "transition hover:border-primary/40 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30",
+                                                            "disabled:cursor-default disabled:hover:border-border cursor-pointer hover:scale-110",
+                                                        )}
+                                                        onClick={() => setSelectedAsset({ asset, enlargedField: null })}
+                                                    >
+                                                        <ImageIcon size={20} />
+                                                        {fieldsWithImages.length > 1 && (
+                                                            <span className="absolute bottom-0.5 right-0.5 rounded bg-black/75 px-1.5 text-[9px] font-semibold leading-4 text-white">
+                                                                {fieldsWithImages.length}
+                                                            </span>
+                                                        )}
+                                                        {/* <ImageTile
                                                             src={asset[coverField.key]}
                                                             label={coverField.label}
                                                             imageCount={fieldsWithImages.length}
                                                             onClick={() =>
                                                                 setSelectedAsset({ asset, enlargedField: null })
                                                             }
-                                                        />
+                                                        /> */}
                                                     </div>
                                                 ) : (
                                                     <span className="text-xs text-muted-foreground">ไม่มีรูป</span>
