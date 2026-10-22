@@ -96,10 +96,8 @@ must be active and belong to the authenticated application.
 
 ### `GET /v2/projects/:projectId/files`
 
-Lists up to 100 files, newest first.
-
-The response includes `isTruncated`. The current endpoint does not
-provide a continuation cursor.
+Lists all files in the project, newest first. A composite index on
+`project_id`, `created_at`, and `id` supports the ordered query.
 
 ### `POST /v2/projects/:projectId/files`
 
@@ -131,7 +129,7 @@ All routes require an active IssueDesk session with the `admin` role. The browse
 
 ### `GET /api/storage/files`
 
-Lists files from the configured Storage project. The response is limited to the first 100 Storage API results and includes `isTruncated`; the API does not currently provide pagination. All files returned by the Storage API are included.
+Lists all files from the configured Storage project, newest first. The Storage API query is indexed by project and upload time.
 
 ```json
 {
@@ -144,8 +142,7 @@ Lists files from the configured Storage project. The response is limited to the 
       "file_size": 24576,
       "uploaded_at": "2026-10-21T09:30:00.000Z"
     }
-  ],
-  "isTruncated": false
+  ]
 }
 ```
 

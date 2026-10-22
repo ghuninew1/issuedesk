@@ -75,7 +75,6 @@ export async function onRequestGet({ request, env }) {
         return jsonResponse({
             success: true,
             files,
-            isTruncated: data.isTruncated === true,
         });
     } catch (error) {
         console.error("Failed to list Storage API files:", error);

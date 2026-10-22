@@ -31,3 +31,7 @@ dist-ssr
 !.env.example
 .dev.vars
 test-curl.sh
+garage/data
+garage/.env
+garage/storage/.env
+garage/key.txt

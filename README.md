@@ -125,11 +125,11 @@ API กลุ่มนี้เป็น proxy ของ IssueDesk ไปยั�
 
 | Method | Endpoint | การทำงาน |
 | --- | --- | --- |
-| `GET` | `/api/storage/files` | แสดงรายการรูป รองรับ JPEG, PNG, WebP, GIF และ AVIF; อาจคืนได้สูงสุด 100 รายการ |
-| `POST` | `/api/storage/files` | อัปโหลดรูปด้วย `multipart/form-data` field ชื่อ `file` |
-| `GET` | `/api/storage/files/:fileId` | แสดงรูปแบบ inline สำหรับ preview |
-| `GET` | `/api/storage/files/:fileId?download=1&name=:fileName` | ดาวน์โหลดรูปเป็นไฟล์แนบ |
-| `DELETE` | `/api/storage/files/:fileId` | ลบรูปจาก Storage และล้างแถว `issue_attachments` ที่อ้างถึงไฟล์นั้นใน D1 |
+| `GET` | `/api/storage/files` | แสดงรายการไฟล์ทั้งหมดจาก Storage เรียงใหม่ไปเก่า |
+| `POST` | `/api/storage/files` | อัปโหลดไฟล์ด้วย `multipart/form-data` field ชื่อ `file` |
+| `GET` | `/api/storage/files/:fileId` | แสดงรูปที่รองรับแบบ inline สำหรับ preview |
+| `GET` | `/api/storage/files/:fileId?download=1&name=:fileName` | ดาวน์โหลดไฟล์เป็นไฟล์แนบ |
+| `DELETE` | `/api/storage/files/:fileId` | ลบไฟล์จาก Storage และล้างแถว `issue_attachments` ที่อ้างถึงไฟล์นั้นใน D1 |
 
 ### ตัวอย่างเรียก API
 
@@ -152,8 +152,7 @@ GET /api/storage/files
       "file_size": 24576,
       "uploaded_at": "2026-10-21T09:30:00.000Z"
     }
-  ],
-  "isTruncated": false
+  ]
 }
 ```
 
@@ -166,7 +165,7 @@ const response = await fetch("/api/storage/files", { method: "POST", body: form 
 const result = await response.json();
 ```
 
-รองรับ JPEG, PNG, WebP, GIF และ AVIF ขนาดมากกว่า 0 และไม่เกิน 10 MiB; server เป็นผู้ตรวจชนิดและขนาดไฟล์อีกครั้ง ตัวอย่าง response (HTTP `201`):
+รองรับรูปภาพ เอกสาร Office/iWork, PDF, ไฟล์บีบอัด, ข้อความ, เสียง และวิดีโอตาม MIME type ที่กำหนด ขนาดมากกว่า 0 และไม่เกิน 10 MiB; server เป็นผู้ตรวจชนิดและขนาดไฟล์อีกครั้ง ตัวอย่าง response (HTTP `201`):
 
 ```json
 {
@@ -405,7 +404,7 @@ pnpm migrate-apply
 | `POST` | `/api/issues/:ticketNumber/attachments` | อัปโหลดไฟล์แนบของ Ticket |
 | `GET` | `/api/issues/:ticketNumber/attachments/:attachmentId` | ดาวน์โหลดหรือแสดงไฟล์; ต้องเป็น Admin |
 | `DELETE` | `/api/issues/:ticketNumber/attachments/:attachmentId` | ลบไฟล์แนบ; ต้องเป็น Admin |
-| `GET` / `POST` | `/api/storage/files` | แสดงรายการรูปและอัปโหลดรูปไปยัง Storage API; ต้องเป็น Admin |
+| `GET` / `POST` | `/api/storage/files` | แสดงรายการไฟล์ทั้งหมดและอัปโหลดไฟล์ไปยัง Storage API; ต้องเป็น Admin |
 | `GET` / `DELETE` | `/api/storage/files/:fileId` | แสดงตัวอย่าง/ดาวน์โหลด หรือลบรูปจาก Storage API; ต้องเป็น Admin |
 | `GET` | `/api/track/:ticketNumber` | ติดตามสาธารณะ; คืนเฉพาะหมายเลข สถานะ และเวลา |
 

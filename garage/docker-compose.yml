@@ -1,0 +1,61 @@
+services:
+  garage:
+    image: dxflrs/garage:v2.1.0
+    container_name: garage
+    restart: unless-stopped
+
+    ports:
+      - "192.168.11.32:3900:3900"
+
+    volumes:
+      - ./garage.toml:/etc/garage.toml:ro
+      - ./data:/var/lib/garage
+
+    environment:
+      TZ: Asia/Bangkok
+
+    networks:
+      - storage-network
+
+  storage-api:
+    build:
+      context: ./storage
+      dockerfile: Dockerfile
+
+    container_name: storage-api
+    restart: unless-stopped
+
+    env_file:
+      - ./storage/.env
+      
+    environment:
+      DATABASE_PATH: /app/data/storage.db
+
+    volumes:
+      - ./storage/data:/app/data
+
+
+    ports:
+      - "192.168.11.32:3000:3000"
+
+    depends_on:
+      - garage
+
+    networks:
+      - storage-network
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: storage-cloudflared
+    restart: unless-stopped
+    command: tunnel run
+    env_file:
+      - ./storage/.env
+    environment:
+      TUNNEL_TOKEN: ${TUNNEL_TOKEN}
+    networks:
+      - storage-network
+
+networks:
+  storage-network:
+    driver: bridge

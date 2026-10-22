@@ -70,7 +70,6 @@ export default function StorageImages() {
     const [uploadProgress, setUploadProgress] = useState(null);
     const isUploading = uploadProgress !== null;
     const [deletingId, setDeletingId] = useState("");
-    const [isTruncated, setIsTruncated] = useState(false);
     const [error, setError] = useState("");
     const [notice, setNotice] = useState("");
     const [selectedImage, setSelectedImage] = useState(null);
@@ -86,7 +85,6 @@ export default function StorageImages() {
                 throw new Error(result.message || "Unable to load images");
             }
             setImages(result.files);
-            setIsTruncated(result.isTruncated === true);
         } catch (requestError) {
             if (requestError.name !== "AbortError") setError(requestError.message || "Unable to load images");
         } finally {
@@ -278,15 +276,6 @@ export default function StorageImages() {
                     {notice}
                 </div>
             )}
-            {isTruncated && (
-                <div
-                    className="mb-4 rounded-lg border border-amber-500/30 bg-amber-500/5 p-3 text-sm text-amber-800 dark:text-amber-300"
-                    role="status"
-                >
-                    Storage API ส่งรายการล่าสุดมาได้สูงสุด 100 ไฟล์ จึงอาจมีไฟล์เก่ากว่านี้ที่ยังไม่แสดง
-                </div>
-            )}
-
             <section className="overflow-hidden rounded-xl border border-border bg-card" aria-label="รายการรูปภาพ">
                 <div className="flex flex-col gap-3 border-b border-border p-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
