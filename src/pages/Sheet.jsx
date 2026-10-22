@@ -383,7 +383,7 @@ export default function Sheet() {
                 )}
             </section>
 
-            {selectedAsset && (
+            {selectedAsset?.enlargedField && (
                 <div
                     className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
                     role="presentation"
@@ -469,12 +469,12 @@ export default function Sheet() {
                     <section
                         role="dialog"
                         aria-modal="true"
-                            aria-label={`ภาพขนาดใหญ่ ${selectedAsset.enlargedField?.label || "อุปกรณ์"}`}
+                            aria-label={`ภาพขนาดใหญ่ ${selectedAsset.enlargedField.label}`}
                         className="relative flex max-h-[95vh] w-full max-w-6xl flex-col overflow-hidden rounded-2xl border border-white/10 bg-card shadow-2xl"
                     >
                         <div className="flex items-center justify-between gap-4 border-b border-border px-4 py-3">
                             <div className="min-w-0">
-                                <p className="truncate text-sm font-medium">{selectedAsset.enlargedField?.label}</p>
+                                <p className="truncate text-sm font-medium">{selectedAsset.enlargedField.label}</p>
                                 <p className="mt-1 truncate text-xs text-muted-foreground">
                                     {selectedAsset.asset.computerName || selectedAsset.asset.assetId}
                                 </p>
@@ -490,8 +490,8 @@ export default function Sheet() {
                         </div>
                         <div className="flex min-h-48 flex-1 items-center justify-center bg-black/5 p-3 dark:bg-black/30">
                             <img
-                                src={selectedAsset.asset[selectedAsset.enlargedField?.key]}
-                                alt={`${selectedAsset.enlargedField?.label} — ${selectedAsset.asset.computerName || selectedAsset.asset.assetId}`}
+                                src={selectedAsset.asset[selectedAsset.enlargedField.key]}
+                                alt={`${selectedAsset.enlargedField.label} — ${selectedAsset.asset.computerName || selectedAsset.asset.assetId}`}
                                 decoding="async"
                                 className="max-h-[calc(95vh-72px)] max-w-full rounded-lg object-contain"
                             />
