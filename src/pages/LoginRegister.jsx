@@ -118,7 +118,7 @@ export default function LoginRegister() {
     };
 
     return (
-        <div className="min-h-screen bg-[#0a0d1a] text-slate-100 flex items-center justify-center p-4 relative overflow-hidden font-sans selection:bg-cyan-500 selection:text-white">
+        <div className="liquid-login min-h-screen bg-background text-foreground flex items-center justify-center p-4 relative overflow-hidden font-sans selection:bg-cyan-500 selection:text-white">
             {/* Background Animated Gradient Blobs */}
             <div className="absolute top-1/4 -left-20 w-96 h-96 bg-purple-600/20 rounded-full blur-3xl animate-pulse pointer-events-none" />
             <div className="absolute bottom-1/4 -right-20 w-96 h-96 bg-cyan-500/20 rounded-full blur-3xl animate-pulse delay-1000 pointer-events-none" />
@@ -155,7 +155,7 @@ export default function LoginRegister() {
                     thickness={1.2}
                     borderRadius={24}
                 >
-                    <div className="relative bg-slate-900/70 border border-slate-800/80 rounded-3xl p-8 backdrop-blur-xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] transition-all duration-500 hover:border-slate-700/80">
+                    <div className="liquid-login-card relative rounded-3xl p-8 transition-all duration-500">
                         {/* Neon Top Edge Accent */}
                         <div className="absolute -top-[1px] left-12 right-12 h-[2px] bg-gradient-to-r from-transparent via-cyan-400 to-purple-500 rounded-full" />
 

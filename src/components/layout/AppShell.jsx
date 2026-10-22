@@ -73,7 +73,7 @@ const AppShell = ({ children }) => {
                 }}
             />
 
-            {!user && (
+            {user && (
                 <Sidebar
                     isCollapsed={isSidebarCollapsed}
                     isMobileOpen={isMobileSidebarOpen}
