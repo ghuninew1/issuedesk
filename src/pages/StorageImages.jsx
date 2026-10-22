@@ -36,7 +36,7 @@ function IconButton({ label, onClick, children, disabled = false, destructive = 
                 "text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
                 destructive && "text-destructive hover:bg-destructive/10 hover:text-destructive",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30",
-                "disabled:pointer-events-none disabled:opacity-50",
+                "disabled:pointer-events-none disabled:opacity-50 cursor-pointer",
             )}
         >
             {children}

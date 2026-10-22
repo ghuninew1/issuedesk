@@ -54,30 +54,30 @@ function Status({ status }) {
     );
 }
 
-function ImageTile({ src, label, imageCount, onClick }) {
-    return (
-        <button
-            type="button"
-            onClick={onClick}
-            disabled={!src}
-            aria-label={src ? `ดูรูป ${label}` : `${label} ไม่มีรูป`}
-            className={cx(
-                "group relative flex aspect-square w-full items-center justify-center overflow-hidden rounded-xl border border-border bg-muted/50",
-                "transition hover:border-primary/40 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30",
-                "disabled:cursor-default disabled:hover:border-border cursor-pointer",
-            )}
-        >
-            {src ? (
-                <>
-                    <img src={src} alt={label} loading="lazy" decoding="async" width={36} height={36} className="size-full object-cover transition duration-200 group-hover:scale-[1.05]" />
-                    {imageCount > 1 && <span className="absolute bottom-0.5 right-0.5 rounded bg-black/75 px-1.5 text-[9px] font-semibold leading-4 text-white">{imageCount}</span>}
-                </>
-            ) : (
-                <ImageIcon className="size-5 text-muted-foreground/45" />
-            )}
-        </button>
-    );
-}
+// function ImageTile({ src, label, imageCount, onClick }) {
+//     return (
+//         <button
+//             type="button"
+//             onClick={onClick}
+//             disabled={!src}
+//             aria-label={src ? `ดูรูป ${label}` : `${label} ไม่มีรูป`}
+//             className={cx(
+//                 "group relative flex aspect-square w-full items-center justify-center overflow-hidden rounded-xl border border-border bg-muted/50",
+//                 "transition hover:border-primary/40 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30",
+//                 "disabled:cursor-default disabled:hover:border-border cursor-pointer",
+//             )}
+//         >
+//             {src ? (
+//                 <>
+//                     <img src={src} alt={label} loading="lazy" decoding="async" width={36} height={36} className="size-full object-cover transition duration-200 group-hover:scale-[1.05]" />
+//                     {imageCount > 1 && <span className="absolute bottom-0.5 right-0.5 rounded bg-black/75 px-1.5 text-[9px] font-semibold leading-4 text-white">{imageCount}</span>}
+//                 </>
+//             ) : (
+//                 <ImageIcon className="size-5 text-muted-foreground/45" />
+//             )}
+//         </button>
+//     );
+// }
 
 function EquipmentList({ asset }) {
     const equipment = equipmentFields.filter((field) => asset[field.key]);
@@ -383,14 +383,21 @@ export default function Sheet() {
                                                 {asset.notes || "ไม่มีหมายเหตุ"}
                                             </p>
                                             {coverField ? (
-                                                <div className="w-10 shrink-0">
-                                                    <ImageTile
-                                                        src={asset[coverField.key]}
-                                                        label={coverField.label}
-                                                        imageCount={fieldsWithImages.length}
+                                                    <div
+                                                        className={cx(
+                                                            "w-9 shrink-0 group relative flex aspect-square items-center justify-center overflow-hidden rounded-xl border border-border bg-muted/50",
+                                                            "transition hover:border-primary/40 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30",
+                                                            "disabled:cursor-default disabled:hover:border-border cursor-pointer hover:scale-110",
+                                                        )}
                                                         onClick={() => setSelectedAsset({ asset, enlargedField: null })}
-                                                    />
-                                                </div>
+                                                    >
+                                                        <ImageIcon />
+                                                        {fieldsWithImages.length > 1 && (
+                                                            <span className="absolute bottom-0.5 right-0.5 rounded bg-black/75 px-1.5 text-[9px] font-semibold leading-4 text-white">
+                                                                {fieldsWithImages.length}
+                                                            </span>
+                                                        )}
+                                                    </div>
                                             ) : (
                                                 <span className="shrink-0 text-xs text-muted-foreground">ไม่มีรูป</span>
                                             )}

@@ -1,6 +1,6 @@
 "use client";
 
-import { Children, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { Children, useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
@@ -94,9 +94,6 @@ const ScrollFloat = ({
         );
     }, [text, shiftStyle]);
 
-    const [mounted, setMounted] = useState(false);
-
-    useEffect(() => setMounted(true), []);
 
     useIsomorphicLayoutEffect(() => {
         const el = containerRef.current;
@@ -219,7 +216,6 @@ const ScrollFloat = ({
 
         return () => mm.revert();
     }, [
-        mounted,
         scrollContainerRef,
         text,
         effect,
