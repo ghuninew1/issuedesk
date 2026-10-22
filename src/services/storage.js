@@ -15,6 +15,10 @@ export function uploadStorageImage(file, options = {}) {
     });
 }
 
+export function uploadStorageFiles(files, options = {}) {
+    return Promise.allSettled(files.map((file) => uploadStorageImage(file, options)));
+}
+
 export function deleteStorageImage(fileId, options = {}) {
     return api(`/api/storage/files/${encodeURIComponent(fileId)}`, {
         method: "DELETE",

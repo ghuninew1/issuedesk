@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Check, ChevronLeft, ChevronRight, Copy, Download, Eye, ImagePlus, LoaderCircle, RefreshCw, Search, Trash2, Upload, X } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, Copy, Download, Eye, File as FileIcon, ImagePlus, LoaderCircle, RefreshCw, Search, Trash2, Upload, X } from "lucide-react";
 import { useDocumentTitle } from "../hooks/useDocumentTitle";
-import { deleteStorageImage, getStorageImageUrl, getStorageImages, uploadStorageImage } from "../services/storage";
+import { deleteStorageImage, getStorageImageUrl, getStorageImages, uploadStorageFiles } from "../services/storage";
 import { cx } from "../utils/cx";
 
 function formatSize(bytes) {
@@ -45,6 +45,21 @@ function IconButton({ label, onClick, children, disabled = false, destructive = 
 }
 
 const PAGE_SIZE = 20;
+const ACCEPTED_UPLOAD_TYPES = [
+    "image/jpeg", "image/png", "image/webp", "image/gif", "image/avif",
+    "image/svg+xml", "image/bmp", "image/tiff", "image/heic", "image/heif",
+    "application/pdf", "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "application/vnd.ms-excel", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "application/vnd.ms-powerpoint", "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+    "application/zip", "application/x-zip-compressed", "application/x-rar-compressed", "application/vnd.rar", "application/x-7z-compressed", "application/gzip",
+    "application/json", "application/xml", "application/octet-stream", "text/plain", "text/csv", "text/markdown", "text/xml", "text/html", "text/css", "text/javascript", "application/javascript",
+    "application/vnd.apple.numbers", "application/vnd.apple.pages", "application/vnd.apple.keynote",
+    "audio/mpeg", "audio/mp4", "audio/wav", "audio/ogg", "video/mp4", "video/quicktime", "video/webm",
+].join(",");
+
+function isPreviewableImage(file) {
+    return ["image/jpeg", "image/png", "image/webp", "image/gif", "image/avif"].includes(file.mime_type.toLowerCase());
+}
 
 export default function StorageImages() {
     const inputRef = useRef(null);
@@ -52,7 +67,8 @@ export default function StorageImages() {
     const [search, setSearch] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
     const [isLoading, setIsLoading] = useState(true);
-    const [isUploading, setIsUploading] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState(null);
+    const isUploading = uploadProgress !== null;
     const [deletingId, setDeletingId] = useState("");
     const [isTruncated, setIsTruncated] = useState(false);
     const [error, setError] = useState("");
@@ -109,31 +125,45 @@ export default function StorageImages() {
     );
 
     const handleUpload = async (event) => {
-        const file = event.target.files?.[0];
+        const files = Array.from(event.target.files || []);
         event.target.value = "";
-        if (!file) return;
+        if (files.length === 0) return;
 
-        setIsUploading(true);
+        setUploadProgress({ completed: 0, total: files.length });
         setError("");
         setNotice("");
-        try {
-            const result = await uploadStorageImage(file);
-            if (!result.success || !result.file) throw new Error(result.message || "Unable to upload image");
-            setImages((current) => [result.file, ...current]);
-            setCurrentPage(1);
-            setNotice("อัปโหลดรูปเรียบร้อยแล้ว");
-        } catch (uploadError) {
-            setError(uploadError.message || "อัปโหลดรูปไม่สำเร็จ");
-        } finally {
-            setIsUploading(false);
+        const uploaded = [];
+        const failures = [];
+        for (let index = 0; index < files.length; index += 3) {
+            const batch = files.slice(index, index + 3);
+            const results = await uploadStorageFiles(batch);
+            results.forEach((result, batchIndex) => {
+                const file = batch[batchIndex];
+                if (result.status === "fulfilled" && result.value.success && result.value.file) {
+                    uploaded.push(result.value.file);
+                } else {
+                    const message = result.status === "rejected"
+                        ? result.reason?.message
+                        : result.value?.message;
+                    failures.push(`${file.name}: ${message || "อัปโหลดไม่สำเร็จ"}`);
+                }
+            });
+            setUploadProgress({ completed: Math.min(index + batch.length, files.length), total: files.length });
         }
+        if (uploaded.length > 0) {
+            setImages((current) => [...uploaded.reverse(), ...current]);
+            setCurrentPage(1);
+            setNotice(`อัปโหลดสำเร็จ ${uploaded.length} จาก ${files.length} ไฟล์`);
+        }
+        if (failures.length > 0) setError(failures.join("\n"));
+        setUploadProgress(null);
     };
 
     const handleCopy = async (image) => {
         const link = new URL(getStorageImageUrl(image.id), window.location.origin).toString();
         try {
             await navigator.clipboard.writeText(link);
-            setNotice(`คัดลอกลิงก์รูป ${image.file_name} แล้ว`);
+            setNotice(`คัดลอกลิงก์ไฟล์ ${image.file_name} แล้ว`);
             setError("");
         } catch {
             setError("คัดลอกลิงก์ไม่ได้ กรุณาตรวจสอบสิทธิ์ Clipboard ของเบราว์เซอร์");
@@ -141,7 +171,7 @@ export default function StorageImages() {
     };
 
     const handleDelete = async (image) => {
-        if (deletingId || !window.confirm(`ลบรูป “${image.file_name}” หรือไม่? การลบนี้ย้อนกลับไม่ได้`)) return;
+        if (deletingId || !window.confirm(`ลบไฟล์ “${image.file_name}” หรือไม่? การลบนี้ย้อนกลับไม่ได้`)) return;
         setDeletingId(image.id);
         setError("");
         setNotice("");
@@ -151,7 +181,7 @@ export default function StorageImages() {
             setImages((current) => current.filter((item) => item.id !== image.id));
             setCurrentPage((page) => Math.min(page, Math.max(1, Math.ceil((filteredImages.length - 1) / PAGE_SIZE))));
             if (selectedImage?.id === image.id) setSelectedImage(null);
-            setNotice("ลบรูปเรียบร้อยแล้ว");
+            setNotice("ลบไฟล์เรียบร้อยแล้ว");
         } catch (deleteError) {
             setError(deleteError.message || "ลบรูปไม่สำเร็จ");
         } finally {
@@ -168,9 +198,9 @@ export default function StorageImages() {
                             <ImagePlus size={22} aria-hidden="true" />
                         </span>
                         <div>
-                            <h2 className="text-2xl font-semibold tracking-tight">จัดการรูปภาพ</h2>
+                            <h2 className="text-2xl font-semibold tracking-tight">จัดการไฟล์ใน Storage</h2>
                             <p className="mt-1 text-sm text-muted-foreground">
-                                อัปโหลด ดูตัวอย่าง ดาวน์โหลด และคัดลอกลิงก์จาก Storage
+                                อัปโหลด ดูตัวอย่าง ดาวน์โหลด และคัดลอกลิงก์ไฟล์จาก Storage
                             </p>
                         </div>
                     </div>
@@ -181,8 +211,8 @@ export default function StorageImages() {
                         type="button"
                         onClick={() => loadImages()}
                         disabled={isLoading || isUploading}
-                        aria-label="รีเฟรชรายการรูปภาพ"
-                        title="รีเฟรชรายการรูปภาพ"
+                        aria-label="รีเฟรชรายการไฟล์"
+                        title="รีเฟรชรายการไฟล์"
                         className={cx(
                             "inline-flex h-10 flex-1 items-center justify-center gap-2 rounded-lg border border-input px-3 sm:flex-none",
                             "text-sm font-medium transition-colors hover:bg-muted",
@@ -204,33 +234,34 @@ export default function StorageImages() {
                         )}
                     >
                         {isUploading ? <LoaderCircle size={16} className="animate-spin" /> : <Upload size={16} />}
-                        {isUploading ? "กำลังอัปโหลด…" : "อัปโหลดรูป"}
+                        {isUploading ? `อัปโหลด ${uploadProgress.completed}/${uploadProgress.total}…` : "อัปโหลดไฟล์"}
                     </button>
                     <input
                         ref={inputRef}
                         type="file"
-                        accept="image/jpeg,image/png,image/webp,image/gif,image/avif"
+                        accept={ACCEPTED_UPLOAD_TYPES}
+                        multiple
                         className="sr-only"
                         onChange={handleUpload}
-                        aria-label="เลือกภาพเพื่ออัปโหลด"
+                        aria-label="เลือกไฟล์เพื่ออัปโหลด"
                     />
                 </div>
             </div>
 
             <div className="mb-5 grid gap-3 sm:grid-cols-3">
                 <div className="rounded-xl border border-border bg-card p-4">
-                    <p className="text-xs font-medium text-muted-foreground">รูปทั้งหมด</p>
+                    <p className="text-xs font-medium text-muted-foreground">ไฟล์ทั้งหมด</p>
                     <p className="mt-1 text-2xl font-semibold">{images.length}</p>
                 </div>
                 <div className="rounded-xl border border-border bg-card p-4 sm:col-span-2">
-                    <p className="text-xs font-medium text-muted-foreground">ชนิดและขนาดไฟล์</p>
-                    <p className="mt-1 text-sm">JPG, PNG, WebP, GIF หรือ AVIF · ขนาดไม่เกิน 10 MB</p>
+                    <p className="text-xs font-medium text-muted-foreground">ชนิดและขนาดไฟล์ที่รองรับ</p>
+                    <p className="mt-1 text-sm">รูปภาพ, PDF, Office/iWork, ZIP/RAR/7z, TXT/CSV/JSON/XML, เสียง และวิดีโอ · ไม่เกิน 10 MB ต่อไฟล์</p>
                 </div>
             </div>
 
             {error && (
                 <div
-                    className="mb-4 rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive"
+                    className="mb-4 whitespace-pre-line rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive"
                     role="alert"
                 >
                     {error}
@@ -250,16 +281,16 @@ export default function StorageImages() {
                     className="mb-4 rounded-lg border border-amber-500/30 bg-amber-500/5 p-3 text-sm text-amber-800 dark:text-amber-300"
                     role="status"
                 >
-                    Storage API ส่งรายการล่าสุดมาได้สูงสุด 100 รูป จึงอาจมีรูปเก่ากว่านี้ที่ยังไม่แสดง
+                    Storage API ส่งรายการล่าสุดมาได้สูงสุด 100 ไฟล์ จึงอาจมีไฟล์เก่ากว่านี้ที่ยังไม่แสดง
                 </div>
             )}
 
             <section className="overflow-hidden rounded-xl border border-border bg-card" aria-label="รายการรูปภาพ">
                 <div className="flex flex-col gap-3 border-b border-border p-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                        <h3 className="font-semibold">คลังรูปภาพ</h3>
+                        <h3 className="font-semibold">คลังไฟล์</h3>
                         <p className="mt-1 text-xs text-muted-foreground">
-                            แสดง {filteredImages.length === 0 ? 0 : (displayPage - 1) * PAGE_SIZE + 1}–{Math.min(displayPage * PAGE_SIZE, filteredImages.length)} จาก {filteredImages.length} รูป
+                            แสดง {filteredImages.length === 0 ? 0 : (displayPage - 1) * PAGE_SIZE + 1}–{Math.min(displayPage * PAGE_SIZE, filteredImages.length)} จาก {filteredImages.length} ไฟล์
                         </p>
                     </div>
                     <label className="relative block w-full sm:max-w-xs">
@@ -295,8 +326,8 @@ export default function StorageImages() {
                         <span className="flex size-12 items-center justify-center rounded-full bg-muted text-muted-foreground">
                             <ImagePlus size={22} aria-hidden="true" />
                         </span>
-                        <p className="mt-3 font-medium">{search ? "ไม่พบรูปที่ค้นหา" : "ยังไม่มีรูปในคลัง"}</p>
-                        <p className="mt-1 text-sm text-muted-foreground">อัปโหลดรูปแรกเพื่อเริ่มใช้งานคลังรูปภาพ</p>
+                        <p className="mt-3 font-medium">{search ? "ไม่พบไฟล์ที่ค้นหา" : "ยังไม่มีไฟล์ในคลัง"}</p>
+                        <p className="mt-1 text-sm text-muted-foreground">อัปโหลดไฟล์แรกเพื่อเริ่มใช้งานคลัง Storage</p>
                     </div>
                 ) : (
                     <>
@@ -308,7 +339,7 @@ export default function StorageImages() {
                                             ตัวอย่าง
                                         </th>
                                         <th scope="col" className="px-4 py-3 font-medium">
-                                            ชื่อรูป
+                                            ชื่อไฟล์
                                         </th>
                                         <th scope="col" className="px-4 py-3 font-medium">
                                             รายละเอียด
@@ -325,23 +356,21 @@ export default function StorageImages() {
                                     {visibleImages.map((image) => (
                                         <tr key={image.id} className="transition-colors hover:bg-muted/20">
                                             <td className="w-24 px-4 py-3">
-                                                <button
-                                                    type="button"
-                                                    onClick={() => setSelectedImage(image)}
-                                                    className="group relative block size-16 overflow-hidden rounded-lg border border-border bg-muted cursor-pointer"
-                                                    aria-label={`ดูตัวอย่าง ${image.file_name}`}
-                                                >
-                                                    <img
-                                                        src={getStorageImageUrl(image.id)}
-                                                        alt=""
-                                                        loading="lazy"
-                                                        decoding="async"
-                                                        className="size-15 object-cover"
-                                                    />
-                                                    <span className="absolute inset-0 flex items-center justify-center bg-black/0 text-white opacity-0 transition group-hover:bg-black/35 group-hover:opacity-100">
-                                                        <Eye size={18} aria-hidden="true" />
+                                                {isPreviewableImage(image) ? (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setSelectedImage(image)}
+                                                        className="group relative block size-16 overflow-hidden rounded-lg border border-border bg-muted cursor-pointer"
+                                                        aria-label={`ดูตัวอย่าง ${image.file_name}`}
+                                                    >
+                                                        <img src={getStorageImageUrl(image.id)} alt="" loading="lazy" decoding="async" className="size-full object-cover" />
+                                                        <span className="absolute inset-0 flex items-center justify-center bg-black/0 text-white opacity-0 transition group-hover:bg-black/35 group-hover:opacity-100"><Eye size={18} aria-hidden="true" /></span>
+                                                    </button>
+                                                ) : (
+                                                    <span className="flex size-16 items-center justify-center rounded-lg border border-border bg-muted text-muted-foreground" title={image.mime_type}>
+                                                        <FileIcon size={22} aria-hidden="true" />
                                                     </span>
-                                                </button>
+                                                )}
                                             </td>
                                             <td className="max-w-[260px] px-4 py-3">
                                                 <p className="truncate font-medium" title={image.file_name}>
@@ -361,7 +390,7 @@ export default function StorageImages() {
                                             <td className="px-4 py-3">
                                                 <div className="flex justify-end gap-2">
                                                     <IconButton
-                                                        label="คัดลอกลิงก์รูป"
+                                                        label="คัดลอกลิงก์ไฟล์"
                                                         onClick={() => handleCopy(image)}
                                                     >
                                                         <Copy size={16} aria-hidden="true" />
@@ -394,23 +423,16 @@ export default function StorageImages() {
                             </table>
                         </div>
                         <div className="divide-y divide-border md:hidden">
-                            {visibleImages.map((image) => (
+                                            {visibleImages.map((image) => (
                                 <article key={image.id} className="space-y-3 p-4">
                                     <div className="flex min-w-0 items-start gap-3">
-                                        <button
-                                            type="button"
-                                            onClick={() => setSelectedImage(image)}
-                                            className="size-16 shrink-0 overflow-hidden rounded-lg border border-border bg-muted"
-                                            aria-label={`ดูตัวอย่าง ${image.file_name}`}
-                                        >
-                                            <img
-                                                src={getStorageImageUrl(image.id)}
-                                                alt=""
-                                                loading="lazy"
-                                                decoding="async"
-                                                className="size-full object-cover"
-                                            />
-                                        </button>
+                                                        {isPreviewableImage(image) ? (
+                                                            <button type="button" onClick={() => setSelectedImage(image)} className="size-16 shrink-0 overflow-hidden rounded-lg border border-border bg-muted" aria-label={`ดูตัวอย่าง ${image.file_name}`}>
+                                                                <img src={getStorageImageUrl(image.id)} alt="" loading="lazy" decoding="async" className="size-full object-cover" />
+                                                            </button>
+                                                        ) : (
+                                                            <span className="flex size-16 shrink-0 items-center justify-center rounded-lg border border-border bg-muted text-muted-foreground" title={image.mime_type}><FileIcon size={22} aria-hidden="true" /></span>
+                                                        )}
                                         <div className="min-w-0 flex-1">
                                             <h4 className="break-all text-sm font-medium">{image.file_name}</h4>
                                             <p className="mt-1 break-all text-xs text-muted-foreground">{image.id}</p>
@@ -426,7 +448,7 @@ export default function StorageImages() {
                                     </div>
 
                                     <div className="grid grid-cols-3 gap-2 border-t border-border/70 pt-3">
-                                        <IconButton label="คัดลอกลิงก์รูป" onClick={() => handleCopy(image)}>
+                                        <IconButton label="คัดลอกลิงก์ไฟล์" onClick={() => handleCopy(image)}>
                                             <Copy size={16} aria-hidden="true" />
                                         </IconButton>
                                         <a

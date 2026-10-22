@@ -6,8 +6,50 @@ import {
     storageHeaders,
 } from "./_utils.js";
 
-const MAX_IMAGE_SIZE = 10 * 1024 * 1024;
-const ALLOWED_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif", "image/avif"]);
+const MAX_FILE_SIZE = 10 * 1024 * 1024;
+const ALLOWED_INLINE_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif", "image/avif"]);
+const ALLOWED_FILE_TYPES = new Set([
+    ...ALLOWED_INLINE_IMAGE_TYPES,
+    "image/svg+xml",
+    "image/bmp",
+    "image/tiff",
+    "image/heic",
+    "image/heif",
+    "application/pdf",
+    "application/msword",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "application/vnd.ms-excel",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "application/vnd.ms-powerpoint",
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+    "application/zip",
+    "application/x-zip-compressed",
+    "application/x-rar-compressed",
+    "application/vnd.rar",
+    "application/x-7z-compressed",
+    "application/gzip",
+    "application/json",
+    "application/xml",
+    "application/octet-stream",
+    "text/plain",
+    "text/csv",
+    "text/markdown",
+    "text/xml",
+    "text/html",
+    "text/css",
+    "text/javascript",
+    "application/javascript",
+    "application/vnd.apple.numbers",
+    "application/vnd.apple.pages",
+    "application/vnd.apple.keynote",
+    "audio/mpeg",
+    "audio/mp4",
+    "audio/wav",
+    "audio/ogg",
+    "video/mp4",
+    "video/quicktime",
+    "video/webm",
+]);
 
 export async function onRequestGet({ request, env }) {
     const storage = await requireStorageAdmin(request, env);
@@ -20,7 +62,7 @@ export async function onRequestGet({ request, env }) {
 
         if (!response.ok) {
             console.error("Storage file listing failed:", response.status);
-            return jsonResponse({ success: false, message: "Unable to load images from Storage API" }, 502);
+            return jsonResponse({ success: false, message: "Unable to load files from Storage API" }, 502);
         }
 
         const data = await response.json();
@@ -28,7 +70,7 @@ export async function onRequestGet({ request, env }) {
             return jsonResponse({ success: false, message: "Storage API returned an invalid file list" }, 502);
         }
 
-        const files = data.files.map(normalizeStorageFile).filter((file) => file.id && ALLOWED_IMAGE_TYPES.has(file.mime_type.toLowerCase()));
+        const files = data.files.map(normalizeStorageFile).filter((file) => file.id);
 
         return jsonResponse({
             success: true,
@@ -36,7 +78,7 @@ export async function onRequestGet({ request, env }) {
             isTruncated: data.isTruncated === true,
         });
     } catch (error) {
-        console.error("Failed to list Storage API images:", error);
+        console.error("Failed to list Storage API files:", error);
         return jsonResponse({ success: false, message: "Unable to connect to Storage API" }, 502);
     }
 }
@@ -58,21 +100,22 @@ export async function onRequestPost({ request, env }) {
 
     const file = form.get("file");
     if (!file || typeof file === "string" || typeof file.arrayBuffer !== "function") {
-        return jsonResponse({ success: false, message: "Choose an image to upload" }, 400);
+        return jsonResponse({ success: false, message: "Choose a file to upload" }, 400);
     }
-    if (!ALLOWED_IMAGE_TYPES.has(file.type.toLowerCase())) {
-        return jsonResponse({ success: false, message: "Supported formats: JPG, PNG, WebP, GIF, and AVIF" }, 415);
+    const mimeType = (file.type || "application/octet-stream").toLowerCase();
+    if (!ALLOWED_FILE_TYPES.has(mimeType)) {
+        return jsonResponse({ success: false, message: "Unsupported file type" }, 415);
     }
     if (file.size === 0) {
         return jsonResponse({ success: false, message: "Empty files are not allowed" }, 400);
     }
-    if (file.size > MAX_IMAGE_SIZE) {
-        return jsonResponse({ success: false, message: "Image exceeds the 10 MiB upload limit" }, 413);
+    if (file.size > MAX_FILE_SIZE) {
+        return jsonResponse({ success: false, message: "File exceeds the 10 MiB upload limit" }, 413);
     }
 
     try {
         const storageForm = new FormData();
-        storageForm.append("file", file, file.name || "image");
+        storageForm.append("file", file, file.name || "file");
 
         const response = await fetch(`${storage.baseUrl}/v2/projects/${STORAGE_PROJECT_ID}/files`, {
             method: "POST",
@@ -81,8 +124,8 @@ export async function onRequestPost({ request, env }) {
         });
 
         if (!response.ok) {
-            console.error("Storage image upload failed:", response.status);
-            return jsonResponse({ success: false, message: "Storage API could not upload the image" }, 502);
+            console.error("Storage file upload failed:", response.status);
+            return jsonResponse({ success: false, message: "Storage API could not upload the file" }, 502);
         }
 
         const data = await response.json();
@@ -92,7 +135,7 @@ export async function onRequestPost({ request, env }) {
 
         return jsonResponse({ success: true, file: normalizeStorageFile(data.file) }, 201);
     } catch (error) {
-        console.error("Failed to upload image to Storage API:", error);
+        console.error("Failed to upload file to Storage API:", error);
         return jsonResponse({ success: false, message: "Unable to connect to Storage API" }, 502);
     }
 }

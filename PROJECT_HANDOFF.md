@@ -71,9 +71,9 @@ Social account ใช้ provider ID ใน `oauth_accounts`; ระบบไม
 
 | Method / route | สิทธิ์ / พฤติกรรม |
 | --- | --- |
-| `GET /api/storage/files` | Admin; list รูปจาก Storage (สูงสุด 100, ไม่มี pagination) |
-| `POST /api/storage/files` | Admin; multipart field `file`, JPEG/PNG/WebP/GIF/AVIF, สูงสุด 10 MiB |
-| `GET /api/storage/files/:fileId` | Admin; inline preview หรือดาวน์โหลดเมื่อ `?download=1` |
+| `GET /api/storage/files` | Admin; list ไฟล์จาก Storage (สูงสุด 100, ไม่มี pagination) |
+| `POST /api/storage/files` | Admin; multipart field `file`, รองรับรูป/เอกสาร/ไฟล์สื่อหลายชนิด สูงสุด 10 MiB ต่อไฟล์ |
+| `GET /api/storage/files/:fileId` | Admin; preview รูปที่รองรับ หรือดาวน์โหลดไฟล์เมื่อ `?download=1` |
 | `DELETE /api/storage/files/:fileId` | Admin; ลบจาก Storage และล้างแถวที่อ้างใน `issue_attachments` |
 
 ลิงก์ที่คัดลอกจากหน้า Storage เป็น URL proxy ที่ต้องใช้ Admin session ไม่ใช่ public image URL บริการ Storage project ID ถูกกำหนดใน Pages Functions (`functions/api/storage/_utils.js` และ routes ไฟล์แนบ); หากเปลี่ยน project ให้ตรวจทุกจุดที่อ้างถึง

@@ -17,17 +17,17 @@ export async function onRequestGet({ request, params, env }) {
         const response = await fetch(storageFileUrl(storage.baseUrl, fileId), { headers: storageHeaders(env) });
         if (!response.ok) {
             return jsonResponse(
-                { success: false, message: response.status === 404 ? "Image not found" : "Unable to load image" },
+                { success: false, message: response.status === 404 ? "File not found" : "Unable to load file" },
                 response.status === 404 ? 404 : 502,
             );
         }
-        if (!response.body) return jsonResponse({ success: false, message: "Storage API returned an empty image" }, 502);
+        if (!response.body) return jsonResponse({ success: false, message: "Storage API returned an empty file" }, 502);
 
         const url = new URL(request.url);
         const isDownload = url.searchParams.get("download") === "1";
         const upstreamMime = (response.headers.get("content-type") || "application/octet-stream").split(";")[0].trim().toLowerCase();
         if (!isDownload && !SAFE_INLINE_IMAGE_TYPES.has(upstreamMime)) {
-            return jsonResponse({ success: false, message: "Only supported raster images can be previewed" }, 415);
+            return jsonResponse({ success: false, message: "This file type can only be downloaded" }, 415);
         }
         const disposition = isDownload ? "attachment" : "inline";
         const requestedName = url.searchParams.get("name") || "image";

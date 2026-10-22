@@ -131,7 +131,7 @@ All routes require an active IssueDesk session with the `admin` role. The browse
 
 ### `GET /api/storage/files`
 
-Lists images from the configured Storage project. The response is limited to the first 100 Storage API results and includes `isTruncated`; the API does not currently provide pagination. Only JPEG, PNG, WebP, GIF, and AVIF files are returned.
+Lists files from the configured Storage project. The response is limited to the first 100 Storage API results and includes `isTruncated`; the API does not currently provide pagination. All files returned by the Storage API are included.
 
 ```json
 {
@@ -151,7 +151,7 @@ Lists images from the configured Storage project. The response is limited to the
 
 ### `POST /api/storage/files`
 
-Uploads a single image as `multipart/form-data` with required field `file`. Accepted content types are `image/jpeg`, `image/png`, `image/webp`, `image/gif`, and `image/avif`. Empty files are rejected; maximum size is 10 MiB. Returns HTTP `201` and the normalized file metadata on success.
+Uploads one file as `multipart/form-data` with required field `file`. Supported MIME types include raster and common image formats (JPEG, PNG, WebP, GIF, AVIF, SVG, BMP, TIFF, HEIC, HEIF), PDF, Microsoft Office and Apple iWork documents, ZIP/RAR/7z/GZIP archives, text/CSV/Markdown/JSON/XML/HTML/CSS/JavaScript, and common audio/video formats. `application/octet-stream` is also accepted for files whose browser does not identify a more specific type. Empty files are rejected; maximum size is 10 MiB per file. Multiple selections are uploaded as separate requests, with up to three requests in flight. Returns HTTP `201` and normalized file metadata on success.
 
 ```json
 {
@@ -168,7 +168,7 @@ Uploads a single image as `multipart/form-data` with required field `file`. Acce
 
 ### `GET /api/storage/files/:fileId`
 
-Streams the image through the authenticated IssueDesk proxy for inline preview. Only the allowed raster image MIME types can be previewed. Responses use `Cache-Control: private, no-store` and `X-Content-Type-Options: nosniff`.
+Streams supported raster images through the authenticated IssueDesk proxy for inline preview. Other allowed files can only be downloaded. Responses use `Cache-Control: private, no-store` and `X-Content-Type-Options: nosniff`.
 
 To download instead, request:
 
@@ -189,7 +189,7 @@ Deletes the file from Storage and removes matching `issue_attachments` rows by `
 
 If the Storage deletion succeeds but D1 cleanup fails, the route returns HTTP `500` and reports that the image was removed but linked IssueDesk records could not be cleaned.
 
-IssueDesk proxy routes commonly return `400` for invalid input, `401` for a missing/expired session, `403` for a non-Admin user, `404` for an absent image, `413` for files over 10 MiB, `415` for unsupported image types, and `502` for Storage API failures.
+IssueDesk proxy routes commonly return `400` for invalid input, `401` for a missing/expired session, `403` for a non-Admin user, `404` for an absent file, `413` for files over 10 MiB, `415` for unsupported file types or previews, and `502` for Storage API failures.
 
 ## Legacy API
 

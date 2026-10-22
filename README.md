@@ -181,7 +181,7 @@ const result = await response.json();
 }
 ```
 
-เปิด URL `/api/storage/files/:fileId` ในแท็ก `<img>` เพื่อ preview หรือใช้ query `download=1` เพื่อดาวน์โหลด ชื่อไฟล์ส่งผ่าน `name` ได้ โดย server กรองอักขระเส้นทางและขึ้นบรรทัดใหม่ก่อนใช้เป็นชื่อดาวน์โหลด การคัดลอกลิงก์จากหน้า `/storage/images` จะได้ URL ของ proxy นี้ ซึ่งยังต้องใช้ session Admin จึงจะเปิดได้ ไม่ใช่ public link สำหรับบุคคลทั่วไป
+หน้า `/storage/images` รองรับอัปโหลดหลายไฟล์ โดยส่งทีละไฟล์ไม่เกิน 10 MiB พร้อมกันสูงสุด 3 รายการ ชนิดไฟล์รวมถึงรูปภาพ PDF, Office/iWork, ZIP/RAR/7z/GZIP, TXT/CSV/Markdown/JSON/XML/HTML/CSS/JavaScript และเสียง/วิดีโอ รูป raster ที่อนุญาตเปิด preview ผ่าน URL `/api/storage/files/:fileId`; ไฟล์อื่นดาวน์โหลดด้วย query `download=1` ชื่อไฟล์ส่งผ่าน `name` ได้ โดย server กรองอักขระเส้นทางและขึ้นบรรทัดใหม่ก่อนใช้เป็นชื่อดาวน์โหลด ลิงก์จากหน้า Storage ต้องใช้ Admin session ไม่ใช่ public link
 
 ลบไฟล์:
 
