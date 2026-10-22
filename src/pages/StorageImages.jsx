@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Check, Copy, Download, Eye, ImagePlus, LoaderCircle, RefreshCw, Search, Trash2, Upload, X } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, Copy, Download, Eye, ImagePlus, LoaderCircle, RefreshCw, Search, Trash2, Upload, X } from "lucide-react";
 import { useDocumentTitle } from "../hooks/useDocumentTitle";
 import { deleteStorageImage, getStorageImageUrl, getStorageImages, uploadStorageImage } from "../services/storage";
 import { cx } from "../utils/cx";
@@ -44,10 +44,13 @@ function IconButton({ label, onClick, children, disabled = false, destructive = 
     );
 }
 
+const PAGE_SIZE = 20;
+
 export default function StorageImages() {
     const inputRef = useRef(null);
     const [images, setImages] = useState([]);
     const [search, setSearch] = useState("");
+    const [currentPage, setCurrentPage] = useState(1);
     const [isLoading, setIsLoading] = useState(true);
     const [isUploading, setIsUploading] = useState(false);
     const [deletingId, setDeletingId] = useState("");
@@ -98,6 +101,12 @@ export default function StorageImages() {
         if (!query) return images;
         return images.filter((image) => image.file_name.toLowerCase().includes(query));
     }, [images, search]);
+    const pageCount = Math.max(1, Math.ceil(filteredImages.length / PAGE_SIZE));
+    const displayPage = Math.min(currentPage, pageCount);
+    const visibleImages = useMemo(
+        () => filteredImages.slice((displayPage - 1) * PAGE_SIZE, displayPage * PAGE_SIZE),
+        [displayPage, filteredImages],
+    );
 
     const handleUpload = async (event) => {
         const file = event.target.files?.[0];
@@ -111,6 +120,7 @@ export default function StorageImages() {
             const result = await uploadStorageImage(file);
             if (!result.success || !result.file) throw new Error(result.message || "Unable to upload image");
             setImages((current) => [result.file, ...current]);
+            setCurrentPage(1);
             setNotice("อัปโหลดรูปเรียบร้อยแล้ว");
         } catch (uploadError) {
             setError(uploadError.message || "อัปโหลดรูปไม่สำเร็จ");
@@ -139,6 +149,7 @@ export default function StorageImages() {
             const result = await deleteStorageImage(image.id);
             if (!result.success) throw new Error(result.message || "ลบรูปไม่สำเร็จ");
             setImages((current) => current.filter((item) => item.id !== image.id));
+            setCurrentPage((page) => Math.min(page, Math.max(1, Math.ceil((filteredImages.length - 1) / PAGE_SIZE))));
             if (selectedImage?.id === image.id) setSelectedImage(null);
             setNotice("ลบรูปเรียบร้อยแล้ว");
         } catch (deleteError) {
@@ -248,7 +259,7 @@ export default function StorageImages() {
                     <div>
                         <h3 className="font-semibold">คลังรูปภาพ</h3>
                         <p className="mt-1 text-xs text-muted-foreground">
-                            แสดง {filteredImages.length} จาก {images.length} รูป
+                            แสดง {filteredImages.length === 0 ? 0 : (displayPage - 1) * PAGE_SIZE + 1}–{Math.min(displayPage * PAGE_SIZE, filteredImages.length)} จาก {filteredImages.length} รูป
                         </p>
                     </div>
                     <label className="relative block w-full sm:max-w-xs">
@@ -260,7 +271,7 @@ export default function StorageImages() {
                         <input
                             type="search"
                             value={search}
-                            onChange={(event) => setSearch(event.target.value)}
+                            onChange={(event) => { setSearch(event.target.value); setCurrentPage(1); }}
                             placeholder="ค้นหาชื่อรูป…"
                             className="h-10 w-full rounded-lg border border-input bg-background pl-9 pr-3 text-sm outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/20"
                         />
@@ -289,147 +300,172 @@ export default function StorageImages() {
                     </div>
                 ) : (
                     <>
-                    <div className="hidden overflow-x-auto md:block">
-                        <table className="w-full min-w-[760px] text-left text-sm">
-                            <thead className="bg-muted/40 text-xs text-muted-foreground">
-                                <tr>
-                                    <th scope="col" className="px-4 py-3 font-medium">
-                                        ตัวอย่าง
-                                    </th>
-                                    <th scope="col" className="px-4 py-3 font-medium">
-                                        ชื่อรูป
-                                    </th>
-                                    <th scope="col" className="px-4 py-3 font-medium">
-                                        รายละเอียด
-                                    </th>
-                                    <th scope="col" className="px-4 py-3 font-medium">
-                                        อัปโหลดเมื่อ
-                                    </th>
-                                    <th scope="col" className="px-4 py-3 text-right font-medium">
-                                        จัดการ
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-border">
-                                {filteredImages.map((image) => (
-                                    <tr key={image.id} className="transition-colors hover:bg-muted/20">
-                                        <td className="w-24 px-4 py-3">
-                                            <button
-                                                type="button"
-                                                onClick={() => setSelectedImage(image)}
-                                                className="group relative block size-16 overflow-hidden rounded-lg border border-border bg-muted"
-                                                aria-label={`ดูตัวอย่าง ${image.file_name}`}
-                                            >
-                                                <img
-                                                    src={getStorageImageUrl(image.id)}
-                                                    alt=""
-                                                    loading="lazy"
-                                                    className="size-full object-cover"
-                                                />
-                                                <span className="absolute inset-0 flex items-center justify-center bg-black/0 text-white opacity-0 transition group-hover:bg-black/35 group-hover:opacity-100">
-                                                    <Eye size={18} aria-hidden="true" />
-                                                </span>
-                                            </button>
-                                        </td>
-                                        <td className="max-w-[260px] px-4 py-3">
-                                            <p className="truncate font-medium" title={image.file_name}>
-                                                {image.file_name}
-                                            </p>
-                                            <p className="mt-1 truncate text-xs text-muted-foreground">{image.id}</p>
-                                        </td>
-                                        <td className="px-4 py-3 text-xs text-muted-foreground">
-                                            <p>{image.mime_type}</p>
-                                            <p className="mt-1">{formatSize(image.file_size)}</p>
-                                        </td>
-                                        <td className="whitespace-nowrap px-4 py-3 text-xs text-muted-foreground">
-                                            {formatDate(image.uploaded_at)}
-                                        </td>
-                                        <td className="px-4 py-3">
-                                            <div className="flex justify-end gap-2">
-                                                <IconButton label="คัดลอกลิงก์รูป" onClick={() => handleCopy(image)}>
-                                                    <Copy size={16} aria-hidden="true" />
-                                                </IconButton>
-                                                <a
-                                                    href={getStorageImageUrl(image.id, true, image.file_name)}
-                                                    aria-label="ดาวน์โหลดรูป"
-                                                    title="ดาวน์โหลดรูป"
-                                                    className="inline-flex size-9 items-center justify-center rounded-lg border border-border text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30"
-                                                >
-                                                    <Download size={16} aria-hidden="true" />
-                                                </a>
-                                                <IconButton
-                                                    label="ลบรูป"
-                                                    onClick={() => handleDelete(image)}
-                                                    disabled={Boolean(deletingId)}
-                                                    destructive
-                                                >
-                                                    {deletingId === image.id ? (
-                                                        <LoaderCircle size={16} className="animate-spin" />
-                                                    ) : (
-                                                        <Trash2 size={16} aria-hidden="true" />
-                                                    )}
-                                                </IconButton>
-                                            </div>
-                                        </td>
+                        <div className="hidden overflow-x-auto md:block">
+                            <table className="w-full min-w-[760px] text-left text-sm">
+                                <thead className="bg-muted/40 text-xs text-muted-foreground">
+                                    <tr>
+                                        <th scope="col" className="px-4 py-3 font-medium">
+                                            ตัวอย่าง
+                                        </th>
+                                        <th scope="col" className="px-4 py-3 font-medium">
+                                            ชื่อรูป
+                                        </th>
+                                        <th scope="col" className="px-4 py-3 font-medium">
+                                            รายละเอียด
+                                        </th>
+                                        <th scope="col" className="px-4 py-3 font-medium">
+                                            อัปโหลดเมื่อ
+                                        </th>
+                                        <th scope="col" className="px-4 py-3 text-right font-medium">
+                                            จัดการ
+                                        </th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                    <div className="divide-y divide-border md:hidden">
-                        {filteredImages.map((image) => (
-                            <article key={image.id} className="space-y-3 p-4">
-                                <div className="flex min-w-0 items-start gap-3">
-                                    <button
-                                        type="button"
-                                        onClick={() => setSelectedImage(image)}
-                                        className="size-16 shrink-0 overflow-hidden rounded-lg border border-border bg-muted"
-                                        aria-label={`ดูตัวอย่าง ${image.file_name}`}
-                                    >
-                                        <img
-                                            src={getStorageImageUrl(image.id)}
-                                            alt=""
-                                            loading="lazy"
-                                            decoding="async"
-                                            className="size-full object-cover"
-                                        />
-                                    </button>
-                                    <div className="min-w-0 flex-1">
-                                        <h4 className="break-all text-sm font-medium">{image.file_name}</h4>
-                                        <p className="mt-1 break-all text-xs text-muted-foreground">{image.id}</p>
+                                </thead>
+                                <tbody className="divide-y divide-border">
+                                    {visibleImages.map((image) => (
+                                        <tr key={image.id} className="transition-colors hover:bg-muted/20">
+                                            <td className="w-24 px-4 py-3">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setSelectedImage(image)}
+                                                    className="group relative block size-16 overflow-hidden rounded-lg border border-border bg-muted cursor-pointer"
+                                                    aria-label={`ดูตัวอย่าง ${image.file_name}`}
+                                                >
+                                                    <img
+                                                        src={getStorageImageUrl(image.id)}
+                                                        alt=""
+                                                        loading="lazy"
+                                                        decoding="async"
+                                                        className="size-15 object-cover"
+                                                    />
+                                                    <span className="absolute inset-0 flex items-center justify-center bg-black/0 text-white opacity-0 transition group-hover:bg-black/35 group-hover:opacity-100">
+                                                        <Eye size={18} aria-hidden="true" />
+                                                    </span>
+                                                </button>
+                                            </td>
+                                            <td className="max-w-[260px] px-4 py-3">
+                                                <p className="truncate font-medium" title={image.file_name}>
+                                                    {image.file_name}
+                                                </p>
+                                                <p className="mt-1 truncate text-xs text-muted-foreground">
+                                                    {image.id}
+                                                </p>
+                                            </td>
+                                            <td className="px-4 py-3 text-xs text-muted-foreground">
+                                                <p>{image.mime_type}</p>
+                                                <p className="mt-1">{formatSize(image.file_size)}</p>
+                                            </td>
+                                            <td className="whitespace-nowrap px-4 py-3 text-xs text-muted-foreground">
+                                                {formatDate(image.uploaded_at)}
+                                            </td>
+                                            <td className="px-4 py-3">
+                                                <div className="flex justify-end gap-2">
+                                                    <IconButton
+                                                        label="คัดลอกลิงก์รูป"
+                                                        onClick={() => handleCopy(image)}
+                                                    >
+                                                        <Copy size={16} aria-hidden="true" />
+                                                    </IconButton>
+                                                    <a
+                                                        href={getStorageImageUrl(image.id, true, image.file_name)}
+                                                        aria-label="ดาวน์โหลดรูป"
+                                                        title="ดาวน์โหลดรูป"
+                                                        className="inline-flex size-9 items-center justify-center rounded-lg border border-border text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30"
+                                                    >
+                                                        <Download size={16} aria-hidden="true" />
+                                                    </a>
+                                                    <IconButton
+                                                        label="ลบรูป"
+                                                        onClick={() => handleDelete(image)}
+                                                        disabled={Boolean(deletingId)}
+                                                        destructive
+                                                    >
+                                                        {deletingId === image.id ? (
+                                                            <LoaderCircle size={16} className="animate-spin" />
+                                                        ) : (
+                                                            <Trash2 size={16} aria-hidden="true" />
+                                                        )}
+                                                    </IconButton>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div className="divide-y divide-border md:hidden">
+                            {visibleImages.map((image) => (
+                                <article key={image.id} className="space-y-3 p-4">
+                                    <div className="flex min-w-0 items-start gap-3">
+                                        <button
+                                            type="button"
+                                            onClick={() => setSelectedImage(image)}
+                                            className="size-16 shrink-0 overflow-hidden rounded-lg border border-border bg-muted"
+                                            aria-label={`ดูตัวอย่าง ${image.file_name}`}
+                                        >
+                                            <img
+                                                src={getStorageImageUrl(image.id)}
+                                                alt=""
+                                                loading="lazy"
+                                                decoding="async"
+                                                className="size-full object-cover"
+                                            />
+                                        </button>
+                                        <div className="min-w-0 flex-1">
+                                            <h4 className="break-all text-sm font-medium">{image.file_name}</h4>
+                                            <p className="mt-1 break-all text-xs text-muted-foreground">{image.id}</p>
+                                        </div>
                                     </div>
-                                </div>
 
-                                <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-xs text-muted-foreground">
-                                    <p className="truncate" title={image.mime_type}>{image.mime_type}</p>
-                                    <p className="text-right">{formatSize(image.file_size)}</p>
-                                    <p className="col-span-2">{formatDate(image.uploaded_at)}</p>
-                                </div>
+                                    <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-xs text-muted-foreground">
+                                        <p className="truncate" title={image.mime_type}>
+                                            {image.mime_type}
+                                        </p>
+                                        <p className="text-right">{formatSize(image.file_size)}</p>
+                                        <p className="col-span-2">{formatDate(image.uploaded_at)}</p>
+                                    </div>
 
-                                <div className="grid grid-cols-3 gap-2 border-t border-border/70 pt-3">
-                                    <IconButton label="คัดลอกลิงก์รูป" onClick={() => handleCopy(image)}>
-                                        <Copy size={16} aria-hidden="true" />
-                                    </IconButton>
-                                    <a
-                                        href={getStorageImageUrl(image.id, true, image.file_name)}
-                                        aria-label="ดาวน์โหลดรูป"
-                                        title="ดาวน์โหลดรูป"
-                                        className="inline-flex size-9 w-full items-center justify-center rounded-lg border border-border text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30"
-                                    >
-                                        <Download size={16} aria-hidden="true" />
-                                    </a>
-                                    <IconButton
-                                        label="ลบรูป"
-                                        onClick={() => handleDelete(image)}
-                                        disabled={Boolean(deletingId)}
-                                        destructive
-                                    >
-                                        {deletingId === image.id ? <LoaderCircle size={16} className="animate-spin" /> : <Trash2 size={16} aria-hidden="true" />}
-                                    </IconButton>
+                                    <div className="grid grid-cols-3 gap-2 border-t border-border/70 pt-3">
+                                        <IconButton label="คัดลอกลิงก์รูป" onClick={() => handleCopy(image)}>
+                                            <Copy size={16} aria-hidden="true" />
+                                        </IconButton>
+                                        <a
+                                            href={getStorageImageUrl(image.id, true, image.file_name)}
+                                            aria-label="ดาวน์โหลดรูป"
+                                            title="ดาวน์โหลดรูป"
+                                            className="inline-flex size-9 w-full items-center justify-center rounded-lg border border-border text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30"
+                                        >
+                                            <Download size={16} aria-hidden="true" />
+                                        </a>
+                                        <IconButton
+                                            label="ลบรูป"
+                                            onClick={() => handleDelete(image)}
+                                            disabled={Boolean(deletingId)}
+                                            destructive
+                                        >
+                                            {deletingId === image.id ? (
+                                                <LoaderCircle size={16} className="animate-spin" />
+                                            ) : (
+                                                <Trash2 size={16} aria-hidden="true" />
+                                            )}
+                                        </IconButton>
+                                    </div>
+                                </article>
+                            ))}
+                        </div>
+                        {pageCount > 1 && (
+                            <nav className="flex flex-col gap-3 border-t border-border px-4 py-3 sm:flex-row sm:items-center sm:justify-between" aria-label="แบ่งหน้ารูปภาพ">
+                                <p className="text-xs text-muted-foreground">หน้า {displayPage} จาก {pageCount} · {PAGE_SIZE} รูปต่อหน้า</p>
+                                <div className="flex items-center gap-2">
+                                    <button type="button" onClick={() => setCurrentPage((page) => Math.max(1, page - 1))} disabled={displayPage === 1} className="inline-flex h-9 items-center gap-1 rounded-lg border border-input px-3 text-sm font-medium hover:bg-muted disabled:pointer-events-none disabled:opacity-50">
+                                        <ChevronLeft size={16} aria-hidden="true" /> ก่อนหน้า
+                                    </button>
+                                    <button type="button" onClick={() => setCurrentPage((page) => Math.min(pageCount, page + 1))} disabled={displayPage === pageCount} className="inline-flex h-9 items-center gap-1 rounded-lg border border-input px-3 text-sm font-medium hover:bg-muted disabled:pointer-events-none disabled:opacity-50">
+                                        ถัดไป <ChevronRight size={16} aria-hidden="true" />
+                                    </button>
                                 </div>
-                            </article>
-                        ))}
-                    </div>
+                            </nav>
+                        )}
                     </>
                 )}
             </section>
