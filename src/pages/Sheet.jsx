@@ -147,7 +147,7 @@ export default function Sheet() {
                 <div className="text-sm text-muted-foreground">อัปเดตข้อมูลจาก Google Sheets</div>
             </div>
 
-            <section aria-label="ภาพรวมอุปกรณ์" className="mb-6 grid gap-3 sm:grid-cols-4">
+            <section aria-label="ภาพรวมอุปกรณ์" className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
                 <div className="flex items-center gap-4 rounded-2xl border border-border bg-card p-4 shadow-sm">
                     <span className="flex size-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
                         <Boxes className="size-5" />
@@ -320,6 +320,56 @@ export default function Sheet() {
                                 ))}
                             </tbody>
                         </table>
+                        <div className="divide-y divide-border md:hidden">
+                            {visibleAssets.map((asset) => {
+                                const fieldsWithImages = imageFields.filter((field) => asset[field.key]);
+                                const coverField = fieldsWithImages[0];
+
+                                return (
+                                    <article key={asset.assetId} className="space-y-3 p-4">
+                                        <div className="flex items-start justify-between gap-3">
+                                            <div className="min-w-0">
+                                                <h3 className="truncate text-sm font-semibold">{asset.computerName || "ไม่ระบุชื่อเครื่อง"}</h3>
+                                                <p className="mt-0.5 text-xs text-muted-foreground">{asset.assetId || "—"}</p>
+                                            </div>
+                                            <Status status={asset.status} />
+                                        </div>
+
+                                        <div className="grid grid-cols-2 gap-x-3 gap-y-2 text-xs">
+                                            <div className="min-w-0">
+                                                <p className="text-muted-foreground">ผู้ใช้งาน</p>
+                                                <p className="mt-0.5 truncate font-medium">{asset.employeeName || "—"}</p>
+                                            </div>
+                                            <div className="min-w-0">
+                                                <p className="text-muted-foreground">แผนก</p>
+                                                <p className="mt-0.5 truncate font-medium">{asset.department || "—"}</p>
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <p className="mb-1.5 text-xs text-muted-foreground">อุปกรณ์</p>
+                                            <EquipmentList asset={asset} />
+                                        </div>
+
+                                        <div className="flex items-center justify-between gap-3 border-t border-border/70 pt-3">
+                                            <p className="line-clamp-2 min-w-0 flex-1 text-xs text-muted-foreground">{asset.notes || "ไม่มีหมายเหตุ"}</p>
+                                            {coverField ? (
+                                                <div className="w-10 shrink-0">
+                                                    <ImageTile
+                                                        src={asset[coverField.key]}
+                                                        label={coverField.label}
+                                                        imageCount={fieldsWithImages.length}
+                                                        onClick={() => setSelectedAsset({ asset, field: coverField })}
+                                                    />
+                                                </div>
+                                            ) : (
+                                                <span className="shrink-0 text-xs text-muted-foreground">ไม่มีรูป</span>
+                                            )}
+                                        </div>
+                                    </article>
+                                );
+                            })}
+                        </div>
                     </div>
                 )}
                 {filteredAssets.length > PAGE_SIZE && (
