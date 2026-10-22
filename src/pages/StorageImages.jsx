@@ -366,18 +366,17 @@ export default function StorageImages() {
                                                     <button
                                                         type="button"
                                                         onClick={() => setSelectedImage(image)}
-                                                        className="group relative flex size-16 overflow-hidden rounded-lg border border-border bg-muted cursor-pointer items-center justify-center p-2"
+                                                        className="group relative flex size-10 overflow-hidden rounded-lg border border-border bg-muted cursor-pointer items-center justify-center p-2"
                                                         aria-label={`ดูตัวอย่าง ${image.file_name}`}
                                                     >
                                                         <Image />
-                                                        {/* <img src={getStorageImageUrl(image.id)} alt="" loading="lazy" decoding="async" className="size-full object-cover" /> */}
                                                         <span className="absolute inset-0 flex items-center justify-center bg-black/0 text-white opacity-0 transition group-hover:bg-black/35 group-hover:opacity-100">
                                                             <Eye size={18} aria-hidden="true" />
                                                         </span>
                                                     </button>
                                                 ) : (
                                                     <span
-                                                        className="flex size-16 items-center justify-center rounded-lg border border-border bg-muted text-muted-foreground"
+                                                        className="flex size-10 items-center justify-center rounded-lg border border-border bg-muted text-muted-foreground"
                                                         title={image.mime_type}
                                                     >
                                                         <FileIcon size={22} aria-hidden="true" />
@@ -434,6 +433,8 @@ export default function StorageImages() {
                                 </tbody>
                             </table>
                         </div>
+
+                        {/* mobile */}
                         <div className="divide-y divide-border md:hidden">
                             {visibleImages.map((image) => (
                                 <article key={image.id} className="space-y-3 p-4">
@@ -442,22 +443,14 @@ export default function StorageImages() {
                                             <button
                                                 type="button"
                                                 onClick={() => setSelectedImage(image)}
-                                                className="size-16 shrink-0 overflow-hidden rounded-lg border border-border bg-muted"
+                                                className="size-10 shrink-0 overflow-hidden rounded-lg border border-border bg-muted flex cursor-pointer items-center justify-center p-2"
                                                 aria-label={`ดูตัวอย่าง ${image.file_name}`}
                                             >
-                                                {image.id && (
-                                                    <img
-                                                        src={getStorageImageUrl(image.id)}
-                                                        alt=""
-                                                        loading="lazy"
-                                                        decoding="async"
-                                                        className="size-full object-cover"
-                                                    />
-                                                )}
+                                                <Image />
                                             </button>
                                         ) : (
                                             <span
-                                                className="flex size-16 shrink-0 items-center justify-center rounded-lg border border-border bg-muted text-muted-foreground"
+                                                className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-border bg-muted text-muted-foreground"
                                                 title={image.mime_type}
                                             >
                                                 <FileIcon size={22} aria-hidden="true" />
@@ -567,14 +560,15 @@ export default function StorageImages() {
                             </button>
                         </div>
                         <div className="flex max-h-[calc(90vh-64px)] min-h-48 items-center justify-center bg-black/5 p-3 dark:bg-black/30">
-                            {getStorageImageUrl(selectedImage.id) && 
-                            <img
-                                src={getStorageImageUrl(selectedImage.id)}
-                                alt={selectedImage.file_name}
-                                loading="lazy"
-                                decoding="async"
-                                className="max-h-[calc(90vh-90px)] max-w-full object-contain"
-                            />}
+                            {getStorageImageUrl(selectedImage.id) && (
+                                <img
+                                    src={getStorageImageUrl(selectedImage.id)}
+                                    alt={selectedImage.file_name}
+                                    loading="lazy"
+                                    decoding="async"
+                                    className="max-h-[calc(90vh-90px)] max-w-full object-contain"
+                                />
+                            )}
                         </div>
                     </div>
                 </div>

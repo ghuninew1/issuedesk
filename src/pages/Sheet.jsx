@@ -322,14 +322,6 @@ export default function Sheet() {
                                                                 {fieldsWithImages.length}
                                                             </span>
                                                         )}
-                                                        {/* <ImageTile
-                                                            src={asset[coverField.key]}
-                                                            label={coverField.label}
-                                                            imageCount={fieldsWithImages.length}
-                                                            onClick={() =>
-                                                                setSelectedAsset({ asset, enlargedField: null })
-                                                            }
-                                                        /> */}
                                                     </div>
                                                 ) : (
                                                     <span className="text-xs text-muted-foreground">ไม่มีรูป</span>
