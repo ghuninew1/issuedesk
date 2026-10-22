@@ -185,6 +185,7 @@ export default function Sheet() {
                 </div>
             </section>
 
+            {/* Table Head */}
             <section className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm w-full max-w-7xl">
                 <div className="flex flex-col gap-3 border-b border-border p-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
                     <div>
@@ -225,7 +226,8 @@ export default function Sheet() {
                         </select>
                     </div>
                 </div>
-
+                
+                {/* Desktop  */}
                 {filteredAssets.length === 0 ? (
                     <div className="px-5 py-16 text-center">
                         <Search className="mx-auto size-8 text-muted-foreground/50" />
@@ -332,6 +334,8 @@ export default function Sheet() {
                                 ))}
                             </tbody>
                         </table>
+
+                        {/* mobile */}
                         <div className="divide-y divide-border md:hidden">
                             {visibleAssets.map((asset) => {
                                 const fieldsWithImages = imageFields.filter((field) => asset[field.key]);
@@ -359,8 +363,8 @@ export default function Sheet() {
                                                 </p>
                                             </div>
                                             <div className="min-w-0">
-                                                <p className="text-muted-foreground">แผนก</p>
-                                                <p className="mt-0.5 truncate font-medium">{asset.department || "—"}</p>
+                                                <p className="text-muted-foreground">รายละเอียด</p>
+                                                <p className="mt-0.5 truncate font-medium">{asset.details || "—"}</p>
                                             </div>
                                         </div>
 
@@ -392,6 +396,8 @@ export default function Sheet() {
                         </div>
                     </div>
                 )}
+
+                {/*  */}
                 {filteredAssets.length > PAGE_SIZE && (
                     <div className="flex flex-col gap-3 border-t border-border px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-5">
                         <p className="text-xs text-muted-foreground">
@@ -424,6 +430,7 @@ export default function Sheet() {
                 )}
             </section>
 
+                {/*  */}
             {selectedAsset && (
                 <div
                     className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
@@ -509,6 +516,8 @@ export default function Sheet() {
                     </section>
                 </div>
             )}
+
+            {/*  */}
             {selectedAsset?.enlargedField && (
                 <div
                     className="fixed inset-0 z-[60] flex items-center justify-center bg-black/85 p-4 backdrop-blur-sm"
