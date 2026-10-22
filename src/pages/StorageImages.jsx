@@ -165,13 +165,15 @@ export default function StorageImages() {
                     </div>
                 </div>
 
-                <div className="flex gap-2">
+                <div className="flex w-full gap-2 sm:w-auto">
                     <button
                         type="button"
                         onClick={() => loadImages()}
                         disabled={isLoading || isUploading}
+                        aria-label="รีเฟรชรายการรูปภาพ"
+                        title="รีเฟรชรายการรูปภาพ"
                         className={cx(
-                            "inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-input px-3",
+                            "inline-flex h-10 flex-1 items-center justify-center gap-2 rounded-lg border border-input px-3 sm:flex-none",
                             "text-sm font-medium transition-colors hover:bg-muted",
                             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30",
                             "disabled:pointer-events-none disabled:opacity-50 cursor-pointer",
@@ -184,7 +186,7 @@ export default function StorageImages() {
                         onClick={() => inputRef.current?.click()}
                         disabled={isUploading}
                         className={cx(
-                            "inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-primary px-4",
+                            "inline-flex h-10 flex-1 items-center justify-center gap-2 rounded-lg bg-primary px-4 sm:flex-none",
                             "text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90",
                             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30",
                             "disabled:pointer-events-none disabled:opacity-50 cursor-pointer",
@@ -286,7 +288,8 @@ export default function StorageImages() {
                         <p className="mt-1 text-sm text-muted-foreground">อัปโหลดรูปแรกเพื่อเริ่มใช้งานคลังรูปภาพ</p>
                     </div>
                 ) : (
-                    <div className="overflow-x-auto">
+                    <>
+                    <div className="hidden overflow-x-auto md:block">
                         <table className="w-full min-w-[760px] text-left text-sm">
                             <thead className="bg-muted/40 text-xs text-muted-foreground">
                                 <tr>
@@ -373,6 +376,61 @@ export default function StorageImages() {
                             </tbody>
                         </table>
                     </div>
+                    <div className="divide-y divide-border md:hidden">
+                        {filteredImages.map((image) => (
+                            <article key={image.id} className="space-y-3 p-4">
+                                <div className="flex min-w-0 items-start gap-3">
+                                    <button
+                                        type="button"
+                                        onClick={() => setSelectedImage(image)}
+                                        className="size-16 shrink-0 overflow-hidden rounded-lg border border-border bg-muted"
+                                        aria-label={`ดูตัวอย่าง ${image.file_name}`}
+                                    >
+                                        <img
+                                            src={getStorageImageUrl(image.id)}
+                                            alt=""
+                                            loading="lazy"
+                                            decoding="async"
+                                            className="size-full object-cover"
+                                        />
+                                    </button>
+                                    <div className="min-w-0 flex-1">
+                                        <h4 className="break-all text-sm font-medium">{image.file_name}</h4>
+                                        <p className="mt-1 break-all text-xs text-muted-foreground">{image.id}</p>
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-xs text-muted-foreground">
+                                    <p className="truncate" title={image.mime_type}>{image.mime_type}</p>
+                                    <p className="text-right">{formatSize(image.file_size)}</p>
+                                    <p className="col-span-2">{formatDate(image.uploaded_at)}</p>
+                                </div>
+
+                                <div className="grid grid-cols-3 gap-2 border-t border-border/70 pt-3">
+                                    <IconButton label="คัดลอกลิงก์รูป" onClick={() => handleCopy(image)}>
+                                        <Copy size={16} aria-hidden="true" />
+                                    </IconButton>
+                                    <a
+                                        href={getStorageImageUrl(image.id, true, image.file_name)}
+                                        aria-label="ดาวน์โหลดรูป"
+                                        title="ดาวน์โหลดรูป"
+                                        className="inline-flex size-9 w-full items-center justify-center rounded-lg border border-border text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30"
+                                    >
+                                        <Download size={16} aria-hidden="true" />
+                                    </a>
+                                    <IconButton
+                                        label="ลบรูป"
+                                        onClick={() => handleDelete(image)}
+                                        disabled={Boolean(deletingId)}
+                                        destructive
+                                    >
+                                        {deletingId === image.id ? <LoaderCircle size={16} className="animate-spin" /> : <Trash2 size={16} aria-hidden="true" />}
+                                    </IconButton>
+                                </div>
+                            </article>
+                        ))}
+                    </div>
+                    </>
                 )}
             </section>
 
