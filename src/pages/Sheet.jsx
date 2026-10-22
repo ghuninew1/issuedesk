@@ -303,7 +303,7 @@ export default function Sheet() {
                                                             src={asset[coverField.key]}
                                                             label={coverField.label}
                                                             imageCount={fieldsWithImages.length}
-                                                            onClick={() => setSelectedAsset({ asset, field: coverField })}
+                                                            onClick={() => setSelectedAsset({ asset, enlargedField: null })}
                                                         />
                                                     </div>
                                                 ) : <span className="text-xs text-muted-foreground">ไม่มีรูป</span>;
@@ -358,7 +358,7 @@ export default function Sheet() {
                                                         src={asset[coverField.key]}
                                                         label={coverField.label}
                                                         imageCount={fieldsWithImages.length}
-                                                        onClick={() => setSelectedAsset({ asset, field: coverField })}
+                                                        onClick={() => setSelectedAsset({ asset, enlargedField: null })}
                                                     />
                                                 </div>
                                             ) : (
@@ -383,12 +383,12 @@ export default function Sheet() {
                 )}
             </section>
 
-            {selectedAsset?.enlargedField && (
+            {selectedAsset && (
                 <div
                     className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
                     role="presentation"
                     onMouseDown={(event) => {
-                        if (event.target === event.currentTarget) setSelectedAsset(null);
+                        if (event.target === event.currentTarget) setSelectedAsset((selected) => ({ ...selected, enlargedField: null }));
                     }}
                 >
                     <section
@@ -458,7 +458,7 @@ export default function Sheet() {
                     </section>
                 </div>
             )}
-            {selectedAsset && (
+            {selectedAsset?.enlargedField && (
                 <div
                     className="fixed inset-0 z-[60] flex items-center justify-center bg-black/85 p-4 backdrop-blur-sm"
                     role="presentation"
@@ -469,7 +469,7 @@ export default function Sheet() {
                     <section
                         role="dialog"
                         aria-modal="true"
-                            aria-label={`ภาพขนาดใหญ่ ${selectedAsset.enlargedField.label}`}
+                        aria-label={`ภาพขนาดใหญ่ ${selectedAsset.enlargedField.label}`}
                         className="relative flex max-h-[95vh] w-full max-w-6xl flex-col overflow-hidden rounded-2xl border border-white/10 bg-card shadow-2xl"
                     >
                         <div className="flex items-center justify-between gap-4 border-b border-border px-4 py-3">
