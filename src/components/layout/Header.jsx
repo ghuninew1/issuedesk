@@ -10,7 +10,7 @@ const MenuIcon = () => <Menu size={20} aria-hidden="true" />;
 const SidebarToggleIcon = ({ isCollapsed }) =>
     isCollapsed ? <PanelLeftOpen size={20} aria-hidden="true" /> : <PanelLeftClose size={20} aria-hidden="true" />;
 
-const Header = ({ isSidebarCollapsed, onToggleSidebar, onOpenMobileSidebar }) => {
+const Header = ({ isSidebarCollapsed, isHeaderVisible = true, onToggleSidebar, onOpenMobileSidebar }) => {
     const { pathname } = useLocation();
     const navigate = useNavigate();
     const trackMatch = useMatch("/track/:ticketNumber");
@@ -73,7 +73,9 @@ const Header = ({ isSidebarCollapsed, onToggleSidebar, onOpenMobileSidebar }) =>
             className={cx(
                 "flex h-15 shrink-0 items-center justify-between gap-3",
                 "border-b border-border bg-background",
-                "px-4 sm:px-5 lg:px-6 animate-fadeInDown",
+                "sticky top-0 z-30 px-4 shadow-sm transition-transform duration-300 ease-out sm:px-5 lg:px-6",
+                "motion-reduce:transition-none",
+                isHeaderVisible ? "translate-y-0" : "-translate-y-full",
             )}
         >
             <div className="flex min-w-0 items-center gap-2">

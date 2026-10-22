@@ -7,7 +7,37 @@ import { useAuth } from "../../auth/useAuth";
 const AppShell = ({ children }) => {
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
     const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+    const [isHeaderVisible, setIsHeaderVisible] = useState(true);
     const { user, isLoading } = useAuth();
+
+    useEffect(() => {
+        let previousScrollY = window.scrollY;
+        let animationFrameId = 0;
+
+        const handleScroll = () => {
+            if (animationFrameId) return;
+
+            animationFrameId = window.requestAnimationFrame(() => {
+                const currentScrollY = window.scrollY;
+                const scrollDifference = currentScrollY - previousScrollY;
+
+                if (currentScrollY <= 24 || scrollDifference < -6) {
+                    setIsHeaderVisible(true);
+                } else if (scrollDifference > 6) {
+                    setIsHeaderVisible(false);
+                }
+
+                previousScrollY = currentScrollY;
+                animationFrameId = 0;
+            });
+        };
+
+        window.addEventListener("scroll", handleScroll, { passive: true });
+        return () => {
+            window.removeEventListener("scroll", handleScroll);
+            if (animationFrameId) window.cancelAnimationFrame(animationFrameId);
+        };
+    }, []);
 
     useEffect(() => {
         if (!isMobileSidebarOpen) {
@@ -32,7 +62,7 @@ const AppShell = ({ children }) => {
     }, [isMobileSidebarOpen]);
 
     return (
-        <div className="flex min-h-screen bg-background text-foreground selection:bg-cyan-500 selection:text-white relative overflow-hidden font-sans antialiased">
+        <div className="relative flex min-h-screen overflow-x-clip bg-background font-sans text-foreground antialiased selection:bg-cyan-500 selection:text-white">
             <div className="absolute top-1/4 -left-20 w-96 h-96 bg-green-500/1 rounded-full blur-3xl animate-pulse pointer-events-none" />
             <div className="absolute bottom-1/4 -right-20 w-96 h-96 bg-red-400/1 rounded-full blur-3xl animate-pulse delay-1000 pointer-events-none" />
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-cyan-500/1 rounded-full blur-[120px] pointer-events-none" />
@@ -57,6 +87,7 @@ const AppShell = ({ children }) => {
             <div className="flex min-w-0 flex-1 flex-col animate-fade">
                 <Header
                     isSidebarCollapsed={isSidebarCollapsed}
+                    isHeaderVisible={isHeaderVisible || isMobileSidebarOpen}
                     onToggleSidebar={() => setIsSidebarCollapsed((previous) => !previous)}
                     onOpenMobileSidebar={() => setIsMobileSidebarOpen(true)}
                 />
