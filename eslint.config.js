@@ -32,7 +32,7 @@ export default [
         },
     },
     {
-        files: ["vite.config.js", "eslint.config.js"],
+        files: ["vite.config.js", "eslint.config.js", "garage/storage/**/*.js"],
         languageOptions: {
             globals: {
                 ...globals.node,

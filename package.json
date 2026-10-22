@@ -1,7 +1,7 @@
 {
     "name": "issuedesk",
     "private": true,
-    "version": "1.1.1",
+    "version": "1.2.0",
     "type": "module",
     "scripts": {
         "dev": "vite",
@@ -19,7 +19,7 @@
         "class-variance-authority": "^0.7.1",
         "cn": "^0.5.0",
         "heic2any": "^0.0.4",
-        "lucide-react": "^1.59.0",
+        "lucide-react": "^1.61.0",
         "react": "^19.3.1",
         "react-dom": "^19.3.1",
         "react-router-dom": "^7.18.4",
@@ -36,9 +36,9 @@
         "eslint-plugin-react-refresh": "^0.5.7",
         "globals": "^17.13.0",
         "gsap": "^3.15.0",
-        "shadcn": "^4.22.0",
+        "shadcn": "^4.22.1",
         "tailwindcss": "^4.3.3",
-        "vite": "^8.3.4",
-        "wrangler": "^4.151.1"
+        "vite": "^8.3.5",
+        "wrangler": "^4.151.3"
     }
 }
