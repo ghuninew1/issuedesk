@@ -70,7 +70,7 @@ function ImageTile({ src, label, imageCount, onClick }) {
             {src ? (
                 <>
                     <img src={src} alt={label} loading="lazy" decoding="async" width={36} height={36} className="size-full object-cover transition duration-200 group-hover:scale-[1.05]" />
-                    {imageCount > 1 && <span className="absolute bottom-0.5 right-0.5 rounded bg-black/70 px-1 text-[9px] leading-4 text-white">+{imageCount - 1}</span>}
+                    {imageCount > 1 && <span className="absolute bottom-0.5 right-0.5 rounded bg-black/75 px-1.5 text-[9px] font-semibold leading-4 text-white">{imageCount}</span>}
                 </>
             ) : (
                 <ImageIcon className="size-5 text-muted-foreground/45" />
@@ -421,11 +421,11 @@ export default function Sheet() {
                                 <button
                                     key={field.key}
                                     type="button"
-                                    onClick={() => setSelectedAsset((selected) => ({ ...selected, field }))}
-                                    aria-pressed={selectedAsset.field.key === field.key}
+                                    onClick={() => setSelectedAsset((selected) => ({ ...selected, enlargedField: field }))}
+                                    aria-label={`ดูภาพใหญ่ ${field.label}`}
                                     className={cx(
                                         "group overflow-hidden rounded-xl border bg-card text-left transition-colors hover:border-primary/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30",
-                                        selectedAsset.field.key === field.key ? "border-primary ring-2 ring-primary/20" : "border-border",
+                                        "border-border",
                                     )}
                                 >
                                     <span className="flex aspect-[4/3] items-center justify-center bg-muted">
@@ -463,25 +463,25 @@ export default function Sheet() {
                     className="fixed inset-0 z-[60] flex items-center justify-center bg-black/85 p-4 backdrop-blur-sm"
                     role="presentation"
                     onMouseDown={(event) => {
-                        if (event.target === event.currentTarget) setSelectedAsset(null);
+                        if (event.target === event.currentTarget) setSelectedAsset((selected) => ({ ...selected, enlargedField: null }));
                     }}
                 >
                     <section
                         role="dialog"
                         aria-modal="true"
-                        aria-label={`ภาพขนาดใหญ่ ${selectedAsset.field.label}`}
+                            aria-label={`ภาพขนาดใหญ่ ${selectedAsset.enlargedField?.label || "อุปกรณ์"}`}
                         className="relative flex max-h-[95vh] w-full max-w-6xl flex-col overflow-hidden rounded-2xl border border-white/10 bg-card shadow-2xl"
                     >
                         <div className="flex items-center justify-between gap-4 border-b border-border px-4 py-3">
                             <div className="min-w-0">
-                                <p className="truncate text-sm font-medium">{selectedAsset.field.label}</p>
+                                <p className="truncate text-sm font-medium">{selectedAsset.enlargedField?.label}</p>
                                 <p className="mt-1 truncate text-xs text-muted-foreground">
                                     {selectedAsset.asset.computerName || selectedAsset.asset.assetId}
                                 </p>
                             </div>
                             <button
                                 type="button"
-                                onClick={() => setSelectedAsset(null)}
+                                onClick={() => setSelectedAsset((selected) => ({ ...selected, enlargedField: null }))}
                                 aria-label="ปิดภาพขนาดใหญ่"
                                 className="inline-flex size-9 shrink-0 items-center justify-center rounded-lg border border-border text-muted-foreground hover:bg-muted hover:text-foreground"
                             >
@@ -490,8 +490,8 @@ export default function Sheet() {
                         </div>
                         <div className="flex min-h-48 flex-1 items-center justify-center bg-black/5 p-3 dark:bg-black/30">
                             <img
-                                src={selectedAsset.asset[selectedAsset.field.key]}
-                                alt={`${selectedAsset.field.label} — ${selectedAsset.asset.computerName || selectedAsset.asset.assetId}`}
+                                src={selectedAsset.asset[selectedAsset.enlargedField?.key]}
+                                alt={`${selectedAsset.enlargedField?.label} — ${selectedAsset.asset.computerName || selectedAsset.asset.assetId}`}
                                 decoding="async"
                                 className="max-h-[calc(95vh-72px)] max-w-full rounded-lg object-contain"
                             />
