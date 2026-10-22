@@ -12,6 +12,10 @@ import {
     MonitorOff,
     MonitorPc,
     Image,
+    Computer,
+    Mouse,
+    Keyboard,
+    Tablet,
 } from "lucide-react";
 import { useGoogleSheet } from "../hooks/useGoogleSheet";
 import { cx } from "../utils/cx";
@@ -24,6 +28,14 @@ const imageFields = [
     { key: "mouseImage", label: "Mouse" },
     { key: "keyboardImage", label: "Keyboard" },
     { key: "wacomImage", label: "Wacom" },
+];
+const equipmentFields = [
+    { key: "computerImage", label: "Computer", Icon: Computer },
+    { key: "monitor1Image", label: "Monitor 1", Icon: Monitor },
+    { key: "monitor2Image", label: "Monitor 2", Icon: Monitor },
+    { key: "mouseImage", label: "Mouse", Icon: Mouse },
+    { key: "keyboardImage", label: "Keyboard", Icon: Keyboard },
+    { key: "wacomImage", label: "Wacom", Icon: Tablet },
 ];
 const PAGE_SIZE = 20;
 
@@ -65,6 +77,25 @@ function ImageTile({ src, label, imageCount, onClick }) {
                 <ImageIcon className="size-5 text-muted-foreground/45" />
             )}
         </button>
+    );
+}
+
+function EquipmentList({ asset }) {
+    const equipment = equipmentFields.filter((field) => asset[field.key]);
+
+    if (equipment.length === 0) {
+        return <span className="text-xs text-muted-foreground">—</span>;
+    }
+
+    return (
+        <div className="flex max-w-64 flex-wrap gap-x-3 gap-y-2">
+            {equipment.map(({ key, label, Icon }) => (
+                <span key={key} title={label} className="inline-flex items-center gap-1.5 whitespace-nowrap text-xs text-muted-foreground">
+                    <Icon className="size-4 shrink-0 text-primary" aria-hidden="true" />
+                    {label}
+                </span>
+            ))}
+        </div>
     );
 }
 
@@ -198,7 +229,7 @@ export default function Sheet() {
                     </div>
                 ) : (
                     <div className="relative w-full">
-                        <table className="w-full min-w-[950px] text-left text-sm hidden md:table">
+                        <table className="w-full min-w-[1100px] text-left text-sm hidden md:table">
                             <thead className="bg-muted/40 text-xs font-medium text-muted-foreground">
                                 <tr>
                                     <th scope="col" className="px-5 py-3">
@@ -212,6 +243,9 @@ export default function Sheet() {
                                     </th>
                                     <th scope="col" className="px-4 py-3">
                                         สถานะ
+                                    </th>
+                                    <th scope="col" className="px-4 py-3">
+                                        อุปกรณ์
                                     </th>
                                     <th scope="col" className="px-4 py-3">
                                         รูปอุปกรณ์
@@ -256,6 +290,9 @@ export default function Sheet() {
                                         </td>
                                         <td className="px-4 py-4">
                                             <Status status={asset.status} />
+                                        </td>
+                                        <td className="px-4 py-4">
+                                            <EquipmentList asset={asset} />
                                         </td>
                                         <td className="px-4 py-4">
                                             {(() => {
