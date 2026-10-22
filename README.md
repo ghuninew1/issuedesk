@@ -1,12 +1,14 @@
 # IssueDesk
 
+> ดูสรุปโครงสร้างระบบ, API, migrations และจุดเริ่มต้นสำหรับงานต่อใน [PROJECT_HANDOFF.md](PROJECT_HANDOFF.md)
+
 IssueDesk เป็นเว็บแอป IT Help Desk สำหรับแจ้งปัญหาภายในองค์กร ติดตามสถานะ Ticket และให้ผู้ดูแลระบบจัดการงานได้ในที่เดียว
 
 ผู้แจ้งส่งรายละเอียดปัญหาพร้อมไฟล์แนบได้โดยไม่ต้องเข้าสู่ระบบ ระบบออกหมายเลข Ticket อัตโนมัติ แจ้งอีเมลไปยังทีม IT เมื่อมีเรื่องใหม่ และเปิดหน้าติดตามสาธารณะที่แสดงเฉพาะสถานะกับเวลา
 
 ผู้ดูแลระบบเข้าสู่ระบบแล้วดู Dashboard เปลี่ยนสถานะ ดูไฟล์แนบ หรือลบ Ticket ได้จากหน้าจัดการ
 
-เวอร์ชันปัจจุบัน: `1.0.2`
+เวอร์ชันปัจจุบัน: `1.1.1` (อ้างอิงจาก `package.json`)
 
 ## ความสามารถ
 
@@ -28,6 +30,7 @@ IssueDesk เป็นเว็บแอป IT Help Desk สำหรับแ�
 - รายการ Ticket ค้นหาและกรองตามสถานะหรือความสำคัญ
 - ดูรายละเอียด Ticket เปลี่ยนสถานะ ดูตัวอย่างไฟล์แนบ ดาวน์โหลด และลบ Ticket พร้อมไฟล์ใน Storage
 - เส้นทาง `/dashboard`, `/issues` และ `/issues/:ticketNumber` รวมถึง API จัดการ Ticket จำกัดเฉพาะ role `admin`
+- หน้า `/storage/images` จัดการภาพใน Storage และหน้า `/sheet` ดูทะเบียนอุปกรณ์จาก Google Sheets (Admin เท่านั้น)
 
 ### ระบบสนับสนุน
 
@@ -114,6 +117,7 @@ issuedesk/
 | `/issues` | Admin | รายการ ค้นหา กรองสถานะ/ความสำคัญ |
 | `/issues/:ticketNumber` | Admin | รายละเอียด เปลี่ยนสถานะ ไฟล์แนบ ลบ Ticket |
 | `/storage/images` | Admin | จัดการภาพใน Storage: ดูตัวอย่าง อัปโหลด ดาวน์โหลด ลบ และคัดลอกลิงก์ |
+| `/sheet` | Admin | ทะเบียนอุปกรณ์จาก Google Sheets; ค้นหา กรองสถานะ และดูรูปอุปกรณ์ |
 
 ## Image Storage API
 
@@ -327,7 +331,7 @@ https://<your-issuedesk-domain>/api/auth/oauth/callback/facebook
 
 ใช้ Facebook Login app ที่เปิดใช้งานและอนุญาตสิทธิ์ email แล้ว หากตั้งค่า `FACEBOOK_GRAPH_API_VERSION` ให้เป็น Graph API version ที่แอป Meta ของคุณรองรับ; ถ้าไม่ตั้ง ระบบใช้ `v26.0` เป็นค่าเริ่มต้น ([Meta Graph API versions](https://developers.facebook.com/docs/graph-api/changelog/versions/)).
 
-Migration `0004_create_oauth_accounts.sql` ต้องถูกนำไปใช้กับ D1 ก่อนเปิด Social sign-in ใน environment นั้น
+Migration `0005_create_oauth_accounts.sql` ต้องถูกนำไปใช้กับ D1 ก่อนเปิด Social sign-in ใน environment นั้น
 
 ## คำสั่งที่ใช้บ่อย
 
@@ -356,6 +360,7 @@ Migrations ใน repository:
 | `0002_create_issue_attachments.sql` | `issue_attachments` และ index ตาม Ticket |
 | `0003_create_auth_tables.sql` | `users`, `sessions`, `login_attempts` และ index ที่เกี่ยวข้อง |
 | `0004_add_issue_in_progress_at.sql` | คอลัมน์ `in_progress_at` เพื่อแสดงประวัติบนหน้าติดตาม |
+| `0005_create_oauth_accounts.sql` | ตาราง `oauth_accounts` สำหรับเชื่อม provider identity กับบัญชีผู้ใช้ |
 
 ตารางหลัก:
 
@@ -414,11 +419,14 @@ python3 scripts/bootstrap-admin.py
 
 ## สถานะโปรเจกต์
 
-ระบบหลักพร้อมใช้งาน:
+ระบบหลักมีหน้าและ API ครบตาม flow ปัจจุบัน; สถานะค่าตั้งค่า production และ migration remote ต้องตรวจใน Cloudflare:
 
 - Portal, แจ้งปัญหา, ติดตาม Ticket, Dashboard และจัดการ Ticket อยู่ใน `src/`
+- ทะเบียนอุปกรณ์อ่าน Google Sheets ผ่าน `src/hooks/useGoogleSheet.js` และหน้า `src/pages/Sheet.jsx`
 - Pages Functions สำหรับ Issue, Authentication, Ticket tracking, Storage และอีเมลอยู่ใน `functions/api/`
 - Authentication และการคุมสิทธิ์ Admin เชื่อมกับ routes และ API แล้ว
+- Google/Facebook OAuth มี authorization/callback flow และ migration `0005`; ต้องตั้ง provider credentials และตรวจ migration/environment ก่อนเปิดใช้
+- หน้า `/storage/images` จัดการรูปผ่าน Storage API proxy โดย URL ที่คัดลอกยังต้องใช้ Admin session
 - การสร้าง Ticket ส่งอีเมลแจ้งทีมผ่าน Resend เมื่อตั้ง secrets ครบ
 - `scripts/bootstrap-admin.py` ใช้สร้าง Admin คนแรกแบบ interactive บน D1 remote
 

@@ -25,6 +25,7 @@ const imageFields = [
     { key: "keyboardImage", label: "Keyboard" },
     { key: "wacomImage", label: "Wacom" },
 ];
+const PAGE_SIZE = 20;
 
 const statusStyles = {
     Active: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400",
@@ -42,7 +43,7 @@ function Status({ status }) {
     );
 }
 
-function ImageTile({ src, label, onClick }) {
+function ImageTile({ src, label, imageCount, onClick }) {
     return (
         <button
             type="button"
@@ -56,7 +57,10 @@ function ImageTile({ src, label, onClick }) {
             )}
         >
             {src ? (
-                <img src={src} alt={label} loading="lazy" className="size-full object-cover transition duration-200 group-hover:scale-[1.03]" />
+                <>
+                    <img src={src} alt={label} loading="lazy" decoding="async" width={36} height={36} className="size-full object-cover transition duration-200 group-hover:scale-[1.05]" />
+                    {imageCount > 1 && <span className="absolute bottom-0.5 right-0.5 rounded bg-black/70 px-1 text-[9px] leading-4 text-white">+{imageCount - 1}</span>}
+                </>
             ) : (
                 <ImageIcon className="size-5 text-muted-foreground/45" />
             )}
@@ -68,6 +72,7 @@ export default function Sheet() {
     const { data = [], loading, error } = useGoogleSheet();
     const [search, setSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState("All status");
+    const [currentPage, setCurrentPage] = useState(1);
     const [selectedAsset, setSelectedAsset] = useState(null);
     useDocumentTitle("Asset inventory");
 
@@ -83,6 +88,9 @@ export default function Sheet() {
     const activeCount = data.filter((asset) => asset.status === "Active").length;
     const availableCount = data.filter((asset) => asset.status === "Available").length;
     const damagedCount = data.filter((asset) => asset.status === "Damaged").length;
+    const pageCount = Math.max(1, Math.ceil(filteredAssets.length / PAGE_SIZE));
+    const displayPage = Math.min(currentPage, pageCount);
+    const visibleAssets = filteredAssets.slice((displayPage - 1) * PAGE_SIZE, displayPage * PAGE_SIZE);
 
     if (loading) {
         return <div className="mx-auto max-w-7xl animate-pulse space-y-5" role="status" aria-label="กำลังโหลดข้อมูล">
@@ -161,7 +169,7 @@ export default function Sheet() {
                             <input
                                 type="search"
                                 value={search}
-                                onChange={(event) => setSearch(event.target.value)}
+                                onChange={(event) => { setSearch(event.target.value); setCurrentPage(1); }}
                                 placeholder="ค้นหารหัส ชื่อ หรือแผนก"
                                 aria-label="ค้นหาอุปกรณ์"
                                 className="h-10 w-full rounded-lg border border-input bg-background pl-9 pr-3 text-sm outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/20"
@@ -169,7 +177,7 @@ export default function Sheet() {
                         </label>
                         <select
                             value={statusFilter}
-                            onChange={(event) => setStatusFilter(event.target.value)}
+                            onChange={(event) => { setStatusFilter(event.target.value); setCurrentPage(1); }}
                             aria-label="กรองตามสถานะ"
                             className="h-10 rounded-lg border border-input bg-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/20"
                         >
@@ -214,7 +222,7 @@ export default function Sheet() {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-border">
-                                {filteredAssets.map((asset) => (
+                                {visibleAssets.map((asset) => (
                                     <tr
                                         key={asset.assetId}
                                         className="transition-colors hover:bg-muted/25 flex md:table-row flex-col md:flex-row items-center mx-auto"
@@ -250,19 +258,22 @@ export default function Sheet() {
                                             <Status status={asset.status} />
                                         </td>
                                         <td className="px-4 py-4">
-                                            <div className="flex w-52 gap-2">
-                                                {imageFields.map((field) => (
-                                                    <div key={field.key} className="w-9 shrink-0 cursor-pointer">
+                                            {(() => {
+                                                const fieldsWithImages = imageFields.filter((field) => asset[field.key]);
+                                                const coverField = fieldsWithImages[0];
+                                                return coverField ? (
+                                                    <div className="w-9 shrink-0">
                                                         <ImageTile
-                                                            src={asset[field.key]}
-                                                            label={field.label}
-                                                            onClick={() => setSelectedAsset({ asset, field })}
+                                                            src={asset[coverField.key]}
+                                                            label={coverField.label}
+                                                            imageCount={fieldsWithImages.length}
+                                                            onClick={() => setSelectedAsset({ asset, field: coverField })}
                                                         />
                                                     </div>
-                                                ))}
-                                            </div>
+                                                ) : <span className="text-xs text-muted-foreground">ไม่มีรูป</span>;
+                                            })()}
                                             <span className="sr-only">
-                                                เรียงตาม Computer, Monitor 1, Monitor 2, Mouse, Keyboard, Wacom
+                                                มีรูปทั้งหมด {imageFields.filter((field) => asset[field.key]).length} รายการ แตะภาพเพื่อเปิดดู
                                             </span>
                                         </td>
                                         <td className="max-w-52 px-5 py-4 text-muted-foreground">
@@ -272,6 +283,16 @@ export default function Sheet() {
                                 ))}
                             </tbody>
                         </table>
+                    </div>
+                )}
+                {filteredAssets.length > PAGE_SIZE && (
+                    <div className="flex flex-col gap-3 border-t border-border px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-5">
+                        <p className="text-xs text-muted-foreground">แสดง {(displayPage - 1) * PAGE_SIZE + 1}–{Math.min(displayPage * PAGE_SIZE, filteredAssets.length)} จาก {filteredAssets.length} รายการ</p>
+                        <div className="flex items-center gap-2">
+                            <button type="button" onClick={() => setCurrentPage((page) => Math.max(1, page - 1))} disabled={displayPage === 1} className="rounded-lg border border-input px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-50">ก่อนหน้า</button>
+                            <span className="min-w-16 text-center text-sm tabular-nums">{displayPage} / {pageCount}</span>
+                            <button type="button" onClick={() => setCurrentPage((page) => Math.min(pageCount, page + 1))} disabled={displayPage === pageCount} className="rounded-lg border border-input px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-50">ถัดไป</button>
+                        </div>
                     </div>
                 )}
             </section>
@@ -313,8 +334,25 @@ export default function Sheet() {
                                 src={selectedAsset.asset[selectedAsset.field.key]}
                                 alt={`${selectedAsset.field.label} — ${selectedAsset.asset.computerName || selectedAsset.asset.assetId}`}
                                 loading="lazy"
+                                decoding="async"
                                 className="max-h-[65vh] max-w-full rounded-lg object-contain"
                             />
+                        </div>
+                        <div className="flex gap-2 overflow-x-auto border-t border-border px-4 py-3 sm:px-5">
+                            {imageFields.filter((field) => selectedAsset.asset[field.key]).map((field) => (
+                                <button
+                                    key={field.key}
+                                    type="button"
+                                    onClick={() => setSelectedAsset((selected) => ({ ...selected, field }))}
+                                    aria-pressed={selectedAsset.field.key === field.key}
+                                    className={cx(
+                                        "shrink-0 rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors",
+                                        selectedAsset.field.key === field.key ? "border-primary bg-primary/10 text-primary" : "border-input text-muted-foreground hover:bg-muted",
+                                    )}
+                                >
+                                    {field.label}
+                                </button>
+                            ))}
                         </div>
                         <div className="flex items-center justify-between gap-3 border-t border-border px-4 py-3 sm:px-5">
                             <p className="truncate text-sm text-muted-foreground">
@@ -323,7 +361,8 @@ export default function Sheet() {
                             <button
                                 type="button"
                                 onClick={() => {
-                                    window.open(selectedAsset.asset[selectedAsset.field.key], "_blank");}}
+                                    window.open(selectedAsset.asset[selectedAsset.field.key], "_blank");
+                                }}
                                 className="inline-flex shrink-0 items-center gap-2 rounded-lg border border-input px-3 py-2 text-sm font-medium hover:bg-muted cursor-pointer"
                             >
                                 view
