@@ -92,7 +92,7 @@ const AppShell = ({ children }) => {
                 />
 
                 <main className={cx("min-w-0 flex-1 bg-muted/30", "p-4 sm:p-5 lg:p-6")}>{children}</main>
-                <footer className="mb-2 border-t border-border pt-4 text-center text-xs text-muted-foreground animate-fadeInUp">
+                <footer className="mb-2 pt-4 text-center text-xs text-muted-foreground animate-fadeInUp">
                     IssueDesk | &copy; {new Date().getFullYear()} GhuniNew. All rights reserved.
                 </footer>
             </div>
