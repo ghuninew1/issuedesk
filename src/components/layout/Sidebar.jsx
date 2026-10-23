@@ -112,7 +112,7 @@ const SidebarContent = ({ isCollapsed, onNavigate, onToggleSidebar, mobile = fal
                         aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
                         aria-pressed={isCollapsed}
                         title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-                        className="mx-auto flex size-auto items-center justify-center rounded-xl p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
+                        className="mx-auto flex size-auto items-center justify-center rounded-xl p-2 text-muted-foreground transition-colors hover:bg-[var(--glass-surface-hover)] hover:shadow-[inset_0_1px_0_var(--glass-highlight)] hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
                     >
                         {isCollapsed ? (
                             <PanelLeftOpen size={19} aria-hidden="true" />

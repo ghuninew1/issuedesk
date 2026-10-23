@@ -394,7 +394,7 @@ const IssueDetail = () => {
                             className={cx(
                                 "inline-flex h-9 items-center justify-center",
                                 "rounded-lg border border-input px-3 text-sm font-medium",
-                                "transition-colors hover:bg-muted",
+                                "transition-colors hover:bg-[var(--glass-surface-hover)] hover:shadow-[inset_0_1px_0_var(--glass-highlight)]",
                                 "focus-visible:outline-none focus-visible:ring-2",
                                 "focus-visible:ring-ring/20",
                                 "disabled:pointer-events-none disabled:opacity-50",
@@ -408,7 +408,7 @@ const IssueDetail = () => {
                             className={cx(
                                 "inline-flex h-9 items-center justify-center",
                                 "rounded-lg px-3 text-sm font-medium",
-                                "transition-colors hover:bg-muted",
+                                "transition-colors hover:bg-[var(--glass-surface-hover)] hover:shadow-[inset_0_1px_0_var(--glass-highlight)]",
                             )}
                         >
                             View all issues
@@ -429,7 +429,7 @@ const IssueDetail = () => {
                                         className={cx(
                                             "inline-flex h-8 items-center justify-center gap-2",
                                             "rounded-md border border-input px-2.5 text-xs font-medium",
-                                            "transition-colors hover:bg-muted",
+                                            "transition-colors hover:bg-[var(--glass-surface-hover)] hover:shadow-[inset_0_1px_0_var(--glass-highlight)]",
                                             "focus-visible:outline-none focus-visible:ring-2",
                                             "focus-visible:ring-ring/20",
                                         )}
@@ -613,7 +613,7 @@ const IssueDetail = () => {
                                                     className={cx(
                                                         "mt-3 inline-flex size-9 items-center justify-center",
                                                         "rounded-md border border-input",
-                                                        "transition-colors hover:bg-muted",
+                                                        "transition-colors hover:bg-[var(--glass-surface-hover)] hover:shadow-[inset_0_1px_0_var(--glass-highlight)]",
                                                         "focus-visible:outline-none focus-visible:ring-2",
                                                         "focus-visible:ring-ring/20",
                                                     )}

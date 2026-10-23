@@ -242,7 +242,7 @@ const ReportForm = () => {
                             className={cx(
                                 "rounded-md border border-border px-3 py-1.5",
                                 "text-sm font-medium transition-colors",
-                                "hover:bg-accent hover:text-accent-foreground",
+                                "hover:bg-[var(--glass-surface-hover)] hover:shadow-[inset_0_1px_0_var(--glass-highlight)] hover:text-accent-foreground",
                                 "focus-visible:outline-none cursor-pointer",
                                 "focus-visible:ring-2 focus-visible:ring-ring",
                             )}
@@ -484,7 +484,7 @@ const ReportForm = () => {
                         className={cx(
                             "rounded-lg border border-border px-6 py-3 cursor-pointer",
                             "text-base font-medium transition-colors w-full md:w-auto ring-offset-1 dark:bg-amber-500/20 bg-amber-400 text-amber-800 dark:text-amber-400",
-                            "hover:bg-accent hover:text-accent-foreground",
+                            "hover:bg-[var(--glass-surface-hover)] hover:shadow-[inset_0_1px_0_var(--glass-highlight)] hover:text-accent-foreground",
                             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                             "disabled:cursor-not-allowed disabled:opacity-60",
                         )}
@@ -499,7 +499,7 @@ const ReportForm = () => {
                         className={cx(
                             "rounded-lg border border-border px-10 py-3 cursor-pointer",
                             "text-base font-medium transition-colors w-full md:w-auto ring-offset-1 dark:bg-emerald-500/20 bg-emerald-400 text-emerald-800 dark:text-emerald-400",
-                            "hover:bg-accent hover:text-accent-foreground",
+                            "hover:bg-[var(--glass-surface-hover)] hover:shadow-[inset_0_1px_0_var(--glass-highlight)] hover:text-accent-foreground",
                             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                             "disabled:cursor-not-allowed disabled:opacity-60",
                         )}

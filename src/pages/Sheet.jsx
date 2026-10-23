@@ -63,7 +63,7 @@ function Status({ status }) {
 //             aria-label={src ? `ดูรูป ${label}` : `${label} ไม่มีรูป`}
 //             className={cx(
 //                 "group relative flex aspect-square w-full items-center justify-center overflow-hidden rounded-xl border border-border bg-muted/50",
-//                 "transition hover:border-primary/40 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30",
+//                 "transition hover:border-primary/40 hover:bg-[var(--glass-surface-hover)] hover:shadow-[inset_0_1px_0_var(--glass-highlight)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30",
 //                 "disabled:cursor-default disabled:hover:border-border cursor-pointer",
 //             )}
 //         >
@@ -132,7 +132,7 @@ export default function Sheet() {
         return <div className="mx-auto max-w-7xl rounded-2xl border border-destructive/25 bg-destructive/5 p-6" role="alert">
             <h1 className="text-lg font-semibold">ไม่สามารถโหลดข้อมูลอุปกรณ์ได้</h1>
             <p className="mt-2 text-sm text-muted-foreground">{error}</p>
-            <button type="button" onClick={() => window.location.reload()} className="mt-4 inline-flex items-center gap-2 rounded-lg border border-input px-3 py-2 text-sm font-medium hover:bg-muted"><RefreshCw className="size-4" />ลองอีกครั้ง</button>
+            <button type="button" onClick={() => window.location.reload()} className="mt-4 inline-flex items-center gap-2 rounded-lg border border-input px-3 py-2 text-sm font-medium hover:bg-[var(--glass-surface-hover)] hover:shadow-[inset_0_1px_0_var(--glass-highlight)]"><RefreshCw className="size-4" />ลองอีกครั้ง</button>
         </div>;
     }
 
@@ -266,7 +266,7 @@ export default function Sheet() {
                                 {visibleAssets.map((asset) => (
                                     <tr
                                         key={asset.assetId}
-                                        className="transition-colors hover:bg-muted/25 flex md:table-row flex-col md:flex-row items-center mx-auto"
+                                        className="transition-colors hover:bg-[var(--glass-surface-hover)] hover:shadow-[inset_0_1px_0_var(--glass-highlight)] flex md:table-row flex-col md:flex-row items-center mx-auto"
                                     >
                                         <td className="px-5 py-4">
                                             <div className="flex items-center gap-3">
@@ -311,7 +311,7 @@ export default function Sheet() {
                                                     <div
                                                         className={cx(
                                                             "w-9 shrink-0 group relative flex aspect-square items-center justify-center overflow-hidden rounded-xl border border-border bg-muted/50",
-                                                            "transition hover:border-primary/40 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30",
+                                                            "transition hover:border-primary/40 hover:bg-[var(--glass-surface-hover)] hover:shadow-[inset_0_1px_0_var(--glass-highlight)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30",
                                                             "disabled:cursor-default disabled:hover:border-border cursor-pointer hover:scale-110",
                                                         )}
                                                         onClick={() => setSelectedAsset({ asset, enlargedField: null })}
@@ -386,7 +386,7 @@ export default function Sheet() {
                                                     <div
                                                         className={cx(
                                                             "w-9 shrink-0 group relative flex aspect-square items-center justify-center overflow-hidden rounded-xl border border-border bg-muted/50",
-                                                            "transition hover:border-primary/40 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30",
+                                                            "transition hover:border-primary/40 hover:bg-[var(--glass-surface-hover)] hover:shadow-[inset_0_1px_0_var(--glass-highlight)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30",
                                                             "disabled:cursor-default disabled:hover:border-border cursor-pointer hover:scale-110",
                                                         )}
                                                         onClick={() => setSelectedAsset({ asset, enlargedField: null })}
@@ -472,7 +472,7 @@ export default function Sheet() {
                                 type="button"
                                 onClick={() => setSelectedAsset(null)}
                                 aria-label="ปิดภาพ"
-                                className="rounded-lg p-2 text-muted-foreground transition hover:bg-muted hover:text-foreground cursor-pointer"
+                                className="rounded-lg p-2 text-muted-foreground transition hover:bg-[var(--glass-surface-hover)] hover:shadow-[inset_0_1px_0_var(--glass-highlight)] hover:text-foreground cursor-pointer"
                             >
                                 <X className="size-5" />
                             </button>
@@ -521,7 +521,7 @@ export default function Sheet() {
                             <button
                                 type="button"
                                 onClick={() => setSelectedAsset(null)}
-                                className="inline-flex shrink-0 items-center gap-2 rounded-lg border border-input px-3 py-2 text-sm font-medium hover:bg-muted cursor-pointer"
+                                className="inline-flex shrink-0 items-center gap-2 rounded-lg border border-input px-3 py-2 text-sm font-medium hover:bg-[var(--glass-surface-hover)] hover:shadow-[inset_0_1px_0_var(--glass-highlight)] cursor-pointer"
                             >
                                 ปิด
                                 <CircleX className="size-4 rotate-180" />
@@ -558,7 +558,7 @@ export default function Sheet() {
                                 type="button"
                                 onClick={() => setSelectedAsset((selected) => ({ ...selected, enlargedField: null }))}
                                 aria-label="ปิดภาพขนาดใหญ่"
-                                className="inline-flex size-9 shrink-0 items-center justify-center rounded-lg border border-border text-muted-foreground hover:bg-muted hover:text-foreground"
+                                className="inline-flex size-9 shrink-0 items-center justify-center rounded-lg border border-border text-muted-foreground hover:bg-[var(--glass-surface-hover)] hover:shadow-[inset_0_1px_0_var(--glass-highlight)] hover:text-foreground"
                             >
                                 <X className="size-5" />
                             </button>

@@ -33,7 +33,7 @@ function IconButton({ label, onClick, children, disabled = false, destructive = 
             disabled={disabled}
             className={cx(
                 "inline-flex size-9 items-center justify-center rounded-lg border border-border",
-                "text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
+                "text-muted-foreground transition-colors hover:bg-[var(--glass-surface-hover)] hover:shadow-[inset_0_1px_0_var(--glass-highlight)] hover:text-foreground",
                 destructive && "text-destructive hover:bg-destructive/10 hover:text-destructive",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30",
                 "disabled:pointer-events-none disabled:opacity-50 cursor-pointer",
@@ -213,7 +213,7 @@ export default function StorageImages() {
                         title="รีเฟรชรายการไฟล์"
                         className={cx(
                             "inline-flex h-10 flex-1 items-center justify-center gap-2 rounded-lg border border-input px-3 sm:flex-none",
-                            "text-sm font-medium transition-colors hover:bg-muted",
+                            "text-sm font-medium transition-colors hover:bg-[var(--glass-surface-hover)] hover:shadow-[inset_0_1px_0_var(--glass-highlight)]",
                             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30",
                             "disabled:pointer-events-none disabled:opacity-50 cursor-pointer",
                         )}
@@ -349,7 +349,7 @@ export default function StorageImages() {
                                 </thead>
                                 <tbody className="divide-y divide-border">
                                     {visibleImages.map((image) => (
-                                        <tr key={image.id} className="transition-colors hover:bg-muted/20">
+                                        <tr key={image.id} className="transition-colors hover:bg-[var(--glass-surface-hover)] hover:shadow-[inset_0_1px_0_var(--glass-highlight)]">
                                             <td className="w-24 px-4 py-3">
                                                 {isPreviewableImage(image) ? (
                                                     <button
@@ -399,7 +399,7 @@ export default function StorageImages() {
                                                         href={getStorageImageUrl(image.id, true, image.file_name)}
                                                         aria-label="ดาวน์โหลดรูป"
                                                         title="ดาวน์โหลดรูป"
-                                                        className="inline-flex size-9 items-center justify-center rounded-lg border border-border text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30"
+                                                        className="inline-flex size-9 items-center justify-center rounded-lg border border-border text-muted-foreground transition-colors hover:bg-[var(--glass-surface-hover)] hover:shadow-[inset_0_1px_0_var(--glass-highlight)] hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30"
                                                     >
                                                         <Download size={16} aria-hidden="true" />
                                                     </a>
@@ -467,7 +467,7 @@ export default function StorageImages() {
                                             href={getStorageImageUrl(image.id, true, image.file_name)}
                                             aria-label="ดาวน์โหลดรูป"
                                             title="ดาวน์โหลดรูป"
-                                            className="inline-flex size-9 w-full items-center justify-center rounded-lg border border-border text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30"
+                                            className="inline-flex size-9 w-full items-center justify-center rounded-lg border border-border text-muted-foreground transition-colors hover:bg-[var(--glass-surface-hover)] hover:shadow-[inset_0_1px_0_var(--glass-highlight)] hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30"
                                         >
                                             <Download size={16} aria-hidden="true" />
                                         </a>
@@ -500,7 +500,7 @@ export default function StorageImages() {
                                         type="button"
                                         onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
                                         disabled={displayPage === 1}
-                                        className="inline-flex h-9 items-center gap-1 rounded-lg border border-input px-3 text-sm font-medium hover:bg-muted disabled:pointer-events-none disabled:opacity-50"
+                                        className="inline-flex h-9 items-center gap-1 rounded-lg border border-input px-3 text-sm font-medium hover:bg-[var(--glass-surface-hover)] hover:shadow-[inset_0_1px_0_var(--glass-highlight)] disabled:pointer-events-none disabled:opacity-50"
                                     >
                                         <ChevronLeft size={16} aria-hidden="true" /> ก่อนหน้า
                                     </button>
@@ -508,7 +508,7 @@ export default function StorageImages() {
                                         type="button"
                                         onClick={() => setCurrentPage((page) => Math.min(pageCount, page + 1))}
                                         disabled={displayPage === pageCount}
-                                        className="inline-flex h-9 items-center gap-1 rounded-lg border border-input px-3 text-sm font-medium hover:bg-muted disabled:pointer-events-none disabled:opacity-50"
+                                        className="inline-flex h-9 items-center gap-1 rounded-lg border border-input px-3 text-sm font-medium hover:bg-[var(--glass-surface-hover)] hover:shadow-[inset_0_1px_0_var(--glass-highlight)] disabled:pointer-events-none disabled:opacity-50"
                                     >
                                         ถัดไป <ChevronRight size={16} aria-hidden="true" />
                                     </button>
@@ -543,7 +543,7 @@ export default function StorageImages() {
                                 type="button"
                                 onClick={() => setSelectedImage(null)}
                                 aria-label="ปิดตัวอย่าง"
-                                className="inline-flex size-9 shrink-0 items-center justify-center rounded-lg border border-border text-muted-foreground hover:bg-muted hover:text-foreground"
+                                className="inline-flex size-9 shrink-0 items-center justify-center rounded-lg border border-border text-muted-foreground hover:bg-[var(--glass-surface-hover)] hover:shadow-[inset_0_1px_0_var(--glass-highlight)] hover:text-foreground"
                             >
                                 <X size={18} aria-hidden="true" />
                             </button>

@@ -186,7 +186,7 @@ const PortalHome = () => {
                                     "mt-4 inline-flex min-h-11 w-full items-center",
                                     "justify-center gap-2 rounded-lg border border-input cursor-pointer",
                                     "bg-background px-4 py-3 text-sm font-medium",
-                                    "transition-colors hover:bg-muted hover:text-foreground hover:opacity-90",
+                                    "transition-colors hover:bg-[var(--glass-surface-hover)] hover:shadow-[inset_0_1px_0_var(--glass-highlight)] hover:text-foreground hover:opacity-90",
                                     "focus-visible:outline-none focus-visible:ring-2",
                                     "focus-visible:ring-ring",
                                     "disabled:cursor-not-allowed disabled:opacity-50",

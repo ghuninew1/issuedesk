@@ -188,7 +188,7 @@ const ImageUploader = ({ files, onChange, disabled = false }) => {
                     "transition-colors",
                     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                     "disabled:cursor-not-allowed disabled:opacity-50",
-                    isDragging ? "border-primary bg-accent" : "border-border hover:border-primary/50 hover:bg-muted/30",
+                    isDragging ? "border-primary bg-accent" : "border-border hover:border-primary/50 hover:bg-[var(--glass-surface-hover)] hover:shadow-[inset_0_1px_0_var(--glass-highlight)]",
                 )}
             >
                 <Images className="mb-3 size-10 text-muted-foreground" />

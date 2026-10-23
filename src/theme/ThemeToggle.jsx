@@ -101,7 +101,7 @@ const ThemeToggle = () => {
                               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                               isActive
                                   ? "bg-accent text-accent-foreground"
-                                  : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                                  : "text-muted-foreground hover:bg-[var(--glass-surface-hover)] hover:shadow-[inset_0_1px_0_var(--glass-highlight)] hover:text-accent-foreground",
                           )}
                       >
                           {icon}

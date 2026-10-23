@@ -180,7 +180,7 @@ const RecentIssues = () => {
 
                         <tbody className="divide-y divide-border">
                             {issues.map((issue) => (
-                                <tr key={issue.id} className={cx("relative transition-colors hover:bg-muted/30")}>
+                                <tr key={issue.id} className={cx("relative transition-colors hover:bg-[var(--glass-surface-hover)] hover:shadow-[inset_0_1px_0_var(--glass-highlight)]")}>
                                     <td className="px-5 py-4">
                                         <Link
                                             to={`/issues/${encodeURIComponent(issue.ticket_number)}`}
@@ -229,7 +229,7 @@ const RecentIssues = () => {
                     {issues.map((issue) => (
                         <article
                             key={issue.id}
-                            className={cx("relative space-y-4 p-4", "transition-colors hover:bg-muted/30")}
+                            className={cx("relative space-y-4 p-4", "transition-colors hover:bg-[var(--glass-surface-hover)] hover:shadow-[inset_0_1px_0_var(--glass-highlight)]")}
                         >
                             <div className="flex items-start justify-between gap-3">
                                 <div className="min-w-0">

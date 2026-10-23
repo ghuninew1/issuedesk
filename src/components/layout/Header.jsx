@@ -88,7 +88,7 @@ const Header = ({ isHeaderVisible = true, onOpenMobileSidebar }) => {
                             className={cx(
                                 "flex size-10 shrink-0 items-center justify-center rounded-lg",
                                 "text-muted-foreground transition-colors",
-                                "hover:bg-accent hover:text-accent-foreground",
+                                "hover:bg-[var(--glass-surface-hover)] hover:shadow-[inset_0_1px_0_var(--glass-highlight)] hover:text-accent-foreground",
                                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                                 "md:hidden",
                             )}
@@ -107,7 +107,7 @@ const Header = ({ isHeaderVisible = true, onOpenMobileSidebar }) => {
                         className={cx(
                             "flex size-10 shrink-0 items-center justify-center rounded-lg",
                             "text-foreground transition-colors",
-                            "hover:bg-accent hover:text-accent-foreground",
+                            "hover:bg-[var(--glass-surface-hover)] hover:shadow-[inset_0_1px_0_var(--glass-highlight)] hover:text-accent-foreground",
                             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                         )}
                     >
@@ -131,7 +131,7 @@ const Header = ({ isHeaderVisible = true, onOpenMobileSidebar }) => {
                         onClick={handleLogout}
                         className={cx(
                             "inline-flex h-10 items-center gap-2 rounded-lg px-3",
-                            "text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground cursor-pointer",
+                            "text-sm text-muted-foreground hover:bg-[var(--glass-surface-hover)] hover:shadow-[inset_0_1px_0_var(--glass-highlight)] hover:text-accent-foreground cursor-pointer",
                             "transition-colors",
                             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                             "motion-reduce:transition-none",
@@ -146,7 +146,7 @@ const Header = ({ isHeaderVisible = true, onOpenMobileSidebar }) => {
                         onClick={() => navigate("/login")}
                         className={cx(
                             "inline-flex h-10 items-center gap-2 rounded-lg px-3",
-                            "text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground cursor-pointer",
+                            "text-sm text-muted-foreground hover:bg-[var(--glass-surface-hover)] hover:shadow-[inset_0_1px_0_var(--glass-highlight)] hover:text-accent-foreground cursor-pointer",
                             "transition-colors",
                             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                             "motion-reduce:transition-none",

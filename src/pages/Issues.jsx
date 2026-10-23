@@ -167,7 +167,7 @@ const Issues = () => {
                     className={cx(
                         "inline-flex items-center justify-center gap-2",
                         "rounded-full border border-input p-3",
-                        "transition-colors hover:bg-muted cursor-pointer",
+                        "transition-colors hover:bg-[var(--glass-surface-hover)] hover:shadow-[inset_0_1px_0_var(--glass-highlight)] cursor-pointer",
                         "focus-visible:outline-none focus-visible:ring-2",
                         "focus-visible:ring-ring/20",
                         "disabled:pointer-events-none disabled:opacity-50",
@@ -222,7 +222,7 @@ const Issues = () => {
                         className={cx(
                             "mt-3 inline-flex h-9 items-center justify-center",
                             "rounded-lg border border-input px-3 text-sm font-medium",
-                            "transition-colors hover:bg-muted",
+                            "transition-colors hover:bg-[var(--glass-surface-hover)] hover:shadow-[inset_0_1px_0_var(--glass-highlight)]",
                             "focus-visible:outline-none focus-visible:ring-2",
                             "focus-visible:ring-ring/20",
                             "disabled:pointer-events-none disabled:opacity-50",
@@ -269,7 +269,7 @@ const Issues = () => {
                                     {filteredIssues.map((issue) => (
                                         <tr
                                             key={issue.id}
-                                            className={cx("relative transition-colors hover:bg-muted/30")}
+                                            className={cx("relative transition-colors hover:bg-[var(--glass-surface-hover)] hover:shadow-[inset_0_1px_0_var(--glass-highlight)]")}
                                         >
                                             <td className="whitespace-nowrap px-4 py-4 font-medium">
                                                 <Link
@@ -316,7 +316,7 @@ const Issues = () => {
                                 key={issue.id}
                                 className={cx(
                                     "relative rounded-xl border border-border p-4",
-                                    "transition-colors hover:bg-muted/30",
+                                    "transition-colors hover:bg-[var(--glass-surface-hover)] hover:shadow-[inset_0_1px_0_var(--glass-highlight)]",
                                 )}
                             >
                                 <div className="flex flex-wrap items-start justify-between gap-3">
