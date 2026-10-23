@@ -1,18 +1,20 @@
 import { Navigate, Outlet, Route, Routes } from "react-router-dom";
-import AppShell from "./components/layout/AppShell";
-import DashboardStats from "./components/dashboard/DashboardStats";
-import RecentIssues from "./components/dashboard/RecentIssues";
-import ReportIssue from "./pages/ReportIssue";
-import Issues from "./pages/Issues";
-import IssueDetail from "./pages/IssueDetail";
-import PortalHome from "./pages/PortalHome";
-import LoginRegister from "./pages/LoginRegister";
+import { lazy, Suspense } from "react";
 import { Loader } from "lucide-react";
-import ProtectedRoute from "./auth/ProtectedRoute";
-import TrackTicket from "./pages/TrackTicket";
 import { useAuth } from "./auth/useAuth";
-import Sheet from "./pages/Sheet";
-import StorageImages from "./pages/StorageImages";
+
+const AppShell = lazy(() => import("./components/layout/AppShell"));
+const DashboardStats = lazy(() => import("./components/dashboard/DashboardStats"));
+const RecentIssues = lazy(() => import("./components/dashboard/RecentIssues"));
+const ReportIssue = lazy(() => import("./pages/ReportIssue"));
+const Issues = lazy(() => import("./pages/Issues"));
+const IssueDetail = lazy(() => import("./pages/IssueDetail"));
+const PortalHome = lazy(() => import("./pages/PortalHome"));
+const LoginRegister = lazy(() => import("./pages/LoginRegister"));
+const ProtectedRoute = lazy(() => import("./auth/ProtectedRoute"));
+const TrackTicket = lazy(() => import("./pages/TrackTicket"));
+const Sheet = lazy(() => import("./pages/Sheet"));
+const StorageImages = lazy(() => import("./pages/StorageImages"));
 
 function LoginRoute() {
     const { user, isLoading } = useAuth();
@@ -71,55 +73,57 @@ function AppLayout() {
 
 function App() {
     return (
-        <Routes>
-            <Route path="/login" element={<LoginRoute />} />
-            <Route element={<AppLayout />}>
-                <Route path="/" element={<PortalHome />} />
-                <Route
-                    path="/dashboard"
-                    element={
-                        <ProtectedRoute requiredRole="admin">
-                            <DashboardPage />
-                        </ProtectedRoute>
-                    }
-                />
-                <Route
-                    path="/issues"
-                    element={
-                        <ProtectedRoute requiredRole="admin">
-                            <Issues />
-                        </ProtectedRoute>
-                    }
-                />
-                <Route
-                    path="/issues/:ticketNumber"
-                    element={
-                        <ProtectedRoute requiredRole="admin">
-                            <IssueDetail />
-                        </ProtectedRoute>
-                    }
-                />
-                <Route
-                    path="/storage/images"
-                    element={
-                        <ProtectedRoute requiredRole="admin">
-                            <StorageImages />
-                        </ProtectedRoute>
-                    }
-                />
-                <Route path="/track/:ticketNumber" element={<TrackTicket />} />
-                <Route path="/report" element={<ReportIssue />} />
-                <Route
-                    path="/sheet"
-                    element={
-                        <ProtectedRoute requiredRole="admin">
-                            <Sheet />
-                        </ProtectedRoute>
-                    }
-                />
-                <Route path="*" element={<NotFoundPage />} />
-            </Route>
-        </Routes>
+        <Suspense fallback={<Loader className="animate-spin" />}>
+            <Routes>
+                <Route path="/login" element={<LoginRoute />} />
+                <Route element={<AppLayout />}>
+                    <Route path="/" element={<PortalHome />} />
+                    <Route
+                        path="/dashboard"
+                        element={
+                            <ProtectedRoute requiredRole="admin">
+                                <DashboardPage />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/issues"
+                        element={
+                            <ProtectedRoute requiredRole="admin">
+                                <Issues />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/issues/:ticketNumber"
+                        element={
+                            <ProtectedRoute requiredRole="admin">
+                                <IssueDetail />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/storage/images"
+                        element={
+                            <ProtectedRoute requiredRole="admin">
+                                <StorageImages />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route path="/track/:ticketNumber" element={<TrackTicket />} />
+                    <Route path="/report" element={<ReportIssue />} />
+                    <Route
+                        path="/sheet"
+                        element={
+                            <ProtectedRoute requiredRole="admin">
+                                <Sheet />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route path="*" element={<NotFoundPage />} />
+                </Route>
+            </Routes>
+        </Suspense>
     );
 }
 
