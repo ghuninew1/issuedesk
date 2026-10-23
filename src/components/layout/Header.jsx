@@ -4,6 +4,7 @@ import { cx } from "../../utils/cx";
 import { LogOut, Menu, PanelLeftClose, PanelLeftOpen, Headset, LogIn } from "lucide-react";
 import { api } from "../../utils/api";
 import { useAuth } from "../../auth/useAuth";
+import logo from "../../assets/logo.avif";
 
 const MenuIcon = () => <Menu size={20} aria-hidden="true" />;
 
@@ -130,7 +131,8 @@ const Header = ({ isSidebarCollapsed, isHeaderVisible = true, onToggleSidebar, o
                             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                         )}
                     >
-                        <Headset size={24} aria-hidden="true" />
+                        {/* <Headset size={24} aria-hidden="true" /> */}
+                        <img src={logo} alt="IssueDesk" className="h-8 w-8" />
                     </button>
                     <div className="truncate text-sm font-medium">
                         <p className="truncate text-sm font-medium"> {currentPage.title}</p>

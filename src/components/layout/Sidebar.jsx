@@ -1,6 +1,8 @@
 import { NavLink } from "react-router-dom";
 import { cx } from "../../utils/cx";
-import { LayoutDashboard, ClipboardList, ClipboardPlus, Headset, Images, FileSpreadsheet } from "lucide-react";
+import { LayoutDashboard, ClipboardList, ClipboardPlus, Images, FileSpreadsheet } from "lucide-react";
+import logoFull from "../../assets/GhuniNew_full_color.avif";
+import logo from "../../assets/logo.avif";
 
 const navLinks = [
     { icon: LayoutDashboard, label: "Dashboard", to: "/dashboard" },
@@ -31,22 +33,25 @@ const SidebarContent = ({ isCollapsed, onNavigate }) => {
                             "md:justify-center md:px-0",
                             "focus-visible:outline-none focus-visible:ring-2",
                             "focus-visible:ring-inset focus-visible:ring-ring/50",
-                            !isCollapsed && "lg:justify-start lg:px-3",
+                            "hover:bg-sidebar-border hover:text-sidebar-accent-foreground",
+                            !isCollapsed && "lg:justify-start lg:px-3 glass-nav-active ",
                             isActive
-                                ? "glass-nav-active font-medium text-sidebar-accent-foreground"
+                                ? "font-medium text-sidebar-accent-foreground"
                                 : "text-muted-foreground hover:text-sidebar-accent-foreground glass-nav-link",
                         )
                     }
                 >
-                    <span className="flex size-10 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-                        <Headset size={22} aria-hidden="true" className="cursor-pointer hover:scale-105" />
-                    </span>
-
-                    <div className={cx("min-w-0", "md:hidden", !isCollapsed && "lg:block")}>
-                        <h1 className="text-sm font-semibold">IssueDesk</h1>
-
-                        <p className="text-xs text-muted-foreground">IT Support Center</p>
-                    </div>
+                    {isCollapsed ? (
+                        <img src={logo} alt="IssueDesk" width={36} height={36} className="size-full object-cover" />
+                    ) : (
+                        <img
+                            src={logoFull}
+                            alt="IssueDesk"
+                            width={120}
+                            height={36}
+                            className="size-full object-cover"
+                        />
+                    )}
                 </NavLink>
             </div>
 
