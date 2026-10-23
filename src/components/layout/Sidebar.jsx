@@ -1,6 +1,14 @@
 import { NavLink } from "react-router-dom";
 import { cx } from "../../utils/cx";
-import { LayoutDashboard, ClipboardList, ClipboardPlus, Images, FileSpreadsheet } from "lucide-react";
+import {
+    LayoutDashboard,
+    ClipboardList,
+    ClipboardPlus,
+    Images,
+    FileSpreadsheet,
+    PanelLeftClose,
+    PanelLeftOpen,
+} from "lucide-react";
 import logoFull from "../../assets/GhuniNew_full_color.avif";
 import logo from "../../assets/logo.avif";
 
@@ -12,57 +20,55 @@ const navLinks = [
     { icon: FileSpreadsheet, label: "Sheet", to: "/sheet" },
 ];
 
-const SidebarContent = ({ isCollapsed, onNavigate }) => {
+const SidebarContent = ({ isCollapsed, onNavigate, onToggleSidebar, mobile = false }) => {
     return (
         <>
             {/* Brand */}
-            <div
-                className={cx(
-                    "flex h-16 shrink-0 items-center gap-3",
-                    "border-b border-sidebar-border px-4",
-                    "md:justify-center md:px-0",
-                    !isCollapsed && "lg:justify-start lg:px-5",
-                )}
-            >
+            <div className={cx("flex h-14 shrink-0 items-center justify-center")}>
                 <NavLink
                     to="/"
                     end
                     className={({ isActive }) =>
                         cx(
-                            "transition-colors flex items-center gap-3 rounded-lg px-3 py-2.5",
-                            "md:justify-center md:px-0",
+                            "transition-colors flex items-center justify-center rounded-xl",
+                            mobile || !isCollapsed ? "h-10 w-full gap-2 px-2" : "size-10",
                             "focus-visible:outline-none focus-visible:ring-2",
                             "focus-visible:ring-inset focus-visible:ring-ring/50",
                             "hover:bg-sidebar-border hover:text-sidebar-accent-foreground",
-                            !isCollapsed && "lg:justify-start lg:px-3 glass-nav-active ",
+                            mobile || !isCollapsed ? "" : "glass-nav-active",
                             isActive
                                 ? "font-medium text-sidebar-accent-foreground"
                                 : "text-muted-foreground hover:text-sidebar-accent-foreground glass-nav-link",
                         )
                     }
                 >
-                    {isCollapsed ? (
-                        <img src={logo} alt="IssueDesk" width={36} height={36} className="size-full object-cover" />
-                    ) : (
+                    {mobile || !isCollapsed ? (
                         <img
                             src={logoFull}
                             alt="IssueDesk"
                             width={120}
                             height={36}
-                            className="size-full object-cover"
+                            className="h-8 w-auto object-contain"
                         />
+                    ) : (
+                        <img src={logo} alt="IssueDesk" width={32} height={32} className="size-8 object-cover" />
                     )}
                 </NavLink>
             </div>
 
             {/* Navigation */}
-            <nav aria-label="Main navigation" className="flex-1 space-y-1 overflow-y-auto p-3">
+            <nav
+                aria-label="Main navigation"
+                className={cx(
+                    "flex-1 space-y-1 overflow-y-auto p-2 animate-fadeInLeft",
+                    mobile || !isCollapsed ? "w-56" : "overflow-x-hidden",
+                )}
+            >
                 <p
                     className={cx(
                         "px-3 pb-2 pt-3 text-xs font-medium uppercase tracking-wider",
                         "text-muted-foreground",
-                        "md:hidden",
-                        !isCollapsed && "lg:block",
+                        mobile || !isCollapsed ? "block" : "hidden",
                     )}
                 >
                     Workspace
@@ -77,12 +83,11 @@ const SidebarContent = ({ isCollapsed, onNavigate }) => {
                         onClick={onNavigate}
                         className={({ isActive }) =>
                             cx(
-                                "flex min-h-11 items-center gap-3 rounded-lg px-3 py-2.5",
-                                "transition-colors",
-                                "md:justify-center md:px-0",
+                                "flex min-h-11 items-center rounded-xl px-3 py-2.5",
+                                mobile || !isCollapsed ? "w-full gap-3" : "mx-auto size-11 justify-center px-0",
+                                "transition-all animate-fadeInLeft duration-200 ease-in-out",
                                 "focus-visible:outline-none focus-visible:ring-2",
                                 "focus-visible:ring-inset focus-visible:ring-ring/50",
-                                !isCollapsed && "lg:justify-start lg:px-3",
                                 isActive
                                     ? "glass-nav-active font-medium text-sidebar-accent-foreground"
                                     : "text-muted-foreground hover:text-sidebar-accent-foreground glass-nav-link",
@@ -90,23 +95,41 @@ const SidebarContent = ({ isCollapsed, onNavigate }) => {
                         }
                     >
                         <link.icon className="size-5 shrink-0" aria-hidden="true" />
-
-                        <span className={cx("text-sm", "md:hidden", !isCollapsed && "lg:inline")}>{link.label}</span>
+                        <span className={cx("text-sm", 
+                            mobile || !isCollapsed ? "inline" : "sr-only")}>
+                            {link.label}
+                        </span>
                     </NavLink>
                 ))}
             </nav>
 
             {/* Footer */}
-            <div className={cx("shrink-0 border-t border-sidebar-border p-4", "md:hidden", !isCollapsed && "lg:block")}>
-                <p className="text-xs text-muted-foreground">IssueDesk</p>
-
-                <p className="mt-1 text-xs text-muted-foreground">Internal IT Support</p>
-            </div>
+            {!mobile && (
+                <div className={cx("shrink-0 p-2", !isCollapsed && "border-t border-sidebar-border")}>
+                    <button
+                        type="button"
+                        onClick={onToggleSidebar}
+                        aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+                        aria-pressed={isCollapsed}
+                        title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+                        className="mx-auto flex size-auto items-center justify-center rounded-xl p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
+                    >
+                        {isCollapsed ? (
+                            <PanelLeftOpen size={19} aria-hidden="true" />
+                        ) : (
+                            <div className="flex items-center gap-2 px-2 animate-fadeInLeft">
+                                <PanelLeftClose size={19} aria-hidden="true" />
+                                Collapse
+                            </div>
+                        )}
+                    </button>
+                </div>
+            )}
         </>
     );
 };
 
-const Sidebar = ({ isCollapsed, isMobileOpen, onMobileClose }) => {
+const Sidebar = ({ isCollapsed, isMobileOpen, onMobileClose, onToggleSidebar }) => {
     return (
         <>
             {/* Mobile backdrop */}
@@ -136,22 +159,19 @@ const Sidebar = ({ isCollapsed, isMobileOpen, onMobileClose }) => {
                 )}
                 inert={!isMobileOpen}
             >
-                <SidebarContent isCollapsed={false} onNavigate={onMobileClose} />
+                <SidebarContent isCollapsed={false} onNavigate={onMobileClose} mobile />
             </aside>
 
             {/* Tablet and desktop sidebar */}
             <aside
                 aria-label="Main sidebar"
                 className={cx(
-                    "glass-sidebar relative z-20",
-                    "hidden h-screen shrink-0 flex-col animate-fadeInLeft",
-                    "border-r text-sidebar-foreground",
-                    "transition-[width] duration-200 ease-in-out",
-                    "md:sticky md:top-0 md:flex md:w-[60px]",
-                    isCollapsed ? "lg:w-[60px]" : "lg:w-56",
+                    "glass-sidebar fixed left-3 top-1/2 z-30 hidden h-auto max-h-[calc(100vh-2rem)] -translate-y-1/2 flex-col animate-fadeInLeft rounded-[1.4rem] border text-sidebar-foreground shadow-xl transition-[width] duration-200",
+                    isCollapsed ? "w-[60px]" : "w-60",
+                    "md:flex",
                 )}
             >
-                <SidebarContent isCollapsed={isCollapsed} />
+                <SidebarContent isCollapsed={isCollapsed} onToggleSidebar={onToggleSidebar} />
             </aside>
         </>
     );

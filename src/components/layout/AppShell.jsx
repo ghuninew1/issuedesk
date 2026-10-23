@@ -78,6 +78,7 @@ const AppShell = ({ children }) => {
                     isCollapsed={isSidebarCollapsed}
                     isMobileOpen={isMobileSidebarOpen}
                     onMobileClose={() => setIsMobileSidebarOpen(false)}
+                    onToggleSidebar={() => setIsSidebarCollapsed((previous) => !previous)}
                 />
             )}
             {isLoading && (
@@ -86,9 +87,7 @@ const AppShell = ({ children }) => {
 
             <div className="relative z-10 flex min-w-0 flex-1 flex-col animate-fade">
                 <Header
-                    isSidebarCollapsed={isSidebarCollapsed}
                     isHeaderVisible={isHeaderVisible || isMobileSidebarOpen}
-                    onToggleSidebar={() => setIsSidebarCollapsed((previous) => !previous)}
                     onOpenMobileSidebar={() => setIsMobileSidebarOpen(true)}
                 />
 

@@ -1,17 +1,14 @@
 import { useLocation, useNavigate, useMatch } from "react-router-dom";
 import ThemeToggle from "../../theme/ThemeToggle";
 import { cx } from "../../utils/cx";
-import { LogOut, Menu, PanelLeftClose, PanelLeftOpen, Headset, LogIn } from "lucide-react";
+import { LogOut, Menu, LogIn } from "lucide-react";
 import { api } from "../../utils/api";
 import { useAuth } from "../../auth/useAuth";
 import logo from "../../assets/logo.avif";
 
 const MenuIcon = () => <Menu size={20} aria-hidden="true" />;
 
-const SidebarToggleIcon = ({ isCollapsed }) =>
-    isCollapsed ? <PanelLeftOpen size={20} aria-hidden="true" /> : <PanelLeftClose size={20} aria-hidden="true" />;
-
-const Header = ({ isSidebarCollapsed, isHeaderVisible = true, onToggleSidebar, onOpenMobileSidebar }) => {
+const Header = ({ isHeaderVisible = true, onOpenMobileSidebar }) => {
     const { pathname } = useLocation();
     const navigate = useNavigate();
     const trackMatch = useMatch("/track/:ticketNumber");
@@ -99,23 +96,6 @@ const Header = ({ isSidebarCollapsed, isHeaderVisible = true, onToggleSidebar, o
                             <MenuIcon />
                         </button>
 
-                        {/* Desktop sidebar toggle */}
-                        <button
-                            type="button"
-                            onClick={onToggleSidebar}
-                            aria-label={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-                            aria-pressed={isSidebarCollapsed}
-                            title={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-                            className={cx(
-                                "hidden size-10 shrink-0 items-center justify-center rounded-lg",
-                                "text-muted-foreground transition-colors",
-                                "hover:bg-accent hover:text-accent-foreground",
-                                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                                "md:flex",
-                            )}
-                        >
-                            <SidebarToggleIcon isCollapsed={isSidebarCollapsed} />
-                        </button>
                     </>
                 )}
 
