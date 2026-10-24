@@ -10,14 +10,10 @@ function storageFileUrl(baseUrl, fileId) {
 export async function onRequestGet({ request, params, env }) {
     const url = new URL(request.url);
     const isDownload = url.searchParams.get("download") === "1";
-
-    // Inventory images are visible to signed-in users; downloads remain admin-only.
-    const auth = isDownload
-        ? await requireStorageAdmin(request, env)
-        : await requireRole(request, env);
+    const auth = await requireRole(request, env);
     if (auth.response) return auth.response;
 
-    const storage = isDownload ? auth : getStorageConfig(env);
+    const storage = getStorageConfig(env);
     if (storage.response) return storage.response;
 
     const fileId = params.fileId?.trim();
@@ -36,6 +32,9 @@ export async function onRequestGet({ request, params, env }) {
         const upstreamMime = (response.headers.get("content-type") || "application/octet-stream").split(";")[0].trim().toLowerCase();
         if (!isDownload && !SAFE_INLINE_IMAGE_TYPES.has(upstreamMime)) {
             return jsonResponse({ success: false, message: "This file type can only be downloaded" }, 415);
+        }
+        if (isDownload && auth.user.role !== "admin" && !SAFE_INLINE_IMAGE_TYPES.has(upstreamMime)) {
+            return jsonResponse({ success: false, message: "Only administrators can download non-image files" }, 403);
         }
         const disposition = isDownload ? "attachment" : "inline";
         const requestedName = url.searchParams.get("name") || "image";

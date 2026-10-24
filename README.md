@@ -143,8 +143,8 @@ API กลุ่มนี้เป็น proxy ของ IssueDesk ไปยั�
 | --- | --- | --- |
 | `GET` | `/api/storage/files` | แสดงรายการไฟล์ทั้งหมดจาก Storage เรียงใหม่ไปเก่า |
 | `POST` | `/api/storage/files` | อัปโหลดไฟล์ด้วย `multipart/form-data` field ชื่อ `file` |
-| `GET` | `/api/storage/files/:fileId` | ผู้ใช้ที่ล็อกอินดูรูปที่รองรับแบบ inline ได้; การดาวน์โหลดและจัดการไฟล์ยังต้องเป็น Admin |
-| `GET` | `/api/storage/files/:fileId?download=1&name=:fileName` | ดาวน์โหลดไฟล์เป็นไฟล์แนบ |
+| `GET` | `/api/storage/files/:fileId` | ผู้ใช้ที่ล็อกอินดูรูปที่รองรับแบบ inline ได้ |
+| `GET` | `/api/storage/files/:fileId?download=1&name=:fileName` | ผู้ใช้ที่ล็อกอินดาวน์โหลดรูปได้; ดาวน์โหลดไฟล์ชนิดอื่นและจัดการไฟล์ต้องเป็น Admin |
 | `DELETE` | `/api/storage/files/:fileId` | ลบไฟล์จาก Storage และล้างแถว `issue_attachments` ที่อ้างถึงไฟล์นั้นใน D1 |
 
 ### ตัวอย่างเรียก API
