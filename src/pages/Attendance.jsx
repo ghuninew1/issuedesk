@@ -168,7 +168,7 @@ export default function Attendance() {
                 </div>
                 {!admin && (
                     <div className="relative mx-auto mt-8 flex w-full max-w-3xl flex-col items-center gap-5">
-                        <div className="flex w-full flex-wrap items-center gap-3 rounded-2xl border border-white/80 bg-white/50 p-4 backdrop-blur-xl dark:border-white/10 dark:bg-white/5">
+                        <div className="grid w-full grid-cols-[auto_1fr] gap-3 rounded-2xl border border-white/80 bg-white/50 p-4 backdrop-blur-xl md:grid-cols-[1fr_auto] md:items-center dark:border-white/10 dark:bg-white/5">
                             <span
                                 className={`grid size-11 place-items-center rounded-2xl ${working ? "bg-amber-100 text-amber-700 dark:bg-amber-400/15 dark:text-amber-300" : today?.status === "completed" ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-400/15 dark:text-emerald-300" : "bg-slate-100 text-slate-500 dark:bg-white/10"}`}
                             >
@@ -184,7 +184,7 @@ export default function Attendance() {
                                           : "ยังไม่ได้เช็คอิน"}
                                 </p>
                             </div>
-                            <div className="ml-auto flex gap-5 text-sm">
+                            <div className="col-span-2 grid grid-cols-2 gap-3 text-sm md:col-span-2">
                                 <span className="text-muted-foreground">
                                     เข้า{" "}
                                     <b className="ml-1 text-slate-800 dark:text-white">{stamp(today?.check_in_at)}</b>
@@ -237,7 +237,7 @@ export default function Attendance() {
             )}
             {admin ? (
                 <>
-                    <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+                    <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
                         <Metric icon={Users} label="รายการทั้งหมด" value={summary.total} />
                         <Metric
                             icon={Activity}
@@ -267,7 +267,7 @@ export default function Attendance() {
                                 </h2>
                                 <p className="mt-1 text-sm text-muted-foreground">ข้อมูลสำหรับตรวจสอบ · ดูอย่างเดียว</p>
                             </div>
-                            <div className="flex flex-wrap gap-2">
+                            <div className="grid w-full gap-2 md:flex md:w-auto">
                                 <label className="relative">
                                     <Search
                                         size={15}
@@ -280,7 +280,7 @@ export default function Attendance() {
                                             setPage(1);
                                         }}
                                         placeholder="ค้นหาชื่อหรืออีเมล"
-                                        className="h-10 w-56 rounded-xl border border-slate-200/80 bg-white/60 pl-9 pr-3 text-sm outline-none focus:border-cyan-400 dark:border-white/10 dark:bg-white/5"
+                                        className="h-10 w-full rounded-xl border border-slate-200/80 bg-white/60 pl-9 pr-3 text-sm outline-none focus:border-cyan-400 md:w-56 dark:border-white/10 dark:bg-white/5"
                                     />
                                 </label>
                                 <input
@@ -291,11 +291,11 @@ export default function Attendance() {
                                         setDate(e.target.value);
                                         setPage(1);
                                     }}
-                                    className="h-10 rounded-xl border border-slate-200/80 bg-white/60 px-3 text-sm outline-none focus:border-cyan-400 dark:border-white/10 dark:bg-white/5"
+                                    className="h-10 w-full rounded-xl border border-slate-200/80 bg-white/60 px-3 text-sm outline-none focus:border-cyan-400 md:w-auto dark:border-white/10 dark:bg-white/5"
                                 />
                             </div>
                         </div>
-                        <div className="overflow-x-auto">
+                        <div className="hidden overflow-x-auto md:block">
                             <table className="w-full min-w-[680px] text-left text-sm">
                                 <thead className="bg-white/35 text-xs uppercase tracking-wide text-muted-foreground dark:bg-white/[.02]">
                                     <tr>
@@ -350,7 +350,38 @@ export default function Attendance() {
                                 </tbody>
                             </table>
                         </div>
-                        <div className="flex items-center justify-between border-t border-slate-200/70 px-5 py-4 text-sm dark:border-white/10">
+                        <div className="space-y-3 p-3 md:hidden">
+                            {records.map((record) => {
+                                const todayDate = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Bangkok" }).format(new Date());
+                                const isCurrentWorkday = record.work_date === todayDate;
+                                const isAbnormal = record.status === "working" && record.work_date < todayDate;
+                                const recordSeconds = record.work_duration_seconds + (record.status === "working" && isCurrentWorkday ? liveSeconds : 0);
+                                return (
+                                    <article key={record.id} className="rounded-2xl border border-white/70 bg-white/45 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,.8)] dark:border-white/10 dark:bg-white/[.04]">
+                                        <div className="flex items-start justify-between gap-3">
+                                            <div className="min-w-0">
+                                                <h3 className="truncate font-semibold text-slate-900 dark:text-white">{record.name}</h3>
+                                                <p className="mt-0.5 break-all text-xs text-muted-foreground">{record.email}</p>
+                                            </div>
+                                            <span className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-medium ${record.status === "completed" ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-400/10 dark:text-emerald-300" : isAbnormal ? "bg-rose-100 text-rose-700 dark:bg-rose-400/10 dark:text-rose-300" : "bg-amber-100 text-amber-700 dark:bg-amber-400/10 dark:text-amber-300"}`}>
+                                                {record.status === "completed" ? "เสร็จสิ้น" : isAbnormal ? "ผิดปกติ" : "กำลังทำงาน"}
+                                            </span>
+                                        </div>
+                                        <p className="mt-3 border-b border-slate-200/70 pb-2 text-xs text-muted-foreground dark:border-white/10">{formatDate(record.work_date)}</p>
+                                        <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
+                                            <div><p className="text-xs text-muted-foreground">เช็คอิน</p><p className="mt-1 font-medium tabular-nums text-slate-800 dark:text-white">{stamp(record.check_in_at)}</p></div>
+                                            <div><p className="text-xs text-muted-foreground">เช็คเอาต์</p><p className="mt-1 font-medium tabular-nums text-slate-800 dark:text-white">{stamp(record.check_out_at)}</p></div>
+                                        </div>
+                                        <div className="mt-3 flex items-center justify-between rounded-xl bg-cyan-50/80 px-3 py-2 text-sm dark:bg-cyan-400/[.08]">
+                                            <span className="text-muted-foreground">เวลาทำงานรวม</span>
+                                            <span className="font-semibold tabular-nums text-cyan-800 dark:text-cyan-200">{duration(recordSeconds)}</span>
+                                        </div>
+                                    </article>
+                                );
+                            })}
+                            {records.length === 0 && <p className="px-3 py-10 text-center text-sm text-muted-foreground">ไม่พบรายการลงเวลา</p>}
+                        </div>
+                        <div className="flex items-center justify-between border-t border-slate-200/70 px-4 py-4 text-sm dark:border-white/10 md:px-5">
                             <span className="text-muted-foreground">ทั้งหมด {pagination.total} รายการ</span>
                             <div className="flex items-center gap-2">
                                 <button
@@ -391,7 +422,7 @@ export default function Attendance() {
                         {history.map((record) => (
                             <div
                                 key={record.id}
-                                className="flex flex-wrap items-center justify-between gap-4 px-5 py-4"
+                                className="grid gap-3 px-4 py-4 md:flex md:items-center md:justify-between md:px-5"
                             >
                                 <div>
                                     <p className="font-medium text-slate-900 dark:text-white">
@@ -406,7 +437,7 @@ export default function Attendance() {
                                               : "กำลังทำงาน"}
                                     </p>
                                 </div>
-                                        <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm">
+                                <div className="grid grid-cols-3 gap-2 rounded-xl bg-white/35 p-3 text-xs dark:bg-white/[.03] md:flex md:flex-wrap md:gap-6 md:bg-transparent md:p-0 md:text-sm dark:md:bg-transparent">
                                     <span className="text-muted-foreground">
                                         เข้า{" "}
                                         <b className="ml-1 text-slate-800 dark:text-white">
