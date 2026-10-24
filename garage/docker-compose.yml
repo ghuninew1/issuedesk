@@ -56,6 +56,21 @@ services:
     networks:
       - storage-network
 
+  network-monitor:
+    build:
+      context: ./network-monitor
+      dockerfile: Dockerfile
+    container_name: network-monitor
+    restart: unless-stopped
+    env_file:
+      - ./network-monitor/.env
+    environment:
+      TZ: Asia/Bangkok
+    volumes:
+      - ./network-monitor/data:/app/data
+    networks:
+      - storage-network
+
 networks:
   storage-network:
     driver: bridge

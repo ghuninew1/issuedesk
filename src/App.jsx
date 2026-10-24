@@ -16,6 +16,7 @@ const TrackTicket = lazy(() => import("./pages/TrackTicket"));
 const Sheet = lazy(() => import("./pages/Sheet"));
 const StorageImages = lazy(() => import("./pages/StorageImages"));
 const Attendance = lazy(() => import("./pages/Attendance"));
+const NetworkMonitor = lazy(() => import("./pages/NetworkMonitor"));
 
 function LoginRoute() {
     const { user, isLoading } = useAuth();
@@ -116,6 +117,14 @@ function App() {
                         element={
                             <ProtectedRoute requiredRole="admin">
                                 <StorageImages />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/network-monitor"
+                        element={
+                            <ProtectedRoute requiredRole="admin">
+                                <NetworkMonitor />
                             </ProtectedRoute>
                         }
                     />

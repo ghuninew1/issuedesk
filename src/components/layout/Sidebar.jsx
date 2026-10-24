@@ -7,6 +7,7 @@ import {
     Images,
     FileSpreadsheet,
     Clock3,
+    Network,
     PanelLeftClose,
     PanelLeftOpen,
 } from "lucide-react";
@@ -20,6 +21,7 @@ const navLinks = [
     { icon: Clock3, label: "Attendance", to: "/attendance" },
     { icon: Images, label: "Storage", to: "/storage/images" },
     { icon: FileSpreadsheet, label: "Sheet", to: "/sheet" },
+    { icon: Network, label: "Network Monitor", to: "/network-monitor" },
 ];
 
 const SidebarContent = ({ isCollapsed, onNavigate, onToggleSidebar, mobile = false }) => {

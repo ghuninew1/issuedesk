@@ -35,3 +35,7 @@ garage/data
 garage/.env
 garage/storage/.env
 garage/key.txt
+test.py
+test*
+!garage/network-monitor/tests/
+!garage/network-monitor/tests/*.py
