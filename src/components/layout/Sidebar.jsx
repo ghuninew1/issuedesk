@@ -97,8 +97,7 @@ const SidebarContent = ({ isCollapsed, onNavigate, onToggleSidebar, mobile = fal
                         }
                     >
                         <link.icon className="size-5 shrink-0" aria-hidden="true" />
-                        <span className={cx("text-sm", 
-                            mobile || !isCollapsed ? "inline" : "sr-only")}>
+                        <span className={cx("text-sm", mobile || !isCollapsed ? "inline" : "sr-only")}>
                             {link.label}
                         </span>
                     </NavLink>
@@ -107,7 +106,7 @@ const SidebarContent = ({ isCollapsed, onNavigate, onToggleSidebar, mobile = fal
 
             {/* Footer */}
             {!mobile && (
-                <div className={cx("shrink-0 p-2", !isCollapsed && "border-t border-sidebar-border")}>
+                <div className={cx("shrink-0 p-2 border-t", !isCollapsed && "border-t border-sidebar-border", "animate-fadeInLeft")}>
                     <button
                         type="button"
                         onClick={onToggleSidebar}
