@@ -1,6 +1,6 @@
 # IssueDesk — Project Handoff
 
-สรุปสถานะจาก source code ใน repository ณ วันที่ 22 ตุลาคม 2026 เพื่อให้กลับมาพัฒนาต่อได้โดยไม่ต้องไล่อ่านทั้งโปรเจกต์ เอกสารนี้อธิบายสิ่งที่โค้ดทำและค่าที่ต้องตั้งก่อนเปิดใช้ ส่วนการตั้งค่า production และสถานะ migration บน Cloudflare ต้องตรวจจาก Cloudflare ก่อนเปลี่ยนแปลงเสมอ
+สรุปสถานะจาก source code ใน repository ณ วันที่ 24 ตุลาคม 2026 เพื่อให้กลับมาพัฒนาต่อได้โดยไม่ต้องไล่อ่านทั้งโปรเจกต์ เอกสารนี้อธิบายสิ่งที่โค้ดทำและค่าที่ต้องตั้งก่อนเปิดใช้ ส่วนการตั้งค่า production และสถานะ migration บน Cloudflare ต้องตรวจจาก Cloudflare ก่อนเปลี่ยนแปลงเสมอ
 
 ## ภาพรวม
 
@@ -16,7 +16,7 @@ IssueDesk เป็นระบบ IT Help Desk ภายในองค์ก�
 | Asset inventory | Google Sheets API โดยตรงจาก browser |
 | Package manager | pnpm |
 
-Version ใน `package.json` ปัจจุบันคือ `1.1.1` (README มี version เก่ากว่า)
+Version ใน `package.json` ปัจจุบันคือ `1.2.2`.
 
 ## เส้นทางหน้าเว็บ
 
@@ -31,6 +31,7 @@ Version ใน `package.json` ปัจจุบันคือ `1.1.1` (README 
 | `/issues/:ticketNumber` | Admin | `src/pages/IssueDetail.jsx` |
 | `/storage/images` | Admin | `src/pages/StorageImages.jsx` |
 | `/sheet` | Admin | `src/pages/Sheet.jsx` |
+| `/attendance` | Login required | `src/pages/Attendance.jsx`; User เห็นข้อมูลตนเอง ส่วน Admin เห็นภาพรวม/รายการทีมแบบอ่านอย่างเดียว |
 
 `src/auth/ProtectedRoute.jsx` คุมหน้า Admin ฝั่ง client; Pages Functions ต้องคุม role ซ้ำที่ API ด้วย `requireRole` ใน `functions/api/auth/_utils.js`.
 
@@ -48,6 +49,21 @@ Version ใน `package.json` ปัจจุบันคือ `1.1.1` (README 
 | `GET /api/auth/oauth/callback/:provider` | แลก code, อ่านโปรไฟล์, ผูก provider ID, ออก session |
 
 Social account ใช้ provider ID ใน `oauth_accounts`; ระบบไม่ผูกบัญชีเดิมอัตโนมัติด้วยอีเมล หากอีเมลนั้นมีบัญชีอยู่แล้ว ให้ใช้รหัสผ่านก่อน การเชื่อมบัญชีภายหลังยังไม่มี UI/API รองรับ การใช้งาน OAuth ต้องตั้ง client ID/secret ใน environment และลงทะเบียน callback URL ที่ตรงกับ origin จริง
+
+### Attendance
+
+| Method / route | สิทธิ์ / พฤติกรรม |
+| --- | --- |
+| `GET /api/attendance/today` | Session ปัจจุบัน; คืน work date ตาม `Asia/Bangkok` และ record ของวันนี้หรือ `null` |
+| `POST /api/attendance/check-in` | Session ปัจจุบัน; ตรวจ same-origin, ใช้ user ID จาก Session และเวลา UTC จาก server; unique `(user_id, work_date)` กันการลงเวลาซ้ำ |
+| `POST /api/attendance/check-out` | Session ปัจจุบัน; ตรวจ same-origin และ conditional update เฉพาะ record `working` ที่ยังไม่มีเวลาออก |
+| `GET /api/attendance/history?page=1&limit=20` | Session ปัจจุบัน; ประวัติของ user ปัจจุบันเท่านั้น, `limit` สูงสุด 50 |
+| `GET /api/admin/attendance/summary` | Admin; สรุปจำนวน record ทั้งหมด, กำลังทำงาน/เช็คเอาต์วันนี้ และ record ค้างจากวันก่อน |
+| `GET /api/admin/attendance/records?date=YYYY-MM-DD&q=name&page=1&limit=30` | Admin; ค้นหาชื่อ/อีเมล กรองวันที่ และแบ่งหน้า (limit สูงสุด 100) |
+
+`functions/api/attendance/_utils.js` มี helper สำหรับ `work_date` ไทยและ error response; ใช้ `getSessionUser`, `requireRole`, `isSameOrigin` จาก auth helper เดิม ไม่รับ `user_id`, `role` หรือ timestamp จาก request body. API ตอบ 401 เมื่อไม่มี Session, 403 เมื่อไม่ใช่ Admin/Origin ไม่ผ่าน, 409 เมื่อ check-in ซ้ำหรือไม่มี record ที่เช็คเอาต์ได้
+
+Schema รองรับหนึ่ง record ต่อ user ต่อวัน ไม่มีหลายกะหรือกะข้ามวัน; ยังไม่มี grace period, นโยบายพัก, วันหยุด, OT, การอนุมัติ หรือแก้ไขเวลาย้อนหลัง รายการ `working` ที่เป็นวันก่อนแสดงเป็น abnormal/ผิดปกติ โดยไม่เติมเวลาเช็คเอาต์เอง
 
 ### Issues และการติดตาม
 
@@ -104,8 +120,9 @@ Sheet ต้องอนุญาตให้อ่านผ่าน API key �
 | `0003_create_auth_tables.sql` | `users`, `sessions`, `login_attempts` |
 | `0004_add_issue_in_progress_at.sql` | เพิ่ม `issues.in_progress_at` และ backfill สำหรับ Ticket ที่กำลังดำเนินการ |
 | `0005_create_oauth_accounts.sql` | ตาราง provider identity และ unique `(provider, provider_user_id)` |
+| `0006_create_attendance_records.sql` | `attendance_records`, foreign key ไป `users`, unique `(user_id, work_date)` และ index ตามวัน/user |
 
-ตารางหลัก: `issues`, `issue_attachments`, `users`, `sessions`, `login_attempts`, `oauth_accounts`. มี migration file ใน repo ไม่ได้ยืนยันว่า migration ถูก apply แล้วใน remote D1; ใช้ `pnpm migrate` ตรวจสถานะก่อน และตรวจ target/environment ก่อน `pnpm migrate-apply`.
+ตารางหลัก: `issues`, `issue_attachments`, `users`, `sessions`, `login_attempts`, `oauth_accounts`, `attendance_records`. มี migration file ใน repo ไม่ได้ยืนยันว่า migration ถูก apply แล้วใน remote D1; ใช้ `pnpm migrate` ตรวจสถานะก่อน และตรวจ target/environment ก่อน `pnpm migrate-apply`. การตรวจสถานะ remote ครั้งล่าสุด (24 ต.ค. 2026) ทำไม่สำเร็จเพราะ Wrangler auth token หมดอายุและเชื่อมต่อ Cloudflare auth server ไม่ได้; สถานะ `0006` จึงยังไม่ยืนยัน
 
 ## Environment และ secrets
 
@@ -145,16 +162,19 @@ pnpm dev
 
 ## สถานะและสิ่งที่ต้องจำ
 
-ฟีเจอร์หลักมีหน้าและ Pages API แล้ว: แจ้ง/ติดตาม Ticket, Admin dashboard/list/detail/status/delete, upload/preview/download/delete attachment, Storage image manager, email notification, email/password authentication, Google/Facebook OAuth flow และ asset inventory จาก Sheets
+ฟีเจอร์หลักมีหน้าและ Pages API แล้ว: แจ้ง/ติดตาม Ticket, Admin dashboard/list/detail/status/delete, upload/preview/download/delete attachment, Storage image manager, email notification, email/password authentication, Google/Facebook OAuth flow, asset inventory จาก Sheets และ Time Attendance (พนักงานเช็คอิน/เช็คเอาต์/ดูประวัติ, Admin dashboard/list)
 
 สิ่งที่ต้องยืนยันก่อนถือว่า production ครบ:
 
-1. ตรวจ migrations `0001`–`0005` บน remote D1 และ apply เฉพาะเมื่อ target ถูกต้อง (โดยเฉพาะ `oauth_accounts` สำหรับ social sign-in)
+1. ตรวจ migrations `0001`–`0006` บน remote D1 และ apply เฉพาะเมื่อ target ถูกต้อง (`0005` สำหรับ OAuth, `0006` สำหรับ Attendance)
 2. ตรวจ Cloudflare Pages variables/secrets ของ production และ preview แยกกัน รวมทั้ง OAuth redirect URLs, Resend verified sender และ Storage Access
 3. Facebook ต้องใช้ `FACEBOOK_GRAPH_API_VERSION` เป็นเลข version เช่น `v26.0`, ไม่ใช่ credential/token; ค่าใน local config เคยถูกแก้แล้ว แต่ยังต้องยืนยันกับ environment ที่กำลังทดสอบ
 4. ปุ่ม “Forgot Password?” ใน `LoginRegister.jsx` ยังเป็นข้อความ toast เท่านั้น ไม่มี password reset API
 5. หน้า Sheet ใช้ Google API key ที่ frontend มองเห็นได้ตามธรรมชาติของ `VITE_*`; ต้องจำกัด key ด้วย referrer/API restrictions และระวังความเป็นส่วนตัวของข้อมูลใน sheet
 6. ทำ regression บน deployed/preview: สมัครและ login, role user/admin, OAuth provider, create Ticket + email, แนบไฟล์, status timeline, delete Ticket + Storage files, image management และโหลด Sheet ที่มีรูปหลายรายการ
+7. หลังยืนยันว่า `0006` ถูก apply ใน environment ที่ทดสอบแล้ว ทดสอบ Attendance: user ไม่มี Session ได้ 401, user check-in/check-out/history ได้เฉพาะข้อมูลตัวเอง, check-in/check-out ซ้ำได้ 409, user เรียก Admin API ได้ 403, Admin อ่าน summary/records ได้ และ work date ใกล้เที่ยงคืนไทยถูกต้อง
+
+ในรอบพัฒนา Attendance ตรวจ `pnpm lint` และ `pnpm build` ผ่าน; build ยังแสดงคำเตือนเรื่อง bundle ขนาดใหญ่ที่มีอยู่ก่อนแล้ว. ไม่ได้ apply migration หรือ deploy
 
 เมื่อเขียนสรุปนี้ Git working tree แสดง `src/pages/Sheet.jsx` เป็นไฟล์ที่แก้ค้างอยู่ โปรดเก็บการเปลี่ยนแปลงนั้นไว้และตรวจ diff ก่อนทับหรือ checkout
 
@@ -167,6 +187,7 @@ pnpm dev
 | Ticket form/API/email | `src/pages/ReportIssue.jsx`, `src/services/issues.js`, `functions/api/issues.js` |
 | Ticket list/detail/delete/attachments | `src/pages/Issues.jsx`, `src/pages/IssueDetail.jsx`, `functions/api/issues/[ticketNumber].js`, `functions/api/issues/[ticketNumber]/attachments/` |
 | public tracking timeline | `src/pages/TrackTicket.jsx`, `functions/api/track/[ticketNumber].js`, `migrations/0004_add_issue_in_progress_at.sql` |
+| Time Attendance UI/API | `src/pages/Attendance.jsx`, `src/App.jsx`, `src/components/layout/Sidebar.jsx`, `functions/api/attendance/`, `functions/api/admin/attendance/`, `migrations/0006_create_attendance_records.sql` |
 | Storage UI/API | `src/pages/StorageImages.jsx`, `src/services/storage.js`, `functions/api/storage/`, `STORAGE_DOCS_API_REFERENCE.md` |
 | Google Sheet inventory | `src/pages/Sheet.jsx`, `src/hooks/useGoogleSheet.js` |
 | D1 setup/Admin bootstrap | `migrations/`, `wrangler.jsonc`, `scripts/bootstrap-admin.py` |

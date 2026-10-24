@@ -8,7 +8,7 @@ IssueDesk เป็นเว็บแอป IT Help Desk สำหรับแ�
 
 ผู้ดูแลระบบเข้าสู่ระบบแล้วดู Dashboard เปลี่ยนสถานะ ดูไฟล์แนบ หรือลบ Ticket ได้จากหน้าจัดการ
 
-เวอร์ชันปัจจุบัน: `1.1.1` (อ้างอิงจาก `package.json`)
+เวอร์ชันปัจจุบัน: `1.2.2` (อ้างอิงจาก `package.json`)
 
 ## ความสามารถ
 
@@ -31,6 +31,15 @@ IssueDesk เป็นเว็บแอป IT Help Desk สำหรับแ�
 - ดูรายละเอียด Ticket เปลี่ยนสถานะ ดูตัวอย่างไฟล์แนบ ดาวน์โหลด และลบ Ticket พร้อมไฟล์ใน Storage
 - เส้นทาง `/dashboard`, `/issues` และ `/issues/:ticketNumber` รวมถึง API จัดการ Ticket จำกัดเฉพาะ role `admin`
 - หน้า `/storage/images` จัดการภาพใน Storage และหน้า `/sheet` ดูทะเบียนอุปกรณ์จาก Google Sheets (Admin เท่านั้น)
+- หน้า `/attendance` แสดงภาพรวมการลงเวลาของทีม ค้นหาด้วยชื่อ/อีเมล และกรองวันที่ (Admin ดูข้อมูลอย่างเดียว)
+
+### ระบบลงเวลาทำงาน
+
+- พนักงานที่เข้าสู่ระบบเช็คอินและเช็คเอาต์ของตนเองได้ พร้อมดูประวัติย้อนหลัง
+- หน้าพนักงานแสดงวันและเวลาในเขตเวลา `Asia/Bangkok`; Timestamp บันทึกโดย server เป็น UTC ISO 8601
+- Admin ดูจำนวนที่กำลังทำงาน เช็คเอาต์แล้ว และรายการค้างจากวันก่อน พร้อมค้นหา/กรอง/แบ่งหน้า
+- หนึ่งรายการต่อผู้ใช้ต่อวัน; ยังไม่รองรับหลายกะ กะข้ามวัน การแก้เวลา ยืนยันรายการ OT วันหยุด หรือ Grace Period
+- รายการที่ยังทำงานจากวันก่อนแสดงเป็นรายการผิดปกติ โดยระบบไม่สร้างเวลาเช็คเอาต์ให้เอง
 
 ### ระบบสนับสนุน
 
@@ -58,6 +67,10 @@ flowchart LR
     dashboard --> adminApi[API จัดการ Ticket]
     adminApi --> d1
     adminApi --> storage
+    employee[พนักงานที่เข้าสู่ระบบ] --> attendance[หน้า Attendance]
+    attendance --> attendanceApi[Attendance API]
+    attendanceApi --> d1
+    admin --> attendance
 ```
 
 1. ผู้แจ้งกรอกฟอร์มที่ `/report` ระบบสร้าง Ticket สถานะ `Open` แล้วส่งอีเมลแจ้งทีม IT
@@ -88,6 +101,8 @@ flowchart LR
 issuedesk/
 ├── functions/api/          # Cloudflare Pages Functions
 │   ├── auth/               # register, login, logout, me, session helpers
+│   ├── attendance/         # today, check-in, check-out, history
+│   ├── admin/attendance/   # summary และ records สำหรับ Admin
 │   ├── issues.js           # สร้าง Ticket + ส่งอีเมล และรายการ Ticket
 │   ├── issues/             # รายละเอียด, สถานะ, ลบ, ไฟล์แนบ
 │   ├── track/              # ติดตามสาธารณะ
@@ -118,6 +133,7 @@ issuedesk/
 | `/issues/:ticketNumber` | Admin | รายละเอียด เปลี่ยนสถานะ ไฟล์แนบ ลบ Ticket |
 | `/storage/images` | Admin | จัดการภาพใน Storage: ดูตัวอย่าง อัปโหลด ดาวน์โหลด ลบ และคัดลอกลิงก์ |
 | `/sheet` | Admin | ทะเบียนอุปกรณ์จาก Google Sheets; ค้นหา กรองสถานะ และดูรูปอุปกรณ์ |
+| `/attendance` | ผู้ใช้ที่เข้าสู่ระบบ | พนักงานเช็คอิน/เช็คเอาต์และดูประวัติ; Admin ดูภาพรวมและรายการของทีม |
 
 ## Image Storage API
 
@@ -360,6 +376,7 @@ Migrations ใน repository:
 | `0003_create_auth_tables.sql` | `users`, `sessions`, `login_attempts` และ index ที่เกี่ยวข้อง |
 | `0004_add_issue_in_progress_at.sql` | คอลัมน์ `in_progress_at` เพื่อแสดงประวัติบนหน้าติดตาม |
 | `0005_create_oauth_accounts.sql` | ตาราง `oauth_accounts` สำหรับเชื่อม provider identity กับบัญชีผู้ใช้ |
+| `0006_create_attendance_records.sql` | ตาราง `attendance_records` และ index สำหรับระบบลงเวลา |
 
 ตารางหลัก:
 
@@ -370,6 +387,7 @@ Migrations ใน repository:
 | `users` | บัญชี อีเมล รหัสผ่านที่แฮชแล้ว และ role |
 | `sessions` | hash ของโทเคน Session และวันหมดอายุ |
 | `login_attempts` | ประวัติพยายามเข้าสู่ระบบ/สมัคร เพื่อจำกัดอัตรา |
+| `attendance_records` | วันทำงาน เวลาเช็คอิน/เช็คเอาต์ สถานะ และเจ้าของรายการ |
 
 ตรวจสอบหรือ apply migration บน remote:
 
@@ -394,6 +412,12 @@ pnpm migrate-apply
 | `POST` | `/api/auth/logout` | ยกเลิก Session และล้าง Cookie |
 | `GET` | `/api/auth/oauth?provider=google\|facebook` | เริ่ม OAuth sign-in และตรวจ CSRF ด้วย state cookie |
 | `GET` | `/api/auth/oauth/callback/:provider` | ตรวจ callback, สร้าง/ค้นหาบัญชี OAuth และออก Session Cookie |
+| `GET` | `/api/attendance/today` | สถานะลงเวลาวันนี้ของ Session ปัจจุบัน |
+| `POST` | `/api/attendance/check-in` | เช็คอินผู้ใช้ปัจจุบัน; เวลาและ `user_id` มาจาก server/session |
+| `POST` | `/api/attendance/check-out` | เช็คเอาต์รายการที่กำลังทำงานของผู้ใช้ปัจจุบัน |
+| `GET` | `/api/attendance/history` | ประวัติของผู้ใช้ปัจจุบัน; รองรับ `page` และ `limit` |
+| `GET` | `/api/admin/attendance/summary` | สรุปการลงเวลาทั้งหมดและของวันนี้; ต้องเป็น Admin |
+| `GET` | `/api/admin/attendance/records` | รายการลงเวลาทั้งทีม; รองรับ `date`, `q`, `page`, `limit`; ต้องเป็น Admin |
 | `POST` | `/api/issues` | สร้าง Ticket แล้วพยายามส่งอีเมลแจ้งทีม IT |
 | `GET` | `/api/issues` | รายการ Ticket; ต้องเป็น Admin |
 | `GET` | `/api/issues/stats` | สถิติ Ticket; ต้องเป็น Admin |
@@ -426,6 +450,9 @@ python3 scripts/bootstrap-admin.py
 - Authentication และการคุมสิทธิ์ Admin เชื่อมกับ routes และ API แล้ว
 - Google/Facebook OAuth มี authorization/callback flow และ migration `0005`; ต้องตั้ง provider credentials และตรวจ migration/environment ก่อนเปิดใช้
 - หน้า `/storage/images` จัดการรูปผ่าน Storage API proxy โดย URL ที่คัดลอกยังต้องใช้ Admin session
+- หน้า `/attendance` ใช้ Attendance API; API ตรวจ Session ทุกคำขอ และ Admin endpoints ตรวจ role `admin`
+- เช็คอินซ้ำป้องกันด้วย unique constraint `(user_id, work_date)`; เช็คเอาต์ใช้ conditional update เพื่อกันคำขอซ้ำหรือพร้อมกัน
+- เวลา `work_date` คำนวณตาม `Asia/Bangkok`; ต้องตรวจว่า migration `0006_create_attendance_records.sql` ถูก apply ใน D1 environment ที่จะใช้งานแล้ว
 - การสร้าง Ticket ส่งอีเมลแจ้งทีมผ่าน Resend เมื่อตั้ง secrets ครบ
 - `scripts/bootstrap-admin.py` ใช้สร้าง Admin คนแรกแบบ interactive บน D1 remote
 
@@ -436,6 +463,7 @@ python3 scripts/bootstrap-admin.py
 3. แนบภาพแล้ว Admin เปิดดู/ดาวน์โหลดได้
 4. เปลี่ยนสถานะแล้วหน้าติดตามสาธารณะอัปเดตตามเวลา `created_at` / `in_progress_at` / `updated_at`
 5. ลบ Ticket แล้วไฟล์ใน Storage หายตาม
+6. ตรวจว่า Migration `0006_create_attendance_records.sql` ถูก apply ใน environment เป้าหมาย แล้วทดสอบ check-in/check-out และ Admin attendance ด้วยบัญชีทดสอบ
 
 ## หมายเหตุการดูแลระบบ
 

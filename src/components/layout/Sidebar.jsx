@@ -6,6 +6,7 @@ import {
     ClipboardPlus,
     Images,
     FileSpreadsheet,
+    Clock3,
     PanelLeftClose,
     PanelLeftOpen,
 } from "lucide-react";
@@ -16,6 +17,7 @@ const navLinks = [
     { icon: LayoutDashboard, label: "Dashboard", to: "/dashboard" },
     { icon: ClipboardList, label: "Issues", to: "/issues" },
     { icon: ClipboardPlus, label: "Report", to: "/report" },
+    { icon: Clock3, label: "Attendance", to: "/attendance" },
     { icon: Images, label: "Storage", to: "/storage/images" },
     { icon: FileSpreadsheet, label: "Sheet", to: "/sheet" },
 ];

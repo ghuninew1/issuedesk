@@ -15,6 +15,7 @@ const ProtectedRoute = lazy(() => import("./auth/ProtectedRoute"));
 const TrackTicket = lazy(() => import("./pages/TrackTicket"));
 const Sheet = lazy(() => import("./pages/Sheet"));
 const StorageImages = lazy(() => import("./pages/StorageImages"));
+const Attendance = lazy(() => import("./pages/Attendance"));
 
 function LoginRoute() {
     const { user, isLoading } = useAuth();
@@ -78,6 +79,14 @@ function App() {
                 <Route path="/login" element={<LoginRoute />} />
                 <Route element={<AppLayout />}>
                     <Route path="/" element={<PortalHome />} />
+                    <Route
+                        path="/attendance"
+                        element={
+                            // <ProtectedRoute>
+                                <Attendance />
+                            // </ProtectedRoute>
+                        }
+                    />
                     <Route
                         path="/dashboard"
                         element={
