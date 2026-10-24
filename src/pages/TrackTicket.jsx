@@ -83,7 +83,7 @@ export default function TrackTicket() {
         : [];
 
     return (
-        <section className="relative z-10 mx-auto max-w-2xl px-5 py-12 md:px-8 animate-fadeInUp">
+        <section className="relative z-10 mx-auto max-w-3xl px-5 py-12 md:px-8 animate-fadeInUp">
             <Link to="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
                 <ArrowLeft size={16} aria-hidden="true" className="animate-bounceLeft transition-all" />
                 กลับหน้าหลัก

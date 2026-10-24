@@ -5,7 +5,7 @@ import { useDocumentTitle } from "../hooks/useDocumentTitle";
 const ReportIssue = () => {
     useDocumentTitle("Report Issue");
     return (
-        <div className="mx-auto max-w-4xl animate-fadeInUp">
+        <div className="mx-auto max-w-7xl animate-fadeInUp">
             <div className="mb-6">
                 <p className="text-sm font-medium text-primary">IT Support</p>
 
