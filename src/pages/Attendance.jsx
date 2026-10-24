@@ -23,6 +23,10 @@ const timeFormatter = new Intl.DateTimeFormat("th-TH", {
     hour12: false,
 });
 const stamp = (value) => (value ? timeFormatter.format(new Date(value)) : "—");
+const duration = (seconds = 0) => {
+    const minutes = Math.floor(Math.max(0, Number(seconds) || 0) / 60);
+    return `${Math.floor(minutes / 60)} ชม. ${minutes % 60} นาที`;
+};
 const glass =
     "rounded-[1.5rem] border border-white/70 bg-white/65 shadow-[inset_0_1px_0_rgba(255,255,255,.85),0_18px_48px_rgba(30,64,95,.08)] backdrop-blur-2xl dark:border-white/10 dark:bg-slate-900/65";
 
@@ -55,8 +59,11 @@ export default function Attendance() {
     const admin = user?.role === "admin";
     const [today, setToday] = useState(null);
     const [history, setHistory] = useState([]);
-    const [summary, setSummary] = useState({ working: 0, completed: 0, abnormal: 0, total: 0 });
+    const [summary, setSummary] = useState({ working: 0, completed: 0, abnormal: 0, total: 0, totalDurationSeconds: 0 });
     const [records, setRecords] = useState([]);
+    const [durationAsOf, setDurationAsOf] = useState(null);
+    const [durationTick, setDurationTick] = useState(0);
+    const [totalDurationSeconds, setTotalDurationSeconds] = useState(0);
     const [pagination, setPagination] = useState({ page: 1, pages: 1, total: 0 });
     const [page, setPage] = useState(1);
     const [date, setDate] = useState("");
@@ -79,9 +86,12 @@ export default function Attendance() {
                 setSummary(stats.summary);
                 setRecords(list.records);
                 setPagination(list.pagination);
+                setDurationAsOf(list.durationAsOf);
             } else {
                 const result = await api("/api/attendance/history?limit=20");
                 setHistory(result.records);
+                setTotalDurationSeconds(result.totalDurationSeconds);
+                setDurationAsOf(result.durationAsOf);
             }
             setError("");
         } catch (cause) {
@@ -95,6 +105,15 @@ export default function Attendance() {
         }, 0);
         return () => window.clearTimeout(timer);
     }, [load]);
+
+    useEffect(() => {
+        const initialTick = window.setTimeout(() => setDurationTick(Date.now()), 0);
+        const timer = window.setInterval(() => setDurationTick(Date.now()), 60_000);
+        return () => {
+            window.clearTimeout(initialTick);
+            window.clearInterval(timer);
+        };
+    }, []);
 
     async function punch(action) {
         setPending(true);
@@ -116,6 +135,9 @@ export default function Attendance() {
     }
 
     const working = today?.status === "working";
+    const liveSeconds = durationAsOf ? Math.max(0, Math.floor((durationTick - new Date(durationAsOf).getTime()) / 1000)) : 0;
+    const userTotalSeconds = totalDurationSeconds + (working ? liveSeconds : 0);
+    const adminTotalSeconds = summary.totalDurationSeconds + (durationAsOf ? liveSeconds : 0);
     return (
         <div className="mx-auto max-w-7xl space-y-7 pb-8">
             <section className="relative overflow-hidden rounded-[2rem] border border-white/70 bg-gradient-to-br from-cyan-50/90 via-white/70 to-indigo-100/80 p-6 shadow-[inset_0_1px_0_white,0_24px_70px_rgba(45,95,125,.1)] backdrop-blur-3xl dark:border-white/10 dark:from-slate-900/95 dark:via-slate-900/75 dark:to-indigo-950/75 md:p-9">
@@ -145,8 +167,8 @@ export default function Attendance() {
                     </div>
                 </div>
                 {!admin && (
-                    <div className="relative mt-8 grid gap-4 md:grid-cols-[1fr_auto] md:items-center">
-                        <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-white/80 bg-white/50 p-4 backdrop-blur-xl dark:border-white/10 dark:bg-white/5">
+                    <div className="relative mx-auto mt-8 flex w-full max-w-3xl flex-col items-center gap-5">
+                        <div className="flex w-full flex-wrap items-center gap-3 rounded-2xl border border-white/80 bg-white/50 p-4 backdrop-blur-xl dark:border-white/10 dark:bg-white/5">
                             <span
                                 className={`grid size-11 place-items-center rounded-2xl ${working ? "bg-amber-100 text-amber-700 dark:bg-amber-400/15 dark:text-amber-300" : today?.status === "completed" ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-400/15 dark:text-emerald-300" : "bg-slate-100 text-slate-500 dark:bg-white/10"}`}
                             >
@@ -177,20 +199,20 @@ export default function Attendance() {
                             <button
                                 disabled={pending}
                                 onClick={() => punch("check-in")}
-                                className="inline-flex h-14 items-center justify-center gap-2 rounded-2xl bg-slate-900 px-7 font-medium text-white shadow-lg shadow-cyan-900/10 transition hover:-translate-y-0.5 hover:bg-cyan-800 disabled:opacity-50 dark:bg-cyan-500 dark:text-slate-950 dark:hover:bg-cyan-400"
+                                className="inline-flex h-16 w-full max-w-lg items-center justify-center gap-3 rounded-2xl bg-slate-900 px-8 text-lg font-semibold text-white shadow-xl shadow-cyan-900/15 transition hover:-translate-y-0.5 hover:bg-cyan-800 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-cyan-400/40 disabled:opacity-50 dark:bg-cyan-500 dark:text-slate-950 dark:hover:bg-cyan-400"
                             >
-                                <ArrowDownToLine size={18} /> เช็คอิน
+                                <ArrowDownToLine size={21} /> เช็คอิน
                             </button>
                         ) : working ? (
                             <button
                                 disabled={pending}
                                 onClick={() => punch("check-out")}
-                                className="inline-flex h-14 items-center justify-center gap-2 rounded-2xl bg-amber-500 px-7 font-medium text-white shadow-lg shadow-amber-900/10 transition hover:-translate-y-0.5 hover:bg-amber-600 disabled:opacity-50"
+                                className="inline-flex h-16 w-full max-w-lg items-center justify-center gap-3 rounded-2xl bg-amber-500 px-8 text-lg font-semibold text-white shadow-xl shadow-amber-900/15 transition hover:-translate-y-0.5 hover:bg-amber-600 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-amber-300/50 disabled:opacity-50"
                             >
-                                <ArrowUpFromLine size={18} /> เช็คเอาต์
+                                <ArrowUpFromLine size={21} /> เช็คเอาต์
                             </button>
                         ) : (
-                            <span className="inline-flex h-14 items-center justify-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50/70 px-6 font-medium text-emerald-700 dark:border-emerald-300/15 dark:bg-emerald-400/10 dark:text-emerald-300">
+                            <span className="inline-flex h-14 w-full max-w-lg items-center justify-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50/70 px-6 font-medium text-emerald-700 dark:border-emerald-300/15 dark:bg-emerald-400/10 dark:text-emerald-300">
                                 <Check size={18} /> เสร็จสิ้นวันนี้
                             </span>
                         )}
@@ -215,7 +237,7 @@ export default function Attendance() {
             )}
             {admin ? (
                 <>
-                    <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                    <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
                         <Metric icon={Users} label="รายการทั้งหมด" value={summary.total} />
                         <Metric
                             icon={Activity}
@@ -235,6 +257,7 @@ export default function Attendance() {
                             value={summary.abnormal}
                             tone="text-rose-600"
                         />
+                        <Metric icon={Clock3} label="เวลาทำงานรวม" value={duration(adminTotalSeconds)} tone="text-cyan-700" />
                     </section>
                     <section className={`${glass} overflow-hidden`}>
                         <div className="flex flex-col justify-between gap-4 border-b border-slate-200/70 p-5 dark:border-white/10 md:flex-row md:items-center">
@@ -276,7 +299,7 @@ export default function Attendance() {
                             <table className="w-full min-w-[680px] text-left text-sm">
                                 <thead className="bg-white/35 text-xs uppercase tracking-wide text-muted-foreground dark:bg-white/[.02]">
                                     <tr>
-                                        {["พนักงาน", "วันที่", "เช็คอิน", "เช็คเอาต์", "สถานะ"].map((heading) => (
+                                        {["พนักงาน", "วันที่", "เช็คอิน", "เช็คเอาต์", "เวลารวม", "สถานะ"].map((heading) => (
                                             <th key={heading} className="px-5 py-3 font-medium">
                                                 {heading}
                                             </th>
@@ -300,6 +323,7 @@ export default function Attendance() {
                                             </td>
                                             <td className="px-5 py-4 tabular-nums">{stamp(record.check_in_at)}</td>
                                             <td className="px-5 py-4 tabular-nums">{stamp(record.check_out_at)}</td>
+                                            <td className="px-5 py-4 whitespace-nowrap tabular-nums">{duration(record.work_duration_seconds + (record.status === "working" && record.work_date === new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Bangkok" }).format(new Date()) ? liveSeconds : 0))}</td>
                                             <td className="px-5 py-4">
                                                 <span
                                                     className={`rounded-full px-2.5 py-1 text-xs font-medium ${record.status === "completed" ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-400/10 dark:text-emerald-300" : "bg-amber-100 text-amber-700 dark:bg-amber-400/10 dark:text-amber-300"}`}
@@ -318,7 +342,7 @@ export default function Attendance() {
                                     ))}
                                     {records.length === 0 && (
                                         <tr>
-                                            <td colSpan="5" className="px-5 py-12 text-center text-muted-foreground">
+                                            <td colSpan="6" className="px-5 py-12 text-center text-muted-foreground">
                                                 ไม่พบรายการลงเวลา
                                             </td>
                                         </tr>
@@ -357,7 +381,7 @@ export default function Attendance() {
                     <div className="flex items-center justify-between border-b border-slate-200/70 p-5 dark:border-white/10">
                         <div>
                             <h2 className="text-lg font-semibold text-slate-900 dark:text-white">ประวัติการลงเวลา</h2>
-                            <p className="mt-1 text-sm text-muted-foreground">รายการของคุณ</p>
+                            <p className="mt-1 text-sm text-muted-foreground">รายการของคุณ · เวลารวม {duration(userTotalSeconds)}</p>
                         </div>
                         <span className="rounded-xl bg-cyan-100/70 p-2.5 text-cyan-800 dark:bg-cyan-400/10 dark:text-cyan-200">
                             <CalendarDays size={18} />
@@ -382,7 +406,7 @@ export default function Attendance() {
                                               : "กำลังทำงาน"}
                                     </p>
                                 </div>
-                                <div className="flex gap-6 text-sm">
+                                        <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm">
                                     <span className="text-muted-foreground">
                                         เข้า{" "}
                                         <b className="ml-1 text-slate-800 dark:text-white">
@@ -395,6 +419,7 @@ export default function Attendance() {
                                             {stamp(record.check_out_at)}
                                         </b>
                                     </span>
+                                            <span className="text-muted-foreground">รวม <b className="ml-1 text-slate-800 dark:text-white">{duration(record.check_in_at && record.check_out_at ? (new Date(record.check_out_at).getTime() - new Date(record.check_in_at).getTime()) / 1000 : record.status === "working" && record.work_date === new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Bangkok" }).format(new Date()) ? (durationTick - new Date(record.check_in_at).getTime()) / 1000 : 0)}</b></span>
                                 </div>
                             </div>
                         ))}

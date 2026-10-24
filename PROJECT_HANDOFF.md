@@ -57,13 +57,13 @@ Social account ใช้ provider ID ใน `oauth_accounts`; ระบบไม
 | `GET /api/attendance/today` | Session ปัจจุบัน; คืน work date ตาม `Asia/Bangkok` และ record ของวันนี้หรือ `null` |
 | `POST /api/attendance/check-in` | Session ปัจจุบัน; ตรวจ same-origin, ใช้ user ID จาก Session และเวลา UTC จาก server; unique `(user_id, work_date)` กันการลงเวลาซ้ำ |
 | `POST /api/attendance/check-out` | Session ปัจจุบัน; ตรวจ same-origin และ conditional update เฉพาะ record `working` ที่ยังไม่มีเวลาออก |
-| `GET /api/attendance/history?page=1&limit=20` | Session ปัจจุบัน; ประวัติของ user ปัจจุบันเท่านั้น, `limit` สูงสุด 50 |
-| `GET /api/admin/attendance/summary` | Admin; สรุปจำนวน record ทั้งหมด, กำลังทำงาน/เช็คเอาต์วันนี้ และ record ค้างจากวันก่อน |
-| `GET /api/admin/attendance/records?date=YYYY-MM-DD&q=name&page=1&limit=30` | Admin; ค้นหาชื่อ/อีเมล กรองวันที่ และแบ่งหน้า (limit สูงสุด 100) |
+| `GET /api/attendance/history?page=1&limit=20` | Session ปัจจุบัน; ประวัติของ user ปัจจุบันเท่านั้น, `limit` สูงสุด 50; คืน `totalDurationSeconds` สะสมทั้งหมดและ `durationAsOf` |
+| `GET /api/admin/attendance/summary` | Admin; สรุปจำนวน record ทั้งหมด, กำลังทำงาน/เช็คเอาต์วันนี้, record ค้างจากวันก่อน และ `totalDurationSeconds` สะสม |
+| `GET /api/admin/attendance/records?date=YYYY-MM-DD&q=name&page=1&limit=30` | Admin; ค้นหาชื่อ/อีเมล กรองวันที่ แบ่งหน้า (limit สูงสุด 100) และคืน `work_duration_seconds` ต่อรายการพร้อม `durationAsOf` |
 
 `functions/api/attendance/_utils.js` มี helper สำหรับ `work_date` ไทยและ error response; ใช้ `getSessionUser`, `requireRole`, `isSameOrigin` จาก auth helper เดิม ไม่รับ `user_id`, `role` หรือ timestamp จาก request body. API ตอบ 401 เมื่อไม่มี Session, 403 เมื่อไม่ใช่ Admin/Origin ไม่ผ่าน, 409 เมื่อ check-in ซ้ำหรือไม่มี record ที่เช็คเอาต์ได้
 
-Schema รองรับหนึ่ง record ต่อ user ต่อวัน ไม่มีหลายกะหรือกะข้ามวัน; ยังไม่มี grace period, นโยบายพัก, วันหยุด, OT, การอนุมัติ หรือแก้ไขเวลาย้อนหลัง รายการ `working` ที่เป็นวันก่อนแสดงเป็น abnormal/ผิดปกติ โดยไม่เติมเวลาเช็คเอาต์เอง
+Schema รองรับหนึ่ง record ต่อ user ต่อวัน ไม่มีหลายกะหรือกะข้ามวัน; ยังไม่มี grace period, นโยบายพัก, วันหยุด, OT, การอนุมัติ หรือแก้ไขเวลาย้อนหลัง เวลารวมสะสมคิดจากช่วงเช็คอินถึงเช็คเอาต์ และเพิ่มเวลาปัจจุบันให้รายการ `working` ของวันนี้เท่านั้น; record ค้างวันก่อนแสดงเป็น abnormal/ผิดปกติ โดยไม่เติมเวลาเช็คเอาต์เอง
 
 ### Issues และการติดตาม
 

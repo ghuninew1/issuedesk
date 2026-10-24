@@ -10,6 +10,6 @@ export default defineConfig({
         host: true,
     },
     build: {
-        chunkSizeWarningLimit: 800,
+        chunkSizeWarningLimit: 1024,
     },
 });
