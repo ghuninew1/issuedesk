@@ -213,7 +213,7 @@ const ReportForm = () => {
                         }
                     }}
                     className={cx(
-                        "fixed inset-0 z-50 flex items-center justify-center",
+                        "fixed inset-0 z-50 flex items-start justify-center overflow-hidden",
                         "cursor-pointer bg-black/70 p-3 backdrop-blur-sm md:p-4",
                         "[height:100dvh]",
                         "animate-fade",
