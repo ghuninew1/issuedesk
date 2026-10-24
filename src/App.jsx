@@ -82,9 +82,9 @@ function App() {
                     <Route
                         path="/attendance"
                         element={
-                            // <ProtectedRoute>
+                            <ProtectedRoute>
                                 <Attendance />
-                            // </ProtectedRoute>
+                            </ProtectedRoute>
                         }
                     />
                     <Route
@@ -124,7 +124,7 @@ function App() {
                     <Route
                         path="/sheet"
                         element={
-                            <ProtectedRoute requiredRole="admin">
+                            <ProtectedRoute>
                                 <Sheet />
                             </ProtectedRoute>
                         }
