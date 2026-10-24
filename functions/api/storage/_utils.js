@@ -12,12 +12,15 @@ export async function requireStorageAdmin(request, env) {
     const auth = await requireRole(request, env, "admin");
     if (auth.response) return { response: auth.response };
 
+    return getStorageConfig(env);
+}
+
+export function getStorageConfig(env) {
     const missing = REQUIRED_ENV.filter((key) => typeof env[key] !== "string" || !env[key].trim());
     if (missing.length > 0) {
         console.error("Missing Storage API environment variables:", missing);
         return { response: jsonResponse({ success: false, message: "Storage API configuration is incomplete" }, 500) };
     }
-
     return { baseUrl: env.STORAGE_API_URL.replace(/\/+$/, "") };
 }
 

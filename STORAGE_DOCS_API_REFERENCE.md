@@ -125,7 +125,7 @@ Deletes the Garage object and corresponding metadata.
 
 These endpoints are Cloudflare Pages Functions in the IssueDesk application. They proxy the Storage API for the Admin image management page at `/storage/images`; they are distinct from the Storage service's `/v2/*` routes documented above.
 
-All routes require an active IssueDesk session with the `admin` role. The browser must call these same-origin endpoints with its session cookie. Storage app credentials and Cloudflare Access service credentials are read only by Pages Functions and must not be sent by the browser.
+The browser must call these same-origin endpoints with its IssueDesk session cookie. Listing, uploading, deleting, and downloading files require an active session with the `admin` role. Inline previews of supported raster images require an active IssueDesk session and are available to signed-in users. Storage app credentials and Cloudflare Access service credentials are read only by Pages Functions and must not be sent by the browser.
 
 ### `GET /api/storage/files`
 
@@ -165,13 +165,13 @@ Uploads one file as `multipart/form-data` with required field `file`. Supported 
 
 ### `GET /api/storage/files/:fileId`
 
-Streams supported raster images through the authenticated IssueDesk proxy for inline preview. Other allowed files can only be downloaded. Responses use `Cache-Control: private, no-store` and `X-Content-Type-Options: nosniff`.
+Streams supported raster images through the authenticated IssueDesk proxy for inline preview. Any signed-in user can view a raster image when its file ID is known. Other allowed files can only be downloaded, and downloads require Admin. Responses use `Cache-Control: private, no-store` and `X-Content-Type-Options: nosniff`.
 
 To download instead, request:
 
 `GET /api/storage/files/:fileId?download=1&name=screen.png`
 
-The response uses `Content-Disposition: attachment`; filename path separators, NUL, and line breaks are sanitized. The resulting URL is not public: opening it requires a valid Admin session.
+The response uses `Content-Disposition: attachment`; filename path separators, NUL, and line breaks are sanitized. Opening it requires a valid Admin session.
 
 ### `DELETE /api/storage/files/:fileId`
 
@@ -186,7 +186,7 @@ Deletes the file from Storage and removes matching `issue_attachments` rows by `
 
 If the Storage deletion succeeds but D1 cleanup fails, the route returns HTTP `500` and reports that the image was removed but linked IssueDesk records could not be cleaned.
 
-IssueDesk proxy routes commonly return `400` for invalid input, `401` for a missing/expired session, `403` for a non-Admin user, `404` for an absent file, `413` for files over 10 MiB, `415` for unsupported file types or previews, and `502` for Storage API failures.
+IssueDesk proxy routes commonly return `400` for invalid input, `401` for a missing/expired session, `403` for a non-Admin file management or download request, `404` for an absent file, `413` for files over 10 MiB, `415` for unsupported file types or previews, and `502` for Storage API failures.
 
 ## Legacy API
 
