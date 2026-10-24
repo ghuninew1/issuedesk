@@ -188,7 +188,7 @@ const ImageUploader = ({ files, onChange, disabled = false }) => {
                     "transition-colors",
                     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                     "disabled:cursor-not-allowed disabled:opacity-50",
-                    isDragging ? "border-primary bg-accent" : "border-border hover:border-primary/50 hover:bg-[var(--glass-surface-hover)] hover:shadow-[inset_0_1px_0_var(--glass-highlight)]",
+                    isDragging ? "border-cyan-500/60 bg-cyan-500/10" : "border-white/70 bg-white/30 hover:border-cyan-400/50 hover:bg-white/55 dark:border-white/10 dark:bg-white/[.02] dark:hover:bg-white/5",
                 )}
             >
                 <Images className="mb-3 size-10 text-muted-foreground" />
@@ -211,7 +211,7 @@ const ImageUploader = ({ files, onChange, disabled = false }) => {
                     {files.map((file, index) => (
                         <div
                             key={`${file.name}-${file.lastModified}-${index}`}
-                            className="overflow-hidden rounded-lg border border-border bg-background"
+                            className="glass-surface overflow-hidden rounded-xl border-white/60 bg-white/45 dark:border-white/10 dark:bg-white/5"
                         >
                             <div className="relative aspect-square bg-muted">
                                 <ImagePreview file={file} />

@@ -186,7 +186,7 @@ export default function Sheet() {
             </section>
 
             {/* Table Head */}
-            <section className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm w-full max-w-7xl">
+            <section className="glass-surface w-full max-w-7xl overflow-hidden rounded-2xl">
                 <div className="flex flex-col gap-3 border-b border-border p-4 md:flex-row md:items-center md:justify-between md:px-5">
                     <div>
                         <h2 className="font-semibold">รายการอุปกรณ์</h2>
@@ -236,8 +236,8 @@ export default function Sheet() {
                     </div>
                 ) : (
                     <div className="relative w-full">
-                        <table className="w-full min-w-[1100px] text-left text-sm hidden md:table">
-                            <thead className="bg-muted/40 text-xs font-medium text-muted-foreground">
+                        <table className="glass-table hidden w-full min-w-[1100px] text-left text-sm md:table">
+                            <thead className="text-xs font-medium text-muted-foreground">
                                 <tr>
                                     <th scope="col" className="px-5 py-3">
                                         อุปกรณ์ / รหัส
@@ -262,7 +262,7 @@ export default function Sheet() {
                                     </th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-border">
+                            <tbody>
                                 {visibleAssets.map((asset) => (
                                     <tr
                                         key={asset.assetId}

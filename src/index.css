@@ -186,6 +186,30 @@
         background: var(--glass-surface-hover);
         box-shadow: inset 0 1px 0 var(--glass-highlight);
     }
+
+    .glass-table {
+        background: color-mix(in oklch, var(--glass-surface) 72%, transparent);
+        -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(150%);
+        backdrop-filter: blur(var(--glass-blur)) saturate(150%);
+    }
+
+    .glass-table thead {
+        background: color-mix(in oklch, var(--glass-surface-hover) 46%, transparent);
+        color: var(--muted-foreground);
+    }
+
+    .glass-table tbody tr {
+        transition: background-color 180ms ease;
+    }
+
+    .glass-table tbody tr + tr {
+        border-top: 1px solid color-mix(in oklch, var(--glass-border) 74%, transparent);
+    }
+
+    .glass-table tbody tr:hover {
+        background: var(--glass-surface-hover);
+        box-shadow: inset 0 1px 0 var(--glass-highlight);
+    }
 }
 
 @supports (backdrop-filter: blur(1px)) {

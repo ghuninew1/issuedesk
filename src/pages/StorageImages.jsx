@@ -276,7 +276,7 @@ export default function StorageImages() {
                     {notice}
                 </div>
             )}
-            <section className="overflow-hidden rounded-xl border border-border bg-card" aria-label="รายการรูปภาพ">
+            <section className="glass-surface overflow-hidden rounded-xl" aria-label="รายการรูปภาพ">
                 <div className="flex flex-col gap-3 border-b border-border p-4 md:flex-row md:items-center md:justify-between">
                     <div>
                         <h3 className="font-semibold">คลังไฟล์</h3>
@@ -327,8 +327,8 @@ export default function StorageImages() {
                 ) : (
                     <>
                         <div className="hidden overflow-x-auto md:block">
-                            <table className="w-full min-w-[760px] text-left text-sm">
-                                <thead className="bg-muted/40 text-xs text-muted-foreground">
+                            <table className="glass-table w-full min-w-[760px] text-left text-sm">
+                                <thead className="text-xs text-muted-foreground">
                                     <tr>
                                         <th scope="col" className="px-4 py-3 font-medium">
                                             ตัวอย่าง
@@ -347,7 +347,7 @@ export default function StorageImages() {
                                         </th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-border">
+                                <tbody>
                                     {visibleImages.map((image) => (
                                         <tr key={image.id} className="transition-colors hover:bg-[var(--glass-surface-hover)] hover:shadow-[inset_0_1px_0_var(--glass-highlight)]">
                                             <td className="w-24 px-4 py-3">

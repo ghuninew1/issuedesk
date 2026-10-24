@@ -151,8 +151,8 @@ const RecentIssues = () => {
             {/* Desktop table */}
             {!isLoading && !error && issues.length > 0 && (
                 <div className="hidden overflow-x-auto md:block">
-                    <table className="w-full text-left text-sm">
-                        <thead className="bg-muted/30 text-xs text-muted-foreground">
+                    <table className="glass-table w-full text-left text-sm">
+                        <thead className="text-xs text-muted-foreground">
                             <tr>
                                 <th scope="col" className="px-5 py-3 font-medium">
                                     Issue
@@ -178,7 +178,7 @@ const RecentIssues = () => {
                             </tr>
                         </thead>
 
-                        <tbody className="divide-y divide-border">
+                        <tbody>
                             {issues.map((issue) => (
                                 <tr key={issue.id} className={cx("relative transition-colors hover:bg-[var(--glass-surface-hover)] hover:shadow-[inset_0_1px_0_var(--glass-highlight)]")}>
                                     <td className="px-5 py-4">

@@ -36,12 +36,13 @@ const PortalHome = () => {
     };
 
     return (
-        <section className="mx-auto max-w-6xl px-5 pb-16 pt-12 md:px-8 md:pt-20">
+        <section className="relative isolate mx-auto max-w-6xl overflow-hidden px-5 pb-16 pt-12 md:px-8 md:pt-20">
+            <div className="pointer-events-none absolute left-1/2 top-10 -z-10 size-[34rem] -translate-x-1/2 rounded-full bg-cyan-400/10 blur-[110px] dark:bg-cyan-400/5" />
             <div className="mx-auto max-w-2xl text-center animate-fadeInDown">
                 <span
                     className={cx(
                         "inline-flex items-center gap-2 rounded-full",
-                        "border border-border bg-muted/50 px-3 py-1.5",
+                        "glass-surface border-white/70 bg-white/55 px-3 py-1.5 dark:border-white/10 dark:bg-white/5",
                         "text-xs font-medium text-muted-foreground",
                         "animate-bounceUp-15 transition-all",
                     )}
@@ -50,9 +51,9 @@ const PortalHome = () => {
                     IT Help Desk
                 </span>
 
-                <h1 className="mt-5 text-3xl font-semibold tracking-tight md:text-5xl">
+                <h1 className="mt-5 text-3xl font-semibold tracking-tight text-slate-900 dark:text-white md:text-5xl">
                     แจ้งปัญหาที่คุณเจอ
-                    <span className="mt-6 block text-muted-foreground">ได้ที่นี่</span>
+                    <span className="mt-2 block bg-gradient-to-r from-cyan-700 via-sky-600 to-indigo-600 bg-clip-text text-transparent dark:from-cyan-300 dark:via-sky-300 dark:to-indigo-300">ได้ที่นี่</span>
                 </h1>
 
                 <p className="mx-auto mt-5 max-w-lg text-sm leading-7 text-muted-foreground md:text-base">
@@ -73,12 +74,11 @@ const PortalHome = () => {
                 >
                     <article
                         className={cx(
-                            "flex flex-col rounded-2xl border border-border h-full",
-                            "bg-card p-6 shadow-sm md:p-8",
-                            "transition-colors hover:border-primary/40",
+                            "glass-surface flex h-full flex-col rounded-2xl border-white/70 bg-white/45 p-6 dark:border-white/10 dark:bg-slate-900/45 md:p-8",
+                            "transition-all hover:-translate-y-1 hover:border-cyan-400/40 hover:shadow-[0_20px_55px_rgba(34,120,150,.14)] duration-300 ease-in-out",
                         )}
                     >
-                        <div className="flex size-12 items-center justify-center rounded-xl bg-primary text-primary-foreground">
+                        <div className="flex size-12 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-600 to-indigo-600 text-white shadow-lg shadow-cyan-900/15 dark:from-cyan-400 dark:to-indigo-400 dark:text-slate-950">
                             <TicketPlus size={25} aria-hidden="true" />
                         </div>
 
@@ -106,8 +106,8 @@ const PortalHome = () => {
                             className={cx(
                                 "mt-8 inline-flex min-h-11 w-full items-center",
                                 "justify-center gap-2 rounded-lg px-4 py-3",
-                                "bg-primary text-sm font-medium text-primary-foreground",
-                                "transition-opacity hover:opacity-90 hover:bg-primary/90 hover:text-primary-foreground/90",
+                                "bg-slate-900 text-sm font-medium text-white shadow-lg shadow-cyan-900/10 dark:bg-cyan-500 dark:text-slate-950",
+                                "transition-all hover:-translate-y-0.5 hover:bg-cyan-800 hover:text-white dark:hover:bg-cyan-400 dark:hover:text-slate-950",
                                 "focus-visible:outline-none focus-visible:ring-2",
                                 "focus-visible:ring-ring focus-visible:ring-offset-2",
                             )}
@@ -131,12 +131,11 @@ const PortalHome = () => {
                 >
                     <article
                         className={cx(
-                            "flex flex-col rounded-2xl border border-border",
-                            "bg-card p-6 shadow-sm md:p-8",
-                            "transition-colors hover:border-primary/40",
+                            "glass-surface flex flex-col rounded-2xl border-white/70 bg-white/45 p-6 dark:border-white/10 dark:bg-slate-900/45 md:p-8",
+                            "transition-all hover:-translate-y-1 hover:border-fuchsia-400/40 hover:shadow-[0_20px_55px_rgba(100,70,150,.14)]",
                         )}
                     >
-                        <div className="flex size-12 items-center justify-center rounded-xl bg-muted text-foreground">
+                        <div className="flex size-12 items-center justify-center rounded-xl bg-gradient-to-br from-fuchsia-500 to-indigo-600 text-white shadow-lg shadow-fuchsia-900/15 dark:from-fuchsia-400 dark:to-indigo-400 dark:text-slate-950">
                             <Search size={25} aria-hidden="true" />
                         </div>
 
@@ -161,7 +160,7 @@ const PortalHome = () => {
                                     required
                                     className={cx(
                                         "h-11 w-full rounded-lg border border-input",
-                                        "bg-background px-3 text-sm",
+                                        "bg-white/60 px-3 text-sm backdrop-blur-xl dark:bg-white/5",
                                         "placeholder:text-muted-foreground",
                                         "focus-visible:outline-none focus-visible:ring-2",
                                         "focus-visible:ring-ring",
@@ -204,7 +203,7 @@ const PortalHome = () => {
                 </ElectricBorder>
             </div>
             {/* Callout */}
-            <div className="mx-auto mt-10 flex max-w-4xl items-start gap-3 rounded-xl border border-border bg-muted/30 p-4 md:p-5 animate-fadeInUp">
+            <div className="glass-surface mx-auto mt-10 flex max-w-4xl items-start gap-3 rounded-2xl border-white/70 bg-white/45 p-4 dark:border-white/10 dark:bg-slate-900/40 md:p-5 animate-fadeInUp">
                 <LifeBuoy size={20} className="mt-0.5 shrink-0 text-muted-foreground" aria-hidden="true" />
                 <div>
                     <p className="text-sm font-medium">ไม่แน่ใจว่าต้องทำอย่างไร?</p>

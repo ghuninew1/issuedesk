@@ -28,7 +28,7 @@ const priorities = [
 ];
 
 const fieldClassName = cx(
-    "w-full rounded-lg border border-input bg-background px-3 py-2.5",
+    "w-full rounded-xl border border-white/70 bg-white/55 px-3 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,.7)] backdrop-blur-xl dark:border-white/10 dark:bg-white/5",
     "text-sm text-foreground appearance-none",
     "placeholder:text-muted-foreground",
     "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
@@ -229,7 +229,7 @@ const ReportForm = () => {
 
             {/* Created issue */}
             {createdIssue && (
-                <div role="status" className={cx("rounded-lg border border-emerald-500/30", "bg-emerald-500/10 p-4")}>
+                <div role="status" className={cx("glass-surface rounded-2xl border-emerald-500/25", "bg-emerald-500/10 p-4")}>
                     <p className="text-sm font-medium text-emerald-700 dark:text-emerald-400">บันทึก Issue สำเร็จ</p>
 
                     <div className="mt-3 flex flex-wrap items-center gap-3">
@@ -453,7 +453,7 @@ const ReportForm = () => {
                 </div>
             </section>
 
-            <section className="space-y-4 border-t border-border pt-6">
+            <section className="space-y-4 border-t border-white/60 pt-6 dark:border-white/10">
                 <div>
                     <h3 className="text-base font-semibold">Attachments</h3>
 
@@ -463,12 +463,10 @@ const ReportForm = () => {
                 <ImageUploader files={files} onChange={setFiles} />
             </section>
 
-            <div className="flex flex-col-reverse gap-3 border-t border-border pt-6 md:flex-row justify-between">
+            <div className="flex flex-col-reverse justify-between gap-3 border-t border-white/60 pt-6 md:flex-row dark:border-white/10">
                 <button
                     className={cx(
-                        "rounded-lg bg-primary px-5 py-2.5 cursor-pointer flex items-center gap-3 justify-center",
-                        "text-sm font-medium text-primary-foreground mt-2 md:mt-0",
-                        "transition-opacity hover:bg-primary/50",
+                        "glass-surface mt-2 flex cursor-pointer items-center justify-center gap-3 rounded-xl border-white/70 bg-white/55 px-5 py-2.5 text-sm font-medium text-slate-700 transition-all hover:bg-white/80 md:mt-0 dark:border-white/10 dark:bg-white/5 dark:text-slate-200 dark:hover:bg-white/10",
                         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                         "disabled:cursor-not-allowed disabled:opacity-60",
                     )}
@@ -483,9 +481,7 @@ const ReportForm = () => {
                         disabled={isSubmitting}
                         title={isSubmitting ? "กําลังล้าง..." : "ล้างฟอร์ม"}
                         className={cx(
-                            "rounded-lg border border-border px-6 py-3 cursor-pointer",
-                            "text-base font-medium transition-colors w-full md:w-auto ring-offset-1 dark:bg-amber-500/20 bg-amber-400 text-amber-800 dark:text-amber-400",
-                            "hover:bg-[var(--glass-surface-hover)] hover:shadow-[inset_0_1px_0_var(--glass-highlight)] hover:text-accent-foreground",
+                            "rounded-xl border border-white/70 bg-white/50 px-6 py-3 text-base font-medium text-slate-700 shadow-sm backdrop-blur-xl transition-colors hover:bg-white/75 dark:border-white/10 dark:bg-white/5 dark:text-slate-200 dark:hover:bg-white/10",
                             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                             "disabled:cursor-not-allowed disabled:opacity-60",
                         )}
@@ -498,9 +494,7 @@ const ReportForm = () => {
                         disabled={isSubmitting}
                         title={isSubmitting ? "กําลังบันทึก..." : "Submit Issue ถัดไป"}
                         className={cx(
-                            "rounded-lg border border-border px-10 py-3 cursor-pointer",
-                            "text-base font-medium transition-colors w-full md:w-auto ring-offset-1 dark:bg-emerald-500/20 bg-emerald-400 text-emerald-800 dark:text-emerald-400",
-                            "hover:bg-[var(--glass-surface-hover)] hover:shadow-[inset_0_1px_0_var(--glass-highlight)] hover:text-accent-foreground",
+                            "rounded-xl border border-cyan-500/20 bg-gradient-to-r from-cyan-600 to-indigo-600 px-10 py-3 text-base font-semibold text-white shadow-lg shadow-cyan-900/15 transition-all hover:-translate-y-0.5 hover:from-cyan-700 hover:to-indigo-700 dark:from-cyan-400 dark:to-indigo-400 dark:text-slate-950 dark:hover:from-cyan-300 dark:hover:to-indigo-300",
                             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                             "disabled:cursor-not-allowed disabled:opacity-60",
                         )}

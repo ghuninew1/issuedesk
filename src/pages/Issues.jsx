@@ -250,10 +250,10 @@ const Issues = () => {
                 </div>
             ) : (
                 <>
-                    <div className="hidden overflow-hidden rounded-xl border border-border md:block">
+                    <div className="glass-surface hidden overflow-hidden rounded-xl md:block">
                         <div className="overflow-x-auto">
-                            <table className="w-full text-left text-sm">
-                                <thead className="bg-muted/50 text-muted-foreground">
+                            <table className="glass-table w-full text-left text-sm">
+                                <thead className="text-muted-foreground">
                                     <tr>
                                         <th className="px-4 py-3 font-medium">Ticket Number</th>
                                         <th className="px-4 py-3 font-medium">Issue</th>
@@ -265,7 +265,7 @@ const Issues = () => {
                                     </tr>
                                 </thead>
 
-                                <tbody className="divide-y divide-border">
+                                <tbody>
                                     {filteredIssues.map((issue) => (
                                         <tr
                                             key={issue.id}

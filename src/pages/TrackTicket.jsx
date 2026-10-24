@@ -89,7 +89,9 @@ export default function TrackTicket() {
                 กลับหน้าหลัก
             </Link>
 
-            <div className="mt-6 rounded-2xl border border-border bg-card p-6 shadow-sm md:p-8">
+            <div className="glass-surface relative mt-6 overflow-hidden rounded-[1.75rem] bg-gradient-to-br from-cyan-50/75 via-white/55 to-indigo-100/60 p-6 md:p-8 dark:from-slate-900/80 dark:via-slate-900/60 dark:to-indigo-950/60">
+                <div className="pointer-events-none absolute -right-20 -top-24 size-64 rounded-full bg-cyan-300/20 blur-3xl dark:bg-cyan-500/10" />
+                <div className="relative">
                 <div className="flex items-center gap-3 text-sm text-muted-foreground">
                     <Search size={18} aria-hidden="true" />
                     <span>ติดตาม Ticket</span>
@@ -118,7 +120,7 @@ export default function TrackTicket() {
                 {ticket && (
                     <>
                         <section
-                            className="mt-8 rounded-xl border border-border bg-muted/30 px-3 pb-4 pt-5 md:px-5"
+                            className="glass-surface mt-8 rounded-2xl bg-white/35 px-3 pb-4 pt-5 dark:bg-white/[.03] md:px-5"
                             aria-label="ขั้นตอนการดำเนินงาน"
                         >
                             <ol className="mx-auto flex items-start">
@@ -137,8 +139,8 @@ export default function TrackTicket() {
                                                     className={cx(
                                                         "absolute right-1/2 top-[21px] h-0.5 w-full",
                                                         index <= currentStep
-                                                            ? "bg-green-500"
-                                                            : "bg-muted-foreground/30",
+                                                            ? "bg-cyan-500"
+                                                            : "bg-slate-300/70 dark:bg-white/15",
                                                     )}
                                                 />
                                             )}
@@ -146,9 +148,9 @@ export default function TrackTicket() {
                                                 className={cx(
                                                     "relative z-10 flex size-[42px] items-center justify-center rounded-full",
                                                     isComplete
-                                                        ? "bg-green-500 text-primary-foreground"
-                                                        : "bg-muted-foreground/30 text-muted",
-                                                    isCurrent && "ring-4 ring-primary/15",
+                                                        ? "bg-cyan-600 text-white shadow-lg shadow-cyan-900/15 dark:bg-cyan-400 dark:text-slate-950"
+                                                        : "bg-slate-200 text-slate-500 dark:bg-white/10 dark:text-slate-400",
+                                                    isCurrent && "ring-4 ring-cyan-500/20",
                                                 )}
                                             >
                                                 <Icon size={23} strokeWidth={2.2} aria-hidden="true" />
@@ -202,7 +204,7 @@ export default function TrackTicket() {
                                         )}
                                         <CheckCircle2
                                             size={20}
-                                            className="relative z-10 mt-1 shrink-0 fill-primary text-primary-foreground"
+                                                className="relative z-10 mt-1 shrink-0 fill-cyan-600 text-white dark:fill-cyan-400 dark:text-slate-950"
                                             aria-hidden="true"
                                         />
                                     </span>
@@ -217,6 +219,7 @@ export default function TrackTicket() {
                         </p>
                     </>
                 )}
+                </div>
             </div>
             <p className="mt-5 text-center text-xs text-muted-foreground">
                 ข้อมูลนี้แสดงเฉพาะเลข Ticket และสถานะ โดยไม่เปิดเผยรายละเอียดที่ผู้แจ้งส่งมา
