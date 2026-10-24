@@ -222,7 +222,7 @@ const ReportForm = () => {
                     <img
                         src="/check_pc_name.jpeg"
                         alt="How to check PC name"
-                        className={cx("max-h-[calc(100dvh-1.5rem)] max-w-full rounded-xl object-contain md:max-h-[90vh]", "shadow-2xl")}
+                        className={cx("max-h-[calc(100dvh-1.5rem)] max-w-full rounded-xl object-contain md:max-h-[90vh]", "shadow-2xl mt-20")}
                     />
                 </div>
             )}
