@@ -151,7 +151,7 @@ const Issues = () => {
 
     return (
         <div className="mx-auto max-w-7xl animate-fadeInUp">
-            <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                 <div>
                     <h2 className="text-2xl font-semibold tracking-tight">All Issues</h2>
 
@@ -179,21 +179,21 @@ const Issues = () => {
                 </button>
             </div>
 
-            <div className="mb-6 flex flex-col gap-4 sm:flex-row">
+            <div className="mb-6 flex flex-col gap-4 md:flex-row">
                 <input
                     type="search"
                     value={search}
                     onChange={(event) => setSearch(event.target.value)}
                     placeholder="Search ticket number or title..."
                     aria-label="Search issues"
-                    className="h-10 w-full rounded-lg border border-input bg-background px-3 text-sm outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/20 sm:max-w-sm"
+                    className="h-10 w-full rounded-lg border border-input bg-background px-3 text-sm outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/20 md:max-w-sm"
                 />
 
                 <select
                     value={status}
                     onChange={(event) => setStatus(event.target.value)}
                     aria-label="Filter issues by status"
-                    className="h-10 w-full rounded-lg border border-input bg-background px-3 text-sm outline-none transition-colors focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/20 sm:w-48"
+                    className="h-10 w-full rounded-lg border border-input bg-background px-3 text-sm outline-none transition-colors focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/20 md:w-48"
                 >
                     {statusFilters.map((filter) => (
                         <option key={filter.value} value={filter.value}>

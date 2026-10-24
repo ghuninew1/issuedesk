@@ -214,14 +214,15 @@ const ReportForm = () => {
                     }}
                     className={cx(
                         "fixed inset-0 z-50 flex items-center justify-center",
-                        "cursor-pointer bg-black/70 p-4 backdrop-blur-sm",
+                        "cursor-pointer bg-black/70 p-3 backdrop-blur-sm md:p-4",
+                        "[height:100dvh]",
                         "animate-fade",
                     )}
                 >
                     <img
                         src="/check_pc_name.jpeg"
                         alt="How to check PC name"
-                        className={cx("max-h-[90vh] max-w-full rounded-xl object-contain", "shadow-2xl")}
+                        className={cx("max-h-[calc(100dvh-1.5rem)] max-w-full rounded-xl object-contain md:max-h-[90vh]", "shadow-2xl")}
                     />
                 </div>
             )}
@@ -291,7 +292,7 @@ const ReportForm = () => {
                     <p className="mt-1 text-sm text-muted-foreground">กรอกข้อมูลปัญหาที่ต้องการแจ้งให้T ทราบ</p>
                 </div>
 
-                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
                     <div className="space-y-2">
                         <div className="flex justify-between items-center">
                             <Label htmlFor="reporter" required>

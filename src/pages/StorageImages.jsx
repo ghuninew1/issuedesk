@@ -189,7 +189,7 @@ export default function StorageImages() {
 
     return (
         <div className="mx-auto max-w-7xl animate-fadeInUp">
-            <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                 <div>
                     <div className="flex items-center gap-3">
                         <span className="flex size-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
@@ -204,7 +204,7 @@ export default function StorageImages() {
                     </div>
                 </div>
 
-                <div className="flex w-full gap-2 sm:w-auto">
+                <div className="flex w-full gap-2 md:w-auto">
                     <button
                         type="button"
                         onClick={() => loadImages()}
@@ -212,7 +212,7 @@ export default function StorageImages() {
                         aria-label="รีเฟรชรายการไฟล์"
                         title="รีเฟรชรายการไฟล์"
                         className={cx(
-                            "inline-flex h-10 flex-1 items-center justify-center gap-2 rounded-lg border border-input px-3 sm:flex-none",
+                            "inline-flex h-10 flex-1 items-center justify-center gap-2 rounded-lg border border-input px-3 md:flex-none",
                             "text-sm font-medium transition-colors hover:bg-[var(--glass-surface-hover)] hover:shadow-[inset_0_1px_0_var(--glass-highlight)]",
                             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30",
                             "disabled:pointer-events-none disabled:opacity-50 cursor-pointer",
@@ -225,7 +225,7 @@ export default function StorageImages() {
                         onClick={() => inputRef.current?.click()}
                         disabled={isUploading}
                         className={cx(
-                            "inline-flex h-10 flex-1 items-center justify-center gap-2 rounded-lg bg-primary px-4 sm:flex-none",
+                            "inline-flex h-10 flex-1 items-center justify-center gap-2 rounded-lg bg-primary px-4 md:flex-none",
                             "text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90",
                             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30",
                             "disabled:pointer-events-none disabled:opacity-50 cursor-pointer",
@@ -246,12 +246,12 @@ export default function StorageImages() {
                 </div>
             </div>
 
-            <div className="mb-5 grid gap-3 sm:grid-cols-3">
+            <div className="mb-5 grid gap-3 md:grid-cols-3">
                 <div className="rounded-xl border border-border bg-card p-4">
                     <p className="text-xs font-medium text-muted-foreground">ไฟล์ทั้งหมด</p>
                     <p className="mt-1 text-2xl font-semibold">{images.length}</p>
                 </div>
-                <div className="rounded-xl border border-border bg-card p-4 sm:col-span-2">
+                <div className="rounded-xl border border-border bg-card p-4 md:col-span-2">
                     <p className="text-xs font-medium text-muted-foreground">ชนิดและขนาดไฟล์ที่รองรับ</p>
                     <p className="mt-1 text-sm">
                         รูปภาพ, PDF, Office/iWork, ZIP/RAR/7z, TXT/CSV/JSON/XML, เสียง และวิดีโอ · ไม่เกิน 10 MB ต่อไฟล์
@@ -277,7 +277,7 @@ export default function StorageImages() {
                 </div>
             )}
             <section className="overflow-hidden rounded-xl border border-border bg-card" aria-label="รายการรูปภาพ">
-                <div className="flex flex-col gap-3 border-b border-border p-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex flex-col gap-3 border-b border-border p-4 md:flex-row md:items-center md:justify-between">
                     <div>
                         <h3 className="font-semibold">คลังไฟล์</h3>
                         <p className="mt-1 text-xs text-muted-foreground">
@@ -285,7 +285,7 @@ export default function StorageImages() {
                             {Math.min(displayPage * PAGE_SIZE, filteredImages.length)} จาก {filteredImages.length} ไฟล์
                         </p>
                     </div>
-                    <label className="relative block w-full sm:max-w-xs">
+                    <label className="relative block w-full md:max-w-xs">
                         <Search
                             size={16}
                             className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
@@ -489,7 +489,7 @@ export default function StorageImages() {
                         </div>
                         {pageCount > 1 && (
                             <nav
-                                className="flex flex-col gap-3 border-t border-border px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
+                                className="flex flex-col gap-3 border-t border-border px-4 py-3 md:flex-row md:items-center md:justify-between"
                                 aria-label="แบ่งหน้ารูปภาพ"
                             >
                                 <p className="text-xs text-muted-foreground">

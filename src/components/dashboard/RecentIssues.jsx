@@ -117,7 +117,7 @@ const RecentIssues = () => {
             <div
                 className={cx(
                     "flex flex-col gap-3 p-5",
-                    "sm:flex-row sm:items-center sm:justify-between",
+                    "md:flex-row md:items-center md:justify-between",
                     "border-b border-border",
                 )}
             >

@@ -138,15 +138,15 @@ export default function Sheet() {
 
     return (
         <div className="mx-auto max-w-7xl animate-fadeInUp overflow-hidden">
-            <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
                 <div>
-                    <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">คลังอุปกรณ์</h1>
+                    <h1 className="text-2xl font-semibold tracking-tight md:text-3xl">คลังอุปกรณ์</h1>
                     <p className="mt-2 text-sm text-muted-foreground">รายการครุภัณฑ์และอุปกรณ์คอมพิวเตอร์</p>
                 </div>
                 <div className="text-sm text-muted-foreground">อัปเดตข้อมูลจาก Google Sheets</div>
             </div>
 
-            <section aria-label="ภาพรวมอุปกรณ์" className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <section aria-label="ภาพรวมอุปกรณ์" className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-4">
                 <div className="flex items-center gap-4 rounded-2xl border border-border bg-card p-4 shadow-sm">
                     <span className="flex size-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
                         <Boxes className="size-5" />
@@ -187,15 +187,15 @@ export default function Sheet() {
 
             {/* Table Head */}
             <section className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm w-full max-w-7xl">
-                <div className="flex flex-col gap-3 border-b border-border p-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
+                <div className="flex flex-col gap-3 border-b border-border p-4 md:flex-row md:items-center md:justify-between md:px-5">
                     <div>
                         <h2 className="font-semibold">รายการอุปกรณ์</h2>
                         <p className="mt-1 text-xs text-muted-foreground">
                             แสดง {filteredAssets.length} จาก {data.length} รายการ
                         </p>
                     </div>
-                    <div className="flex flex-col gap-2 sm:flex-row">
-                        <label className="relative block sm:w-64">
+                    <div className="flex flex-col gap-2 md:flex-row">
+                        <label className="relative block md:w-64">
                             <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
                             <input
                                 type="search"
@@ -411,7 +411,7 @@ export default function Sheet() {
 
                 {/*  */}
                 {filteredAssets.length > PAGE_SIZE && (
-                    <div className="flex flex-col gap-3 border-t border-border px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-5">
+                    <div className="flex flex-col gap-3 border-t border-border px-4 py-3 md:flex-row md:items-center md:justify-between md:px-5">
                         <p className="text-xs text-muted-foreground">
                             แสดง {(displayPage - 1) * PAGE_SIZE + 1}–
                             {Math.min(displayPage * PAGE_SIZE, filteredAssets.length)} จาก {filteredAssets.length}{" "}
@@ -458,7 +458,7 @@ export default function Sheet() {
                         aria-labelledby="asset-image-title"
                         className="w-full max-w-3xl overflow-hidden rounded-2xl border border-border bg-card shadow-2xl"
                     >
-                        <div className="flex items-start justify-between gap-4 border-b border-border p-4 sm:p-5">
+                        <div className="flex items-start justify-between gap-4 border-b border-border p-4 md:p-5">
                             <div className="min-w-0">
                                 <p className="text-xs text-muted-foreground">
                                     {selectedAsset.asset.assetId} · รูปอุปกรณ์{" "}
@@ -477,8 +477,8 @@ export default function Sheet() {
                                 <X className="size-5" />
                             </button>
                         </div>
-                        <div className="max-h-[72vh] overflow-y-auto bg-muted/35 p-4 sm:p-6">
-                            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                        <div className="max-h-[72vh] overflow-y-auto bg-muted/35 p-4 md:p-6">
+                            <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
                                 {imageFields
                                     .filter((field) => selectedAsset.asset[field.key])
                                     .map((field) => (
@@ -514,7 +514,7 @@ export default function Sheet() {
                                     ))}
                             </div>
                         </div>
-                        <div className="flex items-center justify-between gap-3 border-t border-border px-4 py-3 sm:px-5">
+                        <div className="flex items-center justify-between gap-3 border-t border-border px-4 py-3 md:px-5">
                             <p className="truncate text-sm text-muted-foreground">
                                 {selectedAsset.asset.employeeName} · {selectedAsset.asset.details}
                             </p>

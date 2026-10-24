@@ -71,7 +71,7 @@ const Header = ({ isHeaderVisible = true, onOpenMobileSidebar }) => {
             className={cx(
                 "glass-header sticky top-0 z-30",
                 "flex h-15 shrink-0 items-center justify-between gap-3",
-                "px-4 sm:px-5 lg:px-6",
+                "px-4 md:px-5 lg:px-6",
                 "transition-transform duration-300 ease-out",
                 "motion-reduce:transition-none",
                 isHeaderVisible ? "translate-y-0" : "-translate-y-full",
@@ -117,7 +117,7 @@ const Header = ({ isHeaderVisible = true, onOpenMobileSidebar }) => {
                     <div className="truncate text-sm font-medium">
                         <p className="truncate text-sm font-medium"> {currentPage.title}</p>
 
-                        <p className="hidden truncate text-xs text-muted-foreground sm:block">
+                        <p className="hidden truncate text-xs text-muted-foreground md:block">
                             {currentPage.description}
                         </p>
                     </div>
@@ -138,7 +138,7 @@ const Header = ({ isHeaderVisible = true, onOpenMobileSidebar }) => {
                         )}
                     >
                         <LogOut size={16} aria-hidden="true" />
-                        <span className="hidden sm:inline">Sign out</span>
+                        <span className="hidden md:inline">Sign out</span>
                     </button>
                 ) : (
                     <button
@@ -153,7 +153,7 @@ const Header = ({ isHeaderVisible = true, onOpenMobileSidebar }) => {
                         )}
                     >
                         <LogIn size={16} aria-hidden="true" />
-                        <span className="hidden sm:inline">Sign in</span>
+                        <span className="hidden md:inline">Sign in</span>
                     </button>
                 )}
                 <ThemeToggle />

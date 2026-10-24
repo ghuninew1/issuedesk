@@ -83,13 +83,13 @@ export default function TrackTicket() {
         : [];
 
     return (
-        <section className="relative z-10 mx-auto max-w-2xl px-5 py-12 sm:px-8 animate-fadeInUp">
+        <section className="relative z-10 mx-auto max-w-2xl px-5 py-12 md:px-8 animate-fadeInUp">
             <Link to="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
                 <ArrowLeft size={16} aria-hidden="true" className="animate-bounceLeft transition-all" />
                 กลับหน้าหลัก
             </Link>
 
-            <div className="mt-6 rounded-2xl border border-border bg-card p-6 shadow-sm sm:p-8">
+            <div className="mt-6 rounded-2xl border border-border bg-card p-6 shadow-sm md:p-8">
                 <div className="flex items-center gap-3 text-sm text-muted-foreground">
                     <Search size={18} aria-hidden="true" />
                     <span>ติดตาม Ticket</span>
@@ -118,7 +118,7 @@ export default function TrackTicket() {
                 {ticket && (
                     <>
                         <section
-                            className="mt-8 rounded-xl border border-border bg-muted/30 px-3 pb-4 pt-5 sm:px-5"
+                            className="mt-8 rounded-xl border border-border bg-muted/30 px-3 pb-4 pt-5 md:px-5"
                             aria-label="ขั้นตอนการดำเนินงาน"
                         >
                             <ol className="mx-auto flex items-start">
@@ -155,7 +155,7 @@ export default function TrackTicket() {
                                             </span>
                                             <span
                                                 className={cx(
-                                                    "mt-2 max-w-[76px] text-[11px] leading-4 sm:max-w-none sm:text-xs",
+                                                    "mt-2 max-w-[76px] text-[11px] leading-4 md:max-w-none md:text-xs",
                                                     isComplete ? "text-foreground" : "text-muted-foreground",
                                                     isCurrent && "font-semibold",
                                                 )}
@@ -178,11 +178,11 @@ export default function TrackTicket() {
                             {activity.map((item, index) => (
                                 <li
                                     key={`${item.label}-${index}`}
-                                    className="grid grid-cols-[76px_22px_minmax(0,1fr)] gap-2 sm:grid-cols-[100px_28px_minmax(0,1fr)] sm:gap-3"
+                                    className="grid grid-cols-[76px_22px_minmax(0,1fr)] gap-2 md:grid-cols-[100px_28px_minmax(0,1fr)] md:gap-3"
                                 >
                                     <time
                                         dateTime={item.time ? parseDate(item.time).toISOString() : undefined}
-                                        className="pt-1 text-right text-xs leading-5 text-muted-foreground sm:text-sm"
+                                        className="pt-1 text-right text-xs leading-5 text-muted-foreground md:text-sm"
                                     >
                                         {item.time ? (
                                             <>
@@ -206,7 +206,7 @@ export default function TrackTicket() {
                                             aria-hidden="true"
                                         />
                                     </span>
-                                    <p className="pb-8 text-base leading-7 text-card-foreground sm:text-lg sm:leading-8">
+                                    <p className="pb-8 text-base leading-7 text-card-foreground md:text-lg md:leading-8">
                                         {item.label}
                                     </p>
                                 </li>

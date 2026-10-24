@@ -207,7 +207,7 @@ const ImageUploader = ({ files, onChange, disabled = false }) => {
             )}
 
             {files.length > 0 && (
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
                     {files.map((file, index) => (
                         <div
                             key={`${file.name}-${file.lastModified}-${index}`}

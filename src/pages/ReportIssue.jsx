@@ -16,7 +16,7 @@ const ReportIssue = () => {
                 </p>
             </div>
 
-            <div className={cx("rounded-xl border border-border bg-card p-5 shadow-sm", "sm:p-6 lg:p-8")}>
+            <div className={cx("rounded-xl border border-border bg-card p-5 shadow-sm", "md:p-6 lg:p-8")}>
                 <ReportForm />
             </div>
         </div>

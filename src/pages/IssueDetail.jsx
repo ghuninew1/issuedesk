@@ -417,8 +417,8 @@ const IssueDetail = () => {
                 </div>
             ) : issue ? (
                 <div className="space-y-6">
-                    <section className="rounded-xl border border-border p-5 sm:p-6">
-                        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                    <section className="rounded-xl border border-border p-5 md:p-6">
+                        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                             <div className="min-w-0 flex-1">
                                 <div className="flex flex-wrap items-center gap-3">
                                     <p className="text-sm font-medium text-muted-foreground">{issue.ticket_number}</p>
@@ -523,10 +523,10 @@ const IssueDetail = () => {
                         </p>
                     )}
 
-                    <section className="rounded-xl border border-border p-5 sm:p-6">
+                    <section className="rounded-xl border border-border p-5 md:p-6">
                         <h3 className="font-semibold">Issue Information</h3>
 
-                        <dl className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                        <dl className="mt-5 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
                             <DetailField label="Ticket Number">{issue.ticket_number}</DetailField>
 
                             <DetailField label="Created At">{formatDate(issue.created_at)}</DetailField>
@@ -543,7 +543,7 @@ const IssueDetail = () => {
                         </dl>
                     </section>
 
-                    <section className="rounded-xl border border-border p-5 sm:p-6">
+                    <section className="rounded-xl border border-border p-5 md:p-6">
                         <div className="flex items-center justify-between gap-3">
                             <h3 className="font-semibold">Attachments</h3>
 
@@ -563,7 +563,7 @@ const IssueDetail = () => {
                         ) : attachments.length === 0 ? (
                             <p className="mt-4 text-sm text-muted-foreground">No attachments found.</p>
                         ) : (
-                            <ul className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                            <ul className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
                                 {attachments.map((attachment) => {
                                     const isImage = attachment.mime_type?.startsWith("image/");
                                     const fileUrl = getIssueAttachmentUrl(issue.ticket_number, attachment.id);

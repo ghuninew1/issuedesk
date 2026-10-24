@@ -36,7 +36,7 @@ const PortalHome = () => {
     };
 
     return (
-        <section className="mx-auto max-w-6xl px-5 pb-16 pt-12 sm:px-8 sm:pt-20">
+        <section className="mx-auto max-w-6xl px-5 pb-16 pt-12 md:px-8 md:pt-20">
             <div className="mx-auto max-w-2xl text-center animate-fadeInDown">
                 <span
                     className={cx(
@@ -50,12 +50,12 @@ const PortalHome = () => {
                     IT Help Desk
                 </span>
 
-                <h1 className="mt-5 text-3xl font-semibold tracking-tight sm:text-5xl">
+                <h1 className="mt-5 text-3xl font-semibold tracking-tight md:text-5xl">
                     แจ้งปัญหาที่คุณเจอ
                     <span className="mt-6 block text-muted-foreground">ได้ที่นี่</span>
                 </h1>
 
-                <p className="mx-auto mt-5 max-w-lg text-sm leading-7 text-muted-foreground sm:text-base">
+                <p className="mx-auto mt-5 max-w-lg text-sm leading-7 text-muted-foreground md:text-base">
                     แจ้งปัญหาการใช้งาน หรือติดตามความคืบหน้าของทิกเก็ต ได้ง่าย ๆ ในที่เดียว
                 </p>
             </div>
@@ -74,7 +74,7 @@ const PortalHome = () => {
                     <article
                         className={cx(
                             "flex flex-col rounded-2xl border border-border h-full",
-                            "bg-card p-6 shadow-sm sm:p-8",
+                            "bg-card p-6 shadow-sm md:p-8",
                             "transition-colors hover:border-primary/40",
                         )}
                     >
@@ -132,7 +132,7 @@ const PortalHome = () => {
                     <article
                         className={cx(
                             "flex flex-col rounded-2xl border border-border",
-                            "bg-card p-6 shadow-sm sm:p-8",
+                            "bg-card p-6 shadow-sm md:p-8",
                             "transition-colors hover:border-primary/40",
                         )}
                     >
@@ -204,7 +204,7 @@ const PortalHome = () => {
                 </ElectricBorder>
             </div>
             {/* Callout */}
-            <div className="mx-auto mt-10 flex max-w-4xl items-start gap-3 rounded-xl border border-border bg-muted/30 p-4 sm:p-5 animate-fadeInUp">
+            <div className="mx-auto mt-10 flex max-w-4xl items-start gap-3 rounded-xl border border-border bg-muted/30 p-4 md:p-5 animate-fadeInUp">
                 <LifeBuoy size={20} className="mt-0.5 shrink-0 text-muted-foreground" aria-hidden="true" />
                 <div>
                     <p className="text-sm font-medium">ไม่แน่ใจว่าต้องทำอย่างไร?</p>
