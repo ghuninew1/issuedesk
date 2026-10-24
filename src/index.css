@@ -373,6 +373,14 @@ body {
     html {
         @apply font-sans;
     }
+    button:not(:disabled),
+        [role="button"]:not(:disabled) {
+            cursor: pointer;
+    }
+    a {
+        @apply underline-offset-4;
+        cursor: pointer;
+    }
 }
 
 @theme {
