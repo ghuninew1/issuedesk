@@ -13,8 +13,8 @@ The Agent uses Python's standard library only. The Docker image installs the sys
    if [ ! -f network-monitor/.env ]; then cp network-monitor/.env.example network-monitor/.env; fi
    ```
 
-3. Edit `network-monitor/.env` on QNAP. Fill in `ROUTER_PASSWORD`, `ISSUEDESK_API_URL` with the deployed site's HTTPS origin (no path or trailing slash), and `ISSUEDESK_AGENT_TOKEN`. Generate the token locally (for example, `openssl rand -hex 32`), then set the same value in Cloudflare Pages and the QNAP `.env`. Do not send either secret in chat or commit `.env`.
-4. Set Cloudflare Pages secret `NETWORK_AGENT_TOKEN` to the same high-entropy token. The current API rejects tokens shorter than 32 characters. Ensure migration `0007_create_network_monitoring.sql` is applied and the API deployment includes `/api/network/agent/report` before starting the Agent.
+3. Edit `network-monitor/.env` on QNAP. Fill in `ROUTER_PASSWORD`, `ISSUEDESK_API_URL` with the deployed site's HTTPS origin (no path or trailing slash), `ISSUEDESK_AGENT_TOKEN`, and the existing Zero Trust Service Token's `CF_ACCESS_CLIENT_ID` and `CF_ACCESS_CLIENT_SECRET`. Generate a separate API token locally (for example, `openssl rand -hex 32`) and use it for both Cloudflare Pages `NETWORK_AGENT_TOKEN` and QNAP `ISSUEDESK_AGENT_TOKEN`. Do not send secrets in chat or commit `.env`.
+4. Set Cloudflare Pages secret `NETWORK_AGENT_TOKEN` to the same high-entropy API token. The Agent sends the Zero Trust Service Token as `CF-Access-Client-Id` and `CF-Access-Client-Secret` headers to pass the Access policy; it separately sends the API bearer token for Pages Function authorization. These are two distinct credentials. The API rejects bearer tokens shorter than 32 characters. Ensure migrations `0007_create_network_monitoring.sql` and `0008_create_network_monitor_viewers.sql` are applied and the API deployment includes the report, control, and viewer endpoints before starting the Agent.
 5. Build and start only this Compose service from the `garage` directory:
 
    ```sh
@@ -36,7 +36,9 @@ These commands are instructions for the QNAP operator; they are not run as part 
 | `ROUTER_PASSWORD` | Yes | — | Router password, supplied locally on QNAP |
 | `ISSUEDESK_API_URL` | Yes | — | HTTPS origin for the deployed IssueDesk site |
 | `ISSUEDESK_AGENT_TOKEN` | Yes | — | Same high-entropy value as Pages secret `NETWORK_AGENT_TOKEN` |
-| `POLL_INTERVAL_SECONDS` | No | `30` | Poll period, allowed range 5–3600 seconds |
+| `CF_ACCESS_CLIENT_ID` | Yes | — | Client ID from the existing Cloudflare Zero Trust Service Token |
+| `CF_ACCESS_CLIENT_SECRET` | Yes | — | Client Secret paired with that Service Token ID; keep it private |
+| `POLL_INTERVAL_SECONDS` | No | `30` | Agent control check and active Router poll period, allowed range 5–3600 seconds |
 | `ROUTER_TIMEOUT_SECONDS` | No | `10` | Router connect/read timeout, allowed range 1–60 seconds |
 | `ISSUEDESK_REQUEST_TIMEOUT_SECONDS` | No | `10` | HTTP timeout, allowed range 1–60 seconds |
 | `MAX_SEND_ATTEMPTS` | No | `5` | Bounded retry attempts for transient API failures |
@@ -45,9 +47,13 @@ These commands are instructions for the QNAP operator; they are not run as part 
 
 The Container connects to `192.168.11.1:8886` and verifies the certificate against `ROUTER_TLS_SERVER_NAME`. Do not change the certificate verification behavior to work around a TLS error; check QNAP's CA bundle, DNS name, router certificate, and system time instead.
 
+## On-demand behavior
+
+The Agent checks `/api/network/agent/control` every poll interval. When no Admin has the Network Monitor page open, it pauses Router reads and snapshot reports; only the lightweight control request continues. Opening the page creates a viewer lease renewed every 30 seconds. Leaving the page releases the lease, and a 90-second expiry handles browser crashes or lost close requests. Include both `GET /api/network/agent/control` and `POST /api/network/agent/report` in the narrowly scoped Cloudflare Access/BIC configuration for the Agent.
+
 ## Data contract
 
-The Agent posts to `POST /api/network/agent/report` with `Authorization: Bearer <ISSUEDESK_AGENT_TOKEN>`. The JSON fields match `NETWORK_MONITORING_API.md`: `collectedAt`, `router.identity`, `router.uptime`, `router.cpuLoad`, `router.memoryTotalBytes`, `router.memoryFreeBytes`, optional `router.temperatureC`, and `wan.ais`/`wan.true` interface state plus RX/TX byte counters.
+The Agent posts to `POST /api/network/agent/report` with the Cloudflare Access Service Token headers `CF-Access-Client-Id` and `CF-Access-Client-Secret`, plus `Authorization: Bearer <ISSUEDESK_AGENT_TOKEN>` for the Pages API. It identifies itself with the User-Agent `IssueDesk-Network-Monitor/1.0`; Cloudflare Browser Integrity Check must be selectively disabled for this exact API route because this is an API client, not a browser. The JSON fields match `NETWORK_MONITORING_API.md`: `collectedAt`, `router.identity`, `router.uptime`, `router.cpuLoad`, `router.memoryTotalBytes`, `router.memoryFreeBytes`, optional `router.temperatureC`, and `wan.ais`/`wan.true` interface state plus RX/TX byte counters.
 
 The API accepts raw counters, not rate fields. The Agent calculates per-WAN download/upload rates locally for safe diagnostics, while the Dashboard derives rates from saved snapshots. A counter reset or down interface produces `n/a` locally; it never produces a negative rate. PPPoE `running` reports interface state only and is not presented as Internet reachability.
 
@@ -55,7 +61,7 @@ The API accepts raw counters, not rate fields. The Agent calculates per-WAN down
 
 ## Logs and troubleshooting
 
-The Agent logs to stdout/stderr for Docker. It never logs router passwords, Agent tokens, Authorization headers, or response bodies. TLS verification, login, and HTTP errors have distinct messages without secret values.
+The Agent logs to stdout/stderr for Docker. It never logs router passwords, Agent tokens, Cloudflare Access credentials, Authorization headers, or full response bodies. TLS verification, login, and HTTP errors have distinct messages without secret values.
 
 - **TLS verification error:** confirm the router certificate chain and SAN include the configured TLS server name, QNAP time is correct, and the image CA bundle is current.
 - **Router API read/authentication failure:** confirm API-SSL is enabled on port 8886, the monitoring user has `read,api`, and its allowed source includes the QNAP LAN address.

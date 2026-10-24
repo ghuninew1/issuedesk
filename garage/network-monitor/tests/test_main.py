@@ -26,7 +26,10 @@ def sample_config() -> Config:
         router_username="monitor",
         router_password="local-only-test-password",
         issue_desk_report_url="https://issuedesk.example.invalid/api/network/agent/report",
+        issue_desk_control_url="https://issuedesk.example.invalid/api/network/agent/control",
         issue_desk_agent_token="x" * 48,
+        cf_access_client_id="service-token-id",
+        cf_access_client_secret="local-only-test-access-secret",
         poll_interval_seconds=30,
         router_timeout_seconds=10,
         http_timeout_seconds=10,
@@ -89,7 +92,10 @@ class IssueDeskSenderTests(unittest.TestCase):
         request = urlopen.call_args.args[0]
         self.assertEqual(request.full_url, "https://issuedesk.example.invalid/api/network/agent/report")
         self.assertEqual(request.get_method(), "POST")
+        self.assertEqual(request.get_header("User-agent"), "IssueDesk-Network-Monitor/1.0 (+https://issuedesk.bigbrain-studio.com)")
         self.assertEqual(request.get_header("Authorization"), f"Bearer {'x' * 48}")
+        self.assertEqual(request.get_header("Cf-access-client-id"), "service-token-id")
+        self.assertEqual(request.get_header("Cf-access-client-secret"), "local-only-test-access-secret")
         self.assertEqual(json.loads(request.data), payload)
 
     @patch("main.urllib.request.urlopen")

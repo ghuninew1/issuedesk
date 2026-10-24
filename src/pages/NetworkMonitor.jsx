@@ -161,6 +161,7 @@ function NetworkMonitor() {
     const [events, setEvents] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
+    const [viewerError, setViewerError] = useState("");
 
     const load = useCallback(async () => {
         try {
@@ -181,9 +182,48 @@ function NetworkMonitor() {
     }, []);
 
     useEffect(() => {
-        void load();
-        const timer = window.setInterval(() => { void load(); }, 30_000);
-        return () => window.clearInterval(timer);
+        let mounted = true;
+        let released = false;
+        const viewerId = window.crypto.randomUUID();
+        const leaseBody = JSON.stringify({ viewerId });
+        const renewViewerLease = async () => {
+            try {
+                await api("/api/network/viewers", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: leaseBody,
+                });
+                if (mounted) setViewerError("");
+            } catch (cause) {
+                if (mounted) setViewerError(cause.message || "เปิดการตรวจสอบ Network Monitoring ไม่สำเร็จ");
+            }
+        };
+        const releaseViewerLease = () => {
+            if (released) return;
+            released = true;
+            void fetch("/api/network/viewers", {
+                method: "DELETE",
+                credentials: "same-origin",
+                keepalive: true,
+                headers: { "Content-Type": "application/json" },
+                body: leaseBody,
+            }).catch(() => undefined);
+        };
+
+        void (async () => {
+            await renewViewerLease();
+            if (mounted) await load();
+        })();
+        const leaseTimer = window.setInterval(() => { void renewViewerLease(); }, 30_000);
+        const dataTimer = window.setInterval(() => { void load(); }, 30_000);
+        window.addEventListener("pagehide", releaseViewerLease);
+        return () => {
+            mounted = false;
+            window.clearInterval(leaseTimer);
+            window.clearInterval(dataTimer);
+            window.removeEventListener("pagehide", releaseViewerLease);
+            releaseViewerLease();
+        };
     }, [load]);
 
     const snapshot = status?.snapshot;
@@ -203,7 +243,7 @@ function NetworkMonitor() {
                     </span>
                     <div>
                         <h1 className="text-xl font-semibold tracking-tight md:text-2xl">Network Monitoring</h1>
-                        <p className="mt-1 text-sm text-muted-foreground">ภาพรวมสถานะ Router และการเชื่อมต่อเครือข่าย</p>
+                        <p className="mt-1 text-sm text-muted-foreground">ภาพรวม Router และ WAN · เก็บข้อมูลขณะเปิดหน้านี้เท่านั้น</p>
                     </div>
                 </div>
                 <div className="flex items-center gap-3 self-start sm:self-auto">
@@ -224,6 +264,7 @@ function NetworkMonitor() {
             </header>
 
             {error && <div role="alert" className="glass-surface rounded-xl border-amber-500/30 bg-amber-500/5 px-4 py-3 text-sm text-amber-800 dark:text-amber-200">โหลดข้อมูล Network Monitoring ไม่สำเร็จ: {error}</div>}
+            {viewerError && <div role="alert" className="glass-surface rounded-xl border-amber-500/30 bg-amber-500/5 px-4 py-3 text-sm text-amber-800 dark:text-amber-200">ยังเริ่มการเก็บข้อมูลตามการเปิดหน้านี้ไม่ได้: {viewerError}</div>}
             {snapshot && !agentOnline && <div role="status" className="glass-surface rounded-xl border-amber-500/30 bg-amber-500/5 px-4 py-3 text-sm text-amber-800 dark:text-amber-200">กำลังแสดง Snapshot ล่าสุดจาก {bangkokStamp(snapshot.collectedAt)} · Heartbeat เกินเกณฑ์ที่กำหนด</div>}
 
             <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">

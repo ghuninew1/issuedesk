@@ -27,6 +27,7 @@ LOGGER = logging.getLogger("network_monitor")
 MAX_API_WORD_BYTES = 1024 * 1024
 ROUTER_INTERFACE_NAMES = {"ais": "pppoe-AIS", "true": "pppoe-TRUE"}
 REPORT_PATH = "/api/network/agent/report"
+CONTROL_PATH = "/api/network/agent/control"
 
 
 class ConfigurationError(Exception):
@@ -53,7 +54,10 @@ class Config:
     router_username: str
     router_password: str
     issue_desk_report_url: str
+    issue_desk_control_url: str
     issue_desk_agent_token: str
+    cf_access_client_id: str
+    cf_access_client_secret: str
     poll_interval_seconds: int
     router_timeout_seconds: int
     http_timeout_seconds: int
@@ -74,6 +78,8 @@ def _env_int(name: str, default: int, minimum: int, maximum: int) -> int:
 def load_config() -> Config:
     router_password = os.environ.get("ROUTER_PASSWORD", "")
     agent_token = os.environ.get("ISSUEDESK_AGENT_TOKEN", "")
+    cf_access_client_id = os.environ.get("CF_ACCESS_CLIENT_ID", "").strip()
+    cf_access_client_secret = os.environ.get("CF_ACCESS_CLIENT_SECRET", "")
     api_base_url = os.environ.get("ISSUEDESK_API_URL", "").strip()
     tls_server_name = os.environ.get("ROUTER_TLS_SERVER_NAME", "").strip()
 
@@ -81,6 +87,10 @@ def load_config() -> Config:
         raise ConfigurationError("ROUTER_PASSWORD is required")
     if len(agent_token) < 32 or not agent_token.isascii() or any(character.isspace() for character in agent_token):
         raise ConfigurationError("ISSUEDESK_AGENT_TOKEN must contain at least 32 characters")
+    if not cf_access_client_id or not cf_access_client_secret:
+        raise ConfigurationError("CF_ACCESS_CLIENT_ID and CF_ACCESS_CLIENT_SECRET are required for Cloudflare Access")
+    if any(character.isspace() for character in cf_access_client_id + cf_access_client_secret):
+        raise ConfigurationError("Cloudflare Access service token values must not contain whitespace")
     if not tls_server_name:
         raise ConfigurationError("ROUTER_TLS_SERVER_NAME is required for certificate verification")
     if not api_base_url:
@@ -116,7 +126,10 @@ def load_config() -> Config:
         router_username=router_username,
         router_password=router_password,
         issue_desk_report_url=f"{api_base_url.rstrip('/')}{REPORT_PATH}",
+        issue_desk_control_url=f"{api_base_url.rstrip('/')}{CONTROL_PATH}",
         issue_desk_agent_token=agent_token,
+        cf_access_client_id=cf_access_client_id,
+        cf_access_client_secret=cf_access_client_secret,
         poll_interval_seconds=_env_int("POLL_INTERVAL_SECONDS", 30, 5, 3600),
         router_timeout_seconds=_env_int("ROUTER_TIMEOUT_SECONDS", 10, 1, 60),
         http_timeout_seconds=_env_int("ISSUEDESK_REQUEST_TIMEOUT_SECONDS", 10, 1, 60),
@@ -366,6 +379,38 @@ def _utc_now() -> str:
     return datetime.now(timezone.utc).isoformat(timespec="milliseconds").replace("+00:00", "Z")
 
 
+def _issue_desk_headers(config: Config) -> dict[str, str]:
+    return {
+        "Accept": "application/json",
+        "User-Agent": "IssueDesk-Network-Monitor/1.0 (+https://issuedesk.bigbrain-studio.com)",
+        "Authorization": f"Bearer {config.issue_desk_agent_token}",
+        "CF-Access-Client-Id": config.cf_access_client_id,
+        "CF-Access-Client-Secret": config.cf_access_client_secret,
+    }
+
+
+def _monitoring_requested(config: Config) -> bool:
+    request = urllib.request.Request(config.issue_desk_control_url, method="GET", headers=_issue_desk_headers(config))
+    try:
+        with urllib.request.urlopen(request, timeout=config.http_timeout_seconds) as response:
+            raw_response = response.read(16 * 1024)
+    except urllib.error.HTTPError as error:
+        error.close()
+        if error.code in {408, 429} or error.code >= 500:
+            raise IssueDeskRequestError(f"IssueDesk control endpoint returned retryable HTTP status {error.code}") from error
+        raise IssueDeskRejectedError(f"IssueDesk control endpoint rejected the request with HTTP status {error.code}") from error
+    except (urllib.error.URLError, TimeoutError, socket.timeout, OSError) as error:
+        raise IssueDeskRequestError(f"IssueDesk control request failed ({type(error).__name__})") from error
+
+    try:
+        result = json.loads(raw_response.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError) as error:
+        raise IssueDeskRequestError("IssueDesk control endpoint returned invalid JSON") from error
+    if not isinstance(result, dict) or result.get("success") is not True or not isinstance(result.get("active"), bool):
+        raise IssueDeskRequestError("IssueDesk control endpoint returned an unexpected response")
+    return result["active"]
+
+
 def _send_once(config: Config, payload: dict[str, Any]) -> bool:
     body = json.dumps(payload, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
     request = urllib.request.Request(
@@ -373,9 +418,8 @@ def _send_once(config: Config, payload: dict[str, Any]) -> bool:
         data=body,
         method="POST",
         headers={
-            "Accept": "application/json",
+            **_issue_desk_headers(config),
             "Content-Type": "application/json",
-            "Authorization": f"Bearer {config.issue_desk_agent_token}",
         },
     )
     try:
@@ -390,8 +434,17 @@ def _send_once(config: Config, payload: dict[str, Any]) -> bool:
             response_body = error.read(4096)
             if response_content_type == "application/json":
                 decoded = json.loads(response_body.decode("utf-8"))
-                if isinstance(decoded, dict) and isinstance(decoded.get("message"), str):
-                    response_message = decoded["message"][:200]
+                if isinstance(decoded, dict):
+                    for key in ("message", "detail", "error", "title"):
+                        value = decoded.get(key)
+                        if isinstance(value, str) and value.strip():
+                            response_message = value.strip()[:200]
+                            break
+                    if response_message is None and isinstance(decoded.get("errors"), list):
+                        for item in decoded["errors"]:
+                            if isinstance(item, dict) and isinstance(item.get("message"), str) and item["message"].strip():
+                                response_message = item["message"].strip()[:200]
+                                break
         except (OSError, UnicodeDecodeError, json.JSONDecodeError):
             pass
         finally:
@@ -400,7 +453,7 @@ def _send_once(config: Config, payload: dict[str, Any]) -> bool:
             return True
         if error.code in {408, 429} or error.code >= 500:
             raise IssueDeskRequestError(f"IssueDesk returned retryable HTTP status {error.code}") from error
-        details = f": {response_message}" if response_message else f" (content type: {response_content_type or 'unknown'})"
+        details = f": {response_message}" if response_message else f" (content type: {response_content_type or 'unknown'}; no safe error message returned)"
         raise IssueDeskRejectedError(f"IssueDesk rejected the report with HTTP status {error.code}{details}") from error
     except (urllib.error.URLError, TimeoutError, socket.timeout, OSError) as error:
         raise IssueDeskRequestError(f"IssueDesk request failed ({type(error).__name__})") from error
@@ -436,29 +489,39 @@ def _rate_text(value: float | None) -> str:
 
 def run_agent(config: Config, stop_event: threading.Event) -> None:
     rate_tracker = RateTracker()
+    was_active = False
     while not stop_event.is_set():
         cycle_started = time.monotonic()
         try:
-            collected = _read_router(config)
-            sample_at = time.monotonic()
-            local_rates = rate_tracker.update(collected["wan"], sample_at)
-            payload = {
-                "collectedAt": _utc_now(),
-                "router": collected["router"],
-                "wan": collected["wan"],
-            }
-            was_already_received = _send_with_retry(config, payload, stop_event)
-            if not stop_event.is_set():
-                if was_already_received:
-                    LOGGER.info("IssueDesk already has this snapshot; duplicate delivery was ignored")
-                else:
-                    LOGGER.info(
-                        "Snapshot delivered; AIS down/up=%s/%s, True down/up=%s/%s",
-                        _rate_text(local_rates["ais"]["download"]),
-                        _rate_text(local_rates["ais"]["upload"]),
-                        _rate_text(local_rates["true"]["download"]),
-                        _rate_text(local_rates["true"]["upload"]),
-                    )
+            if not _monitoring_requested(config):
+                if was_active:
+                    LOGGER.info("No active Network Monitor viewers; Router polling paused")
+                was_active = False
+                rate_tracker = RateTracker()
+            else:
+                if not was_active:
+                    LOGGER.info("Network Monitor viewer active; Router polling started")
+                was_active = True
+                collected = _read_router(config)
+                sample_at = time.monotonic()
+                local_rates = rate_tracker.update(collected["wan"], sample_at)
+                payload = {
+                    "collectedAt": _utc_now(),
+                    "router": collected["router"],
+                    "wan": collected["wan"],
+                }
+                was_already_received = _send_with_retry(config, payload, stop_event)
+                if not stop_event.is_set():
+                    if was_already_received:
+                        LOGGER.info("IssueDesk already has this snapshot; duplicate delivery was ignored")
+                    else:
+                        LOGGER.info(
+                            "Snapshot delivered; AIS down/up=%s/%s, True down/up=%s/%s",
+                            _rate_text(local_rates["ais"]["download"]),
+                            _rate_text(local_rates["ais"]["upload"]),
+                            _rate_text(local_rates["true"]["download"]),
+                            _rate_text(local_rates["true"]["upload"]),
+                        )
         except ssl.SSLCertVerificationError:
             LOGGER.error("Router TLS certificate or hostname verification failed")
         except ssl.SSLError:
@@ -466,9 +529,9 @@ def run_agent(config: Config, stop_event: threading.Event) -> None:
         except RouterConnectionError:
             LOGGER.error("RouterOS API read or authentication failed")
         except IssueDeskRejectedError as error:
-            LOGGER.error("IssueDesk rejected the report (%s); check API URL and token configuration", error)
+            LOGGER.error("IssueDesk rejected the request (%s)", error)
         except IssueDeskRequestError as error:
-            LOGGER.error("IssueDesk report could not be delivered (%s)", error)
+            LOGGER.error("IssueDesk request failed (%s)", error)
         except (socket.timeout, TimeoutError):
             LOGGER.warning("Router API request timed out")
         except OSError as error:

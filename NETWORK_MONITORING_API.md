@@ -30,6 +30,14 @@ Example payload:
 
 Successful response (`201`): `{ "success": true, "receivedAt": "...", "snapshotId": "..." }`.
 
+## On-demand collection
+
+The Agent only reads the Router and submits snapshots while at least one Admin has the Network Monitor page open. The page maintains a 90-second viewer lease by calling `POST /api/network/viewers` with a per-tab UUID every 30 seconds; it sends `DELETE /api/network/viewers` when leaving. Expired leases are ignored, so a closed tab or browser crash stops collection within 90 seconds.
+
+The Agent calls `GET /api/network/agent/control` every 30 seconds using the same Access Service Token headers and API Bearer token as the report endpoint. The response is `{ "success": true, "active": true|false, "pollIntervalSeconds": 30 }`. A control endpoint error fails closed: the Agent does not poll the Router or send snapshots until it can confirm an active viewer.
+
+The idle Agent remains running in QNAP Docker and makes one small control request per polling interval. Router API reads, snapshot writes, and report requests stop when there are no active viewer leases.
+
 ## Admin dashboard
 
 - `GET /api/network/status` returns the latest snapshot and agent heartbeat state. `agent.online` is calculated from the last heartbeat and the stale threshold (default 90 seconds; optional Pages variable `NETWORK_AGENT_STALE_SECONDS`, clamped to 30–900).
@@ -40,4 +48,4 @@ The API retains snapshots for 30 days and events for 90 days, with cleanup throt
 
 ## Database setup
 
-Migration `0007_create_network_monitoring.sql` adds the snapshots, current heartbeat pointer, event tables, indexes, and uniqueness constraint. Check the remote target and current D1 migration state before applying it. No database or secret is created by the API code itself.
+Migration `0007_create_network_monitoring.sql` adds the snapshots, current heartbeat pointer, event tables, indexes, and uniqueness constraint. Migration `0008_create_network_monitor_viewers.sql` adds expiring per-tab viewer leases for on-demand collection. Check the remote target and current D1 migration state before applying pending migrations. No database or secret is created by the API code itself.
