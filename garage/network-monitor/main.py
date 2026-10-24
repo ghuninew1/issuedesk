@@ -384,12 +384,24 @@ def _send_once(config: Config, payload: dict[str, Any]) -> bool:
             if response.status != 201:
                 raise IssueDeskRequestError(f"IssueDesk returned unexpected HTTP status {response.status}")
     except urllib.error.HTTPError as error:
-        error.close()
+        response_content_type = error.headers.get("Content-Type", "").split(";", 1)[0].strip().lower()
+        response_message = None
+        try:
+            response_body = error.read(4096)
+            if response_content_type == "application/json":
+                decoded = json.loads(response_body.decode("utf-8"))
+                if isinstance(decoded, dict) and isinstance(decoded.get("message"), str):
+                    response_message = decoded["message"][:200]
+        except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+            pass
+        finally:
+            error.close()
         if error.code == 409:
             return True
         if error.code in {408, 429} or error.code >= 500:
             raise IssueDeskRequestError(f"IssueDesk returned retryable HTTP status {error.code}") from error
-        raise IssueDeskRejectedError(f"IssueDesk rejected the report with HTTP status {error.code}") from error
+        details = f": {response_message}" if response_message else f" (content type: {response_content_type or 'unknown'})"
+        raise IssueDeskRejectedError(f"IssueDesk rejected the report with HTTP status {error.code}{details}") from error
     except (urllib.error.URLError, TimeoutError, socket.timeout, OSError) as error:
         raise IssueDeskRequestError(f"IssueDesk request failed ({type(error).__name__})") from error
 
