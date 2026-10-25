@@ -38,6 +38,15 @@ The Agent calls `GET /api/network/agent/control` every 30 seconds using the same
 
 The idle Agent remains running in QNAP Docker and makes one small control request per polling interval. Router API reads, snapshot writes, and report requests stop when there are no active viewer leases.
 
+## On-demand IP ping
+
+- `POST /api/network/ping/check` is Admin-only and accepts `{ "targets": ["192.168.11.20", "192.168.11.21"] }`. It queues 1–20 unique addresses for the known `192.168.11.0/24` LAN and returns `202` with a `checkId`.
+- `GET /api/network/ping/check?id=<checkId>` is Admin-only and returns the queued/running/completed state and per-IP result. Without `id`, it returns the latest check.
+- `GET /api/network/agent/control` includes a claimed `pingJob` when work is queued. The QNAP Agent sends one ICMP echo request per target concurrently.
+- `POST /api/network/agent/ping-report` uses the Agent Bearer token and Zero Trust Service Token to submit `online`, `offline` (no ICMP reply), or `error` plus `latencyMs` for successful replies.
+
+The Agent runs checks only after an Admin explicitly presses **Check Ping**. Only `192.168.11.1`–`192.168.11.254` are accepted; targets outside that LAN are rejected. A device that filters ICMP may be online but appear as not responding. Ping checks are retained for 30 days.
+
 ## Admin dashboard
 
 - `GET /api/network/status` returns the latest snapshot and agent heartbeat state. `agent.online` is calculated from the last heartbeat and the stale threshold (default 90 seconds; optional Pages variable `NETWORK_AGENT_STALE_SECONDS`, clamped to 30–900).
@@ -48,4 +57,4 @@ The API retains snapshots for 30 days and events for 90 days, with cleanup throt
 
 ## Database setup
 
-Migration `0007_create_network_monitoring.sql` adds the snapshots, current heartbeat pointer, event tables, indexes, and uniqueness constraint. Migration `0008_create_network_monitor_viewers.sql` adds expiring per-tab viewer leases for on-demand collection. Check the remote target and current D1 migration state before applying pending migrations. No database or secret is created by the API code itself.
+Migration `0007_create_network_monitoring.sql` adds the snapshots, current heartbeat pointer, event tables, indexes, and uniqueness constraint. Migration `0008_create_network_monitor_viewers.sql` adds expiring per-tab viewer leases for on-demand collection. Migration `0009_create_network_ping_checks.sql` adds queued ping checks and per-address results. Check the remote target and current D1 migration state before applying pending migrations. No database or secret is created by the API code itself.

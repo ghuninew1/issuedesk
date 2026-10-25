@@ -4,14 +4,18 @@
 from __future__ import annotations
 
 import hashlib
+import concurrent.futures
+import ipaddress
 import json
 import logging
 import os
 import random
+import re
 import signal
 import socket
 import ssl
 import struct
+import subprocess
 import sys
 import threading
 import time
@@ -28,6 +32,9 @@ MAX_API_WORD_BYTES = 1024 * 1024
 ROUTER_INTERFACE_NAMES = {"ais": "pppoe-AIS", "true": "pppoe-TRUE"}
 REPORT_PATH = "/api/network/agent/report"
 CONTROL_PATH = "/api/network/agent/control"
+PING_REPORT_PATH = "/api/network/agent/ping-report"
+LAN_NETWORK = ipaddress.ip_network("192.168.11.0/24")
+PING_LATENCY_PATTERN = re.compile(r"time[=<]\s*([0-9]+(?:\.[0-9]+)?)\s*ms", re.IGNORECASE)
 
 
 class ConfigurationError(Exception):
@@ -55,6 +62,7 @@ class Config:
     router_password: str
     issue_desk_report_url: str
     issue_desk_control_url: str
+    issue_desk_ping_report_url: str
     issue_desk_agent_token: str
     cf_access_client_id: str
     cf_access_client_secret: str
@@ -127,6 +135,7 @@ def load_config() -> Config:
         router_password=router_password,
         issue_desk_report_url=f"{api_base_url.rstrip('/')}{REPORT_PATH}",
         issue_desk_control_url=f"{api_base_url.rstrip('/')}{CONTROL_PATH}",
+        issue_desk_ping_report_url=f"{api_base_url.rstrip('/')}{PING_REPORT_PATH}",
         issue_desk_agent_token=agent_token,
         cf_access_client_id=cf_access_client_id,
         cf_access_client_secret=cf_access_client_secret,
@@ -389,7 +398,7 @@ def _issue_desk_headers(config: Config) -> dict[str, str]:
     }
 
 
-def _monitoring_requested(config: Config) -> bool:
+def _read_agent_control(config: Config) -> dict[str, Any]:
     request = urllib.request.Request(config.issue_desk_control_url, method="GET", headers=_issue_desk_headers(config))
     try:
         with urllib.request.urlopen(request, timeout=config.http_timeout_seconds) as response:
@@ -408,7 +417,83 @@ def _monitoring_requested(config: Config) -> bool:
         raise IssueDeskRequestError("IssueDesk control endpoint returned invalid JSON") from error
     if not isinstance(result, dict) or result.get("success") is not True or not isinstance(result.get("active"), bool):
         raise IssueDeskRequestError("IssueDesk control endpoint returned an unexpected response")
-    return result["active"]
+    ping_job = result.get("pingJob")
+    if ping_job is not None:
+        if not isinstance(ping_job, dict) or not isinstance(ping_job.get("id"), str) or not isinstance(ping_job.get("targets"), list):
+            raise IssueDeskRequestError("IssueDesk control endpoint returned an invalid ping job")
+        if not 1 <= len(ping_job["targets"]) <= 20 or any(not _is_allowed_ping_target(target) for target in ping_job["targets"]):
+            raise IssueDeskRequestError("IssueDesk control endpoint returned invalid ping targets")
+    return result
+
+
+def _is_allowed_ping_target(value: Any) -> bool:
+    if not isinstance(value, str):
+        return False
+    try:
+        address = ipaddress.ip_address(value)
+    except ValueError:
+        return False
+    return address.version == 4 and address in LAN_NETWORK and address not in {LAN_NETWORK.network_address, LAN_NETWORK.broadcast_address}
+
+
+def _ping_one(target: str) -> dict[str, Any]:
+    if not _is_allowed_ping_target(target):
+        return {"ipAddress": target, "status": "error", "latencyMs": None}
+    started = time.monotonic()
+    try:
+        result = subprocess.run(
+            ["ping", "-n", "-c", "1", "-W", "1", target],
+            capture_output=True,
+            text=True,
+            timeout=3,
+            check=False,
+        )
+    except subprocess.TimeoutExpired:
+        return {"ipAddress": target, "status": "offline", "latencyMs": None}
+    except OSError:
+        return {"ipAddress": target, "status": "error", "latencyMs": None}
+
+    if result.returncode == 1:
+        return {"ipAddress": target, "status": "offline", "latencyMs": None}
+    if result.returncode != 0:
+        return {"ipAddress": target, "status": "error", "latencyMs": None}
+    match = PING_LATENCY_PATTERN.search(result.stdout)
+    latency = float(match.group(1)) if match else (time.monotonic() - started) * 1000
+    return {"ipAddress": target, "status": "online", "latencyMs": round(latency, 3)}
+
+
+def _run_ping_job(targets: list[str]) -> list[dict[str, Any]]:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=min(10, len(targets))) as executor:
+        return list(executor.map(_ping_one, targets))
+
+
+def _send_ping_results(config: Config, check_id: str, results: list[dict[str, Any]]) -> None:
+    body = json.dumps({"checkId": check_id, "results": results}, separators=(",", ":")).encode("utf-8")
+    request = urllib.request.Request(
+        config.issue_desk_ping_report_url,
+        data=body,
+        method="POST",
+        headers={**_issue_desk_headers(config), "Content-Type": "application/json"},
+    )
+    for attempt in range(1, config.max_retry_attempts + 1):
+        try:
+            with urllib.request.urlopen(request, timeout=config.http_timeout_seconds) as response:
+                payload = json.loads(response.read(16 * 1024).decode("utf-8"))
+                if response.status != 200 or not isinstance(payload, dict) or payload.get("success") is not True:
+                    raise IssueDeskRequestError("IssueDesk rejected ping results")
+                return
+        except urllib.error.HTTPError as error:
+            error.close()
+            if error.code not in {408, 429} and error.code < 500:
+                raise IssueDeskRejectedError(f"IssueDesk ping report rejected with HTTP status {error.code}") from error
+            last_error: Exception = IssueDeskRequestError(f"IssueDesk ping report returned HTTP status {error.code}")
+        except (urllib.error.URLError, TimeoutError, socket.timeout, OSError, UnicodeDecodeError, json.JSONDecodeError) as error:
+            last_error = IssueDeskRequestError(f"IssueDesk ping report failed ({type(error).__name__})")
+        if attempt == config.max_retry_attempts:
+            raise last_error
+        delay = min(2 ** (attempt - 1), 15) + random.uniform(0, 0.25)
+        LOGGER.warning("Ping result delivery attempt %s/%s failed; retrying in %.1fs", attempt, config.max_retry_attempts, delay)
+        time.sleep(delay)
 
 
 def _send_once(config: Config, payload: dict[str, Any]) -> bool:
@@ -493,7 +578,15 @@ def run_agent(config: Config, stop_event: threading.Event) -> None:
     while not stop_event.is_set():
         cycle_started = time.monotonic()
         try:
-            if not _monitoring_requested(config):
+            control = _read_agent_control(config)
+            ping_job = control.get("pingJob")
+            if ping_job:
+                ping_results = _run_ping_job(ping_job["targets"])
+                _send_ping_results(config, ping_job["id"], ping_results)
+                online_count = sum(result["status"] == "online" for result in ping_results)
+                LOGGER.info("Ping check %s completed: %s/%s online", ping_job["id"], online_count, len(ping_results))
+
+            if not control["active"]:
                 if was_active:
                     LOGGER.info("No active Network Monitor viewers; Router polling paused")
                 was_active = False

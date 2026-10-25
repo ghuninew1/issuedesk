@@ -4,7 +4,8 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
 
 RUN apt-get update \
-    && apt-get install --no-install-recommends -y ca-certificates \
+    && apt-get install --no-install-recommends -y ca-certificates iputils-ping libcap2-bin \
+    && setcap cap_net_raw+ep /usr/bin/ping \
     && rm -rf /var/lib/apt/lists/* \
     && mkdir -p /app/data \
     && chown -R 10001:10001 /app

@@ -8,9 +8,12 @@ import {
     Gauge,
     HardDrive,
     History,
+    LoaderCircle,
     Network,
+    Plus,
     RefreshCw,
     Router,
+    Trash2,
     Wifi,
     Clock3,
 } from "lucide-react";
@@ -156,6 +159,10 @@ function TrafficChart({ series }) {
 }
 
 function NetworkMonitor() {
+    const [pingTargets, setPingTargets] = useState([{ id: "initial", value: "" }]);
+    const [pingCheck, setPingCheck] = useState(null);
+    const [pingLoading, setPingLoading] = useState(false);
+    const [pingError, setPingError] = useState("");
     const [status, setStatus] = useState(null);
     const [snapshots, setSnapshots] = useState([]);
     const [events, setEvents] = useState([]);
@@ -165,14 +172,16 @@ function NetworkMonitor() {
 
     const load = useCallback(async () => {
         try {
-            const [current, history, eventHistory] = await Promise.all([
+            const [current, history, eventHistory, latestPingCheck] = await Promise.all([
                 api("/api/network/status"),
                 api("/api/network/history?hours=24&limit=3000"),
                 api("/api/network/events?limit=100"),
+                api("/api/network/ping/check"),
             ]);
             setStatus(current);
             setSnapshots(history.snapshots || []);
             setEvents(eventHistory.events || []);
+            setPingCheck(latestPingCheck.check);
             setError("");
         } catch (cause) {
             setError(cause.message || "โหลดข้อมูล Network Monitoring ไม่สำเร็จ");
@@ -226,6 +235,60 @@ function NetworkMonitor() {
         };
     }, [load]);
 
+    useEffect(() => {
+        if (!pingCheck?.id || pingCheck.status === "completed") return undefined;
+        let mounted = true;
+        const refreshPingCheck = async () => {
+            try {
+                const result = await api(`/api/network/ping/check?id=${encodeURIComponent(pingCheck.id)}`);
+                if (mounted) {
+                    setPingCheck(result.check);
+                    setPingError("");
+                }
+            } catch (cause) {
+                if (mounted) setPingError(cause.message || "อ่านผล Ping ไม่สำเร็จ");
+            }
+        };
+        void refreshPingCheck();
+        const timer = window.setInterval(() => { void refreshPingCheck(); }, 3_000);
+        return () => {
+            mounted = false;
+            window.clearInterval(timer);
+        };
+    }, [pingCheck?.id, pingCheck?.status]);
+
+    const updatePingTarget = (id, value) => {
+        setPingTargets((current) => current.map((target) => target.id === id ? { ...target, value } : target));
+    };
+
+    const submitPingCheck = async (event) => {
+        event.preventDefault();
+        const targets = [...new Set(pingTargets.map((target) => target.value.trim()).filter(Boolean))];
+        if (!targets.length) {
+            setPingError("กรอก IP อย่างน้อย 1 หมายเลขก่อนกดเช็ค");
+            return;
+        }
+        setPingLoading(true);
+        setPingError("");
+        try {
+            const result = await api("/api/network/ping/check", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ targets }),
+            });
+            setPingCheck({
+                id: result.checkId,
+                status: result.status,
+                requestedAt: new Date().toISOString(),
+                results: result.targets.map((ipAddress) => ({ ipAddress, status: "pending", latencyMs: null })),
+            });
+        } catch (cause) {
+            setPingError(cause.message || "ส่งคำขอ Ping ไม่สำเร็จ");
+        } finally {
+            setPingLoading(false);
+        }
+    };
+
     const snapshot = status?.snapshot;
     const agentOnline = status?.agent?.online === true;
     const memoryPercent = snapshot?.router.memoryTotalBytes
@@ -266,6 +329,93 @@ function NetworkMonitor() {
             {error && <div role="alert" className="glass-surface rounded-xl border-amber-500/30 bg-amber-500/5 px-4 py-3 text-sm text-amber-800 dark:text-amber-200">โหลดข้อมูล Network Monitoring ไม่สำเร็จ: {error}</div>}
             {viewerError && <div role="alert" className="glass-surface rounded-xl border-amber-500/30 bg-amber-500/5 px-4 py-3 text-sm text-amber-800 dark:text-amber-200">ยังเริ่มการเก็บข้อมูลตามการเปิดหน้านี้ไม่ได้: {viewerError}</div>}
             {snapshot && !agentOnline && <div role="status" className="glass-surface rounded-xl border-amber-500/30 bg-amber-500/5 px-4 py-3 text-sm text-amber-800 dark:text-amber-200">กำลังแสดง Snapshot ล่าสุดจาก {bangkokStamp(snapshot.collectedAt)} · Heartbeat เกินเกณฑ์ที่กำหนด</div>}
+
+            <section className={cx(glassCard, "space-y-4")}>
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                        <h2 className="font-semibold">เช็ค Ping อุปกรณ์</h2>
+                        <p className="mt-1 text-sm text-muted-foreground">ใส่ IP ในวง 192.168.11.x ได้สูงสุด 20 เครื่อง แล้วกดเช็คเพื่อให้ Agent บน QNAP ตรวจสอบ</p>
+                    </div>
+                    <StatusPill tone={pingCheck?.status === "completed" ? "good" : "muted"}>
+                        {pingCheck?.status === "completed" ? "ตรวจเสร็จแล้ว" : pingCheck?.status === "running" ? "กำลังตรวจ" : pingCheck ? "รอ Agent" : "พร้อมตรวจ"}
+                    </StatusPill>
+                </div>
+                <form onSubmit={submitPingCheck} className="space-y-3">
+                    <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+                        {pingTargets.map((target, index) => (
+                            <label key={target.id} className="flex min-w-0 items-center gap-2 rounded-xl border border-border/70 bg-background/25 p-2">
+                                <span className="w-6 shrink-0 text-center text-xs text-muted-foreground">{index + 1}</span>
+                                <input
+                                    value={target.value}
+                                    onChange={(event) => updatePingTarget(target.id, event.target.value)}
+                                    inputMode="decimal"
+                                    autoComplete="off"
+                                    placeholder="192.168.11.50"
+                                    aria-label={`IP address ${index + 1}`}
+                                    className="min-w-0 flex-1 bg-transparent px-1 py-1.5 font-mono text-sm outline-none placeholder:font-sans placeholder:text-muted-foreground/60"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setPingTargets((current) => current.length > 1 ? current.filter((item) => item.id !== target.id) : current.map((item) => ({ ...item, value: "" })))}
+                                    className="inline-flex size-8 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition hover:bg-[var(--glass-surface-hover)] hover:text-foreground"
+                                    aria-label={`ลบช่อง IP ${index + 1}`}
+                                >
+                                    <Trash2 className="size-4" aria-hidden="true" />
+                                </button>
+                            </label>
+                        ))}
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2">
+                        <button
+                            type="button"
+                            disabled={pingTargets.length >= 20}
+                            onClick={() => setPingTargets((current) => [...current, { id: window.crypto.randomUUID(), value: "" }])}
+                            className="inline-flex h-10 items-center gap-2 rounded-xl border border-border/70 bg-background/30 px-3 text-sm transition hover:bg-[var(--glass-surface-hover)] disabled:opacity-50"
+                        >
+                            <Plus className="size-4" aria-hidden="true" />เพิ่ม IP
+                        </button>
+                        <button
+                            type="submit"
+                            disabled={pingLoading || pingCheck?.status === "pending" || pingCheck?.status === "running"}
+                            className="inline-flex h-10 items-center gap-2 rounded-xl bg-primary px-4 text-sm font-medium text-primary-foreground shadow-sm transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                            {pingLoading ? <LoaderCircle className="size-4 animate-spin" aria-hidden="true" /> : <Wifi className="size-4" aria-hidden="true" />}
+                            {pingLoading ? "กำลังส่งคำขอ" : "เช็ค Ping"}
+                        </button>
+                        <span className="text-xs text-muted-foreground">ไม่ตอบ Ping อาจเกิดจากอุปกรณ์ปิดกั้น ICMP ไม่ได้ยืนยันว่าเครื่องปิดอยู่</span>
+                    </div>
+                </form>
+                {pingError && <p role="alert" className="text-sm text-amber-700 dark:text-amber-300">{pingError}</p>}
+                {pingCheck?.results?.length > 0 && (
+                    <div className="overflow-hidden rounded-xl border border-border/60">
+                        {pingCheck.results.map((result) => (
+                            <div key={result.ipAddress} className="flex flex-wrap items-center justify-between gap-3 border-b border-border/50 bg-background/15 px-3 py-2.5 last:border-b-0">
+                                <span className="font-mono text-sm">{result.ipAddress}</span>
+                                <div className="flex items-center gap-3 text-sm">
+                                    <span className={cx(
+                                        "inline-flex items-center gap-2",
+                                        result.status === "online" && "text-emerald-600 dark:text-emerald-300",
+                                        result.status === "offline" && "text-rose-600 dark:text-rose-300",
+                                        (result.status === "pending" || result.status === "error") && "text-muted-foreground",
+                                    )}>
+                                        <span className={cx(
+                                            "size-2 rounded-full",
+                                            result.status === "online" && "bg-emerald-500",
+                                            result.status === "offline" && "bg-rose-500",
+                                            result.status === "pending" && "animate-pulse bg-amber-500",
+                                            result.status === "error" && "bg-muted-foreground",
+                                        )} />
+                                        {result.status === "online" ? "ออนไลน์" : result.status === "offline" ? "ออฟไลน์" : result.status === "error" ? "เช็คไม่สำเร็จ" : "รอ Agent"}
+                                    </span>
+                                    <span className="min-w-20 text-right font-medium tabular-nums">
+                                        {result.status === "online" ? `${Number(result.latencyMs).toFixed(2)} ms` : "—"}
+                                    </span>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </section>
 
             <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
                 <section className={cx(glassCard, "sm:col-span-2 xl:col-span-1")}>

@@ -27,6 +27,7 @@ def sample_config() -> Config:
         router_password="local-only-test-password",
         issue_desk_report_url="https://issuedesk.example.invalid/api/network/agent/report",
         issue_desk_control_url="https://issuedesk.example.invalid/api/network/agent/control",
+        issue_desk_ping_report_url="https://issuedesk.example.invalid/api/network/agent/ping-report",
         issue_desk_agent_token="x" * 48,
         cf_access_client_id="service-token-id",
         cf_access_client_secret="local-only-test-access-secret",

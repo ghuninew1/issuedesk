@@ -2,7 +2,7 @@
 
 This container connects outbound to the MikroTik RouterOS API-SSL, reads router and PPPoE counters, then posts snapshots to IssueDesk. It does not listen on a port, use SSH, change RouterOS settings, or test public Internet reachability. TLS certificate-chain and hostname verification stay enabled; the configured TLS server name is used for SNI and certificate checks.
 
-The Agent uses Python's standard library only. The Docker image installs the system CA bundle required to verify the RouterOS certificate. The Compose service, network, `.env` file, and `/app/data` volume are already present in `garage/docker-compose.yml`; this implementation does not require persistent state in the volume.
+The Agent uses Python's standard library plus the system `ping` utility installed in the image. The image includes the CA bundle required to verify the RouterOS certificate and grants the non-root `ping` executable only the `CAP_NET_RAW` file capability needed for ICMP. The container is not privileged and no extra Compose capability is added. The Compose service, network, `.env` file, and `/app/data` volume are already present in `garage/docker-compose.yml`; this implementation does not require persistent state in the volume.
 
 ## Configure on QNAP
 
@@ -14,7 +14,7 @@ The Agent uses Python's standard library only. The Docker image installs the sys
    ```
 
 3. Edit `network-monitor/.env` on QNAP. Fill in `ROUTER_PASSWORD`, `ISSUEDESK_API_URL` with the deployed site's HTTPS origin (no path or trailing slash), `ISSUEDESK_AGENT_TOKEN`, and the existing Zero Trust Service Token's `CF_ACCESS_CLIENT_ID` and `CF_ACCESS_CLIENT_SECRET`. Generate a separate API token locally (for example, `openssl rand -hex 32`) and use it for both Cloudflare Pages `NETWORK_AGENT_TOKEN` and QNAP `ISSUEDESK_AGENT_TOKEN`. Do not send secrets in chat or commit `.env`.
-4. Set Cloudflare Pages secret `NETWORK_AGENT_TOKEN` to the same high-entropy API token. The Agent sends the Zero Trust Service Token as `CF-Access-Client-Id` and `CF-Access-Client-Secret` headers to pass the Access policy; it separately sends the API bearer token for Pages Function authorization. These are two distinct credentials. The API rejects bearer tokens shorter than 32 characters. Ensure migrations `0007_create_network_monitoring.sql` and `0008_create_network_monitor_viewers.sql` are applied and the API deployment includes the report, control, and viewer endpoints before starting the Agent.
+4. Set Cloudflare Pages secret `NETWORK_AGENT_TOKEN` to the same high-entropy API token. The Agent sends the Zero Trust Service Token as `CF-Access-Client-Id` and `CF-Access-Client-Secret` headers to pass the Access policy; it separately sends the API bearer token for Pages Function authorization. These are two distinct credentials. The API rejects bearer tokens shorter than 32 characters. Ensure migrations `0007_create_network_monitoring.sql`, `0008_create_network_monitor_viewers.sql`, and `0009_create_network_ping_checks.sql` are applied and the API deployment includes the report, control, viewer, and ping endpoints before starting the Agent.
 5. Build and start only this Compose service from the `garage` directory:
 
    ```sh
@@ -49,11 +49,15 @@ The Container connects to `192.168.11.1:8886` and verifies the certificate again
 
 ## On-demand behavior
 
-The Agent checks `/api/network/agent/control` every poll interval. When no Admin has the Network Monitor page open, it pauses Router reads and snapshot reports; only the lightweight control request continues. Opening the page creates a viewer lease renewed every 30 seconds. Leaving the page releases the lease, and a 90-second expiry handles browser crashes or lost close requests. Include both `GET /api/network/agent/control` and `POST /api/network/agent/report` in the narrowly scoped Cloudflare Access/BIC configuration for the Agent.
+The Agent checks `/api/network/agent/control` every poll interval. When no Admin has the Network Monitor page open, it pauses Router reads and snapshot reports; only the lightweight control request continues. Opening the page creates a viewer lease renewed every 30 seconds. Leaving the page releases the lease, and a 90-second expiry handles browser crashes or lost close requests. Include `GET /api/network/agent/control`, `POST /api/network/agent/report`, and `POST /api/network/agent/ping-report` in the narrowly scoped Cloudflare Access/BIC configuration for the Agent.
+
+## Ping checks
+
+An Admin can queue up to 20 IPs from `192.168.11.1` through `192.168.11.254` on the dashboard. The Agent claims queued jobs through its control request, sends one ICMP echo request per target, then reports the response status and latency. A non-response means ICMP did not reply; it does not prove the device is powered off. Only the Agent's `ping` executable has `CAP_NET_RAW`; the Python process stays non-root and the Compose service does not use privileged mode or additional capabilities.
 
 ## Data contract
 
-The Agent posts to `POST /api/network/agent/report` with the Cloudflare Access Service Token headers `CF-Access-Client-Id` and `CF-Access-Client-Secret`, plus `Authorization: Bearer <ISSUEDESK_AGENT_TOKEN>` for the Pages API. It identifies itself with the User-Agent `IssueDesk-Network-Monitor/1.0`; Cloudflare Browser Integrity Check must be selectively disabled for this exact API route because this is an API client, not a browser. The JSON fields match `NETWORK_MONITORING_API.md`: `collectedAt`, `router.identity`, `router.uptime`, `router.cpuLoad`, `router.memoryTotalBytes`, `router.memoryFreeBytes`, optional `router.temperatureC`, and `wan.ais`/`wan.true` interface state plus RX/TX byte counters.
+The Agent posts to `POST /api/network/agent/report` with the Cloudflare Access Service Token headers `CF-Access-Client-Id` and `CF-Access-Client-Secret`, plus `Authorization: Bearer <ISSUEDESK_AGENT_TOKEN>` for the Pages API. It identifies itself with the User-Agent `IssueDesk-Network-Monitor/1.0`; Cloudflare Browser Integrity Check must be selectively disabled for its control, report, and ping-report routes because this is an API client, not a browser. The JSON fields match `NETWORK_MONITORING_API.md`: `collectedAt`, `router.identity`, `router.uptime`, `router.cpuLoad`, `router.memoryTotalBytes`, `router.memoryFreeBytes`, optional `router.temperatureC`, and `wan.ais`/`wan.true` interface state plus RX/TX byte counters.
 
 The API accepts raw counters, not rate fields. The Agent calculates per-WAN download/upload rates locally for safe diagnostics, while the Dashboard derives rates from saved snapshots. A counter reset or down interface produces `n/a` locally; it never produces a negative rate. PPPoE `running` reports interface state only and is not presented as Internet reachability.
 
