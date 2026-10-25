@@ -62,12 +62,12 @@ const AppShell = ({ children }) => {
     }, [isMobileSidebarOpen]);
 
     return (
-        <div className="relative isolate flex min-h-screen overflow-x-clip bg-background font-sans text-foreground antialiased selection:bg-cyan-500 selection:text-white">
-            <div className="pointer-events-none absolute top-1/4 -left-20 z-0 size-96 rounded-full bg-green-500/5 blur-3xl" />
-            <div className="pointer-events-none absolute right-0 bottom-1/4 z-0 size-96 rounded-full bg-red-400/5 blur-3xl" />
-            <div className="pointer-events-none absolute top-1/2 left-1/2 z-0 size-[500px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-cyan-500/5 blur-[120px]" />
+        <div className="isolate relative flex bg-background selection:bg-cyan-500 min-h-screen overflow-x-clip font-sans text-foreground selection:text-white antialiased">
+            <div className="top-1/4 -left-20 z-0 absolute bg-green-500/5 blur-3xl rounded-full size-96 pointer-events-none" />
+            <div className="right-0 bottom-1/4 z-0 absolute bg-red-400/5 blur-3xl rounded-full size-96 pointer-events-none" />
+            <div className="top-1/2 left-1/2 z-0 absolute bg-cyan-500/5 blur-[120px] rounded-full size-[500px] -translate-x-1/2 -translate-y-1/2 pointer-events-none" />
             <div
-                className="pointer-events-none absolute inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-[0.02]"
+                className="z-0 absolute inset-0 bg-cover bg-no-repeat bg-center opacity-[0.02] pointer-events-none"
                 style={{
                     backgroundImage: "url('/it-workspace-bg.jpg')",
                 }}
@@ -82,17 +82,17 @@ const AppShell = ({ children }) => {
                 />
             )}
             {isLoading && (
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-indigo-600/10 rounded-full blur-[120px] pointer-events-none" />
+                <div className="top-1/2 left-1/2 absolute bg-indigo-600/10 blur-[120px] rounded-full w-[500px] h-[500px] -translate-x-1/2 -translate-y-1/2 pointer-events-none" />
             )}
 
-            <div className="relative z-10 flex min-w-0 flex-1 flex-col animate-fade">
+            <div className="z-10 relative flex flex-col flex-1 min-w-0 animate-fade">
                 <Header
                     isHeaderVisible={isHeaderVisible || isMobileSidebarOpen}
                     onOpenMobileSidebar={() => setIsMobileSidebarOpen(true)}
                 />
 
                 <main className={cx("min-w-0 flex-1 bg-muted/30", "p-4 md:p-5 lg:p-6")}>{children}</main>
-                <footer className="mb-2 pt-4 text-center text-xs text-muted-foreground animate-fadeInUp">
+                <footer className="mb-2 pt-4 text-muted-foreground text-xs text-center animate-fadeInUp">
                     IssueDesk | &copy; {new Date().getFullYear()} GhuniNew. All rights reserved.
                 </footer>
             </div>

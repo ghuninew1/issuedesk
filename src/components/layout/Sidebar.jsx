@@ -1,5 +1,6 @@
 import { NavLink } from "react-router-dom";
 import { cx } from "../../utils/cx";
+import { glassHover } from "../../utils/utils";
 import {
     LayoutDashboard,
     ClipboardList,
@@ -24,6 +25,13 @@ const navLinks = [
     { icon: Network, label: "Network Monitor", to: "/network-monitor" },
 ];
 
+const handleGlowMove = (e) => {
+    if (e.pointerType !== "mouse") return; // ข้ามบนจอสัมผัส
+    const rect = e.currentTarget.getBoundingClientRect();
+    e.currentTarget.style.setProperty("--mx", `${e.clientX - rect.left}px`);
+    e.currentTarget.style.setProperty("--my", `${e.clientY - rect.top}px`);
+};
+
 const SidebarContent = ({ isCollapsed, onNavigate, onToggleSidebar, mobile = false }) => {
     return (
         <>
@@ -43,6 +51,7 @@ const SidebarContent = ({ isCollapsed, onNavigate, onToggleSidebar, mobile = fal
                             isActive
                                 ? "font-medium text-sidebar-accent-foreground"
                                 : "text-muted-foreground hover:text-sidebar-accent-foreground glass-nav-link",
+                            glassHover,
                         )
                     }
                 >
@@ -52,7 +61,7 @@ const SidebarContent = ({ isCollapsed, onNavigate, onToggleSidebar, mobile = fal
                             alt="IssueDesk"
                             width={120}
                             height={36}
-                            className="h-8 w-auto object-contain"
+                            className="w-auto h-8 object-contain"
                         />
                     ) : (
                         <img src={logo} alt="IssueDesk" width={32} height={32} className="size-8 object-cover" />
@@ -85,6 +94,7 @@ const SidebarContent = ({ isCollapsed, onNavigate, onToggleSidebar, mobile = fal
                         to={link.to}
                         title={isCollapsed ? link.label : undefined}
                         onClick={onNavigate}
+                        onPointerMove={handleGlowMove}
                         className={({ isActive }) =>
                             cx(
                                 "flex min-h-11 items-center rounded-xl px-3 py-2.5",
@@ -94,12 +104,12 @@ const SidebarContent = ({ isCollapsed, onNavigate, onToggleSidebar, mobile = fal
                                 "focus-visible:ring-inset focus-visible:ring-ring/50",
                                 isActive
                                     ? "glass-nav-active font-medium text-sidebar-accent-foreground"
-                                    : "text-muted-foreground hover:text-sidebar-accent-foreground glass-nav-link",
+                                    : cx("text-muted-foreground hover:text-sidebar-accent-foreground", glassHover),
                             )
                         }
                     >
-                        <link.icon className="size-5 shrink-0" aria-hidden="true" />
-                        <span className={cx("text-sm", mobile || !isCollapsed ? "inline" : "sr-only")}>
+                        <link.icon className="relative size-5 shrink-0" aria-hidden="true" />
+                        <span className={cx("relative text-sm", mobile || !isCollapsed ? "inline" : "sr-only")}>
                             {link.label}
                         </span>
                     </NavLink>
@@ -108,14 +118,24 @@ const SidebarContent = ({ isCollapsed, onNavigate, onToggleSidebar, mobile = fal
 
             {/* Footer */}
             {!mobile && (
-                <div className={cx("shrink-0 p-2 border-t", !isCollapsed && "border-t border-sidebar-border", "animate-fadeInLeft")}>
+                <div
+                    className={cx(
+                        "shrink-0 p-2 border-t",
+                        !isCollapsed && "border-t border-sidebar-border",
+                        "animate-fadeInLeft",
+                    )}
+                >
                     <button
                         type="button"
                         onClick={onToggleSidebar}
                         aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
                         aria-pressed={isCollapsed}
                         title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-                        className="mx-auto flex size-auto items-center justify-center rounded-xl p-2 text-muted-foreground transition-colors hover:bg-[var(--glass-surface-hover)] hover:shadow-[inset_0_1px_0_var(--glass-highlight)] hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
+                        onPointerMove={handleGlowMove}
+                        className={cx(
+                            glassHover,
+                            "flex justify-center items-center  mx-auto p-2 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring size-auto text-muted-foreground transition-colors hover:text-accent-foreground cursor-pointer",
+                        )}
                     >
                         {isCollapsed ? (
                             <PanelLeftOpen size={19} aria-hidden="true" />
@@ -141,6 +161,7 @@ const Sidebar = ({ isCollapsed, isMobileOpen, onMobileClose, onToggleSidebar }) 
                 aria-label="Close navigation menu"
                 tabIndex={isMobileOpen ? 0 : -1}
                 onClick={onMobileClose}
+                onPointerMove={handleGlowMove}
                 className={cx(
                     "fixed inset-0 z-40 bg-black/40 transition-opacity duration-200",
                     "md:hidden",
