@@ -65,16 +65,16 @@ function buildTrafficSeries(snapshots) {
 function MetricCard({ icon: Icon, label, value = "—", detail, accent = "text-primary" }) {
     return (
         <section className={cx(glassCard, "min-h-32")}>
-            <div className="flex items-start justify-between gap-3">
+            <div className="flex justify-between items-start gap-3">
                 <div>
-                    <p className="text-sm text-muted-foreground">{label}</p>
-                    <p className="mt-3 text-2xl font-semibold tracking-tight">{value}</p>
+                    <p className="text-muted-foreground text-sm">{label}</p>
+                    <p className="mt-3 font-semibold text-2xl tracking-tight">{value}</p>
                 </div>
-                <span className="rounded-xl border border-border/70 bg-background/35 p-2.5">
+                <span className="bg-background/35 p-2.5 border border-border/70 rounded-xl">
                     <Icon className={cx("size-5", accent)} aria-hidden="true" />
                 </span>
             </div>
-            {detail && <p className="mt-2 text-xs text-muted-foreground">{detail}</p>}
+            {detail && <p className="mt-2 text-muted-foreground text-xs">{detail}</p>}
         </section>
     );
 }
@@ -96,29 +96,29 @@ function StatusPill({ children, tone = "muted" }) {
 function WanCard({ name, wan, rates }) {
     const known = Boolean(wan);
     return (
-        <article className="rounded-xl border border-border/70 bg-background/25 p-4">
-            <div className="flex flex-wrap items-center justify-between gap-3">
+        <article className="bg-background/25 p-4 border border-border/70 rounded-xl">
+            <div className="flex flex-wrap justify-between items-center gap-3">
                 <div className="flex items-center gap-2.5">
-                    <span className="rounded-lg border border-border/70 bg-background/40 p-2">
+                    <span className="bg-background/40 p-2 border border-border/70 rounded-lg">
                         <Wifi className="size-4 text-primary" aria-hidden="true" />
                     </span>
                     <div>
-                        <h3 className="text-sm font-medium">{name}</h3>
-                        <p className="text-xs text-muted-foreground">{wan?.interface || "รอข้อมูล Interface"}</p>
+                        <h3 className="font-medium text-sm">{name}</h3>
+                        <p className="text-muted-foreground text-xs">{wan?.interface || "รอข้อมูล Interface"}</p>
                     </div>
                 </div>
                 <StatusPill tone={known && wan.running ? "good" : "muted"}>
                     {!known ? "ยังไม่มีข้อมูล" : wan.running ? "Interface connected" : "Interface down"}
                 </StatusPill>
             </div>
-            <div className="mt-5 grid grid-cols-2 gap-3 border-t border-border/60 pt-4">
+            <div className="gap-3 grid grid-cols-2 mt-5 pt-4 border-border/60 border-t">
                 <div>
-                    <p className="text-xs text-muted-foreground">Download</p>
-                    <p className="mt-1 flex items-center gap-1.5 text-sm font-medium"><ArrowDownToLine className="size-4 text-sky-500" />{readableRate(rates?.download)}</p>
+                    <p className="text-muted-foreground text-xs">Download</p>
+                    <p className="flex items-center gap-1.5 mt-1 font-medium text-sm"><ArrowDownToLine className="size-4 text-sky-500" />{readableRate(rates?.download)}</p>
                 </div>
                 <div>
-                    <p className="text-xs text-muted-foreground">Upload</p>
-                    <p className="mt-1 flex items-center gap-1.5 text-sm font-medium"><ArrowUpFromLine className="size-4 text-violet-500" />{readableRate(rates?.upload)}</p>
+                    <p className="text-muted-foreground text-xs">Upload</p>
+                    <p className="flex items-center gap-1.5 mt-1 font-medium text-sm"><ArrowUpFromLine className="size-4 text-violet-500" />{readableRate(rates?.upload)}</p>
                 </div>
             </div>
         </article>
@@ -129,14 +129,14 @@ function TrafficChart({ series }) {
     const valid = series.filter((point) => point.download !== null && point.upload !== null);
     if (!valid.length) {
         return (
-            <div className="relative mt-5 flex h-52 items-center justify-center overflow-hidden rounded-xl border border-border/50 bg-background/20 md:h-64">
+            <div className="relative flex justify-center items-center bg-background/20 mt-5 border border-border/50 rounded-xl h-52 md:h-64 overflow-hidden">
                 <div className="absolute inset-0 flex flex-col justify-between px-4 py-5" aria-hidden="true">
-                    {[0, 1, 2, 3].map((line) => <div key={line} className="border-t border-dashed border-border/50" />)}
+                    {[0, 1, 2, 3].map((line) => <div key={line} className="border-border/50 border-t border-dashed" />)}
                 </div>
-                <div className="relative flex max-w-xs flex-col items-center px-5 text-center">
+                <div className="relative flex flex-col items-center px-5 max-w-xs text-center">
                     <Activity className="size-6 text-muted-foreground/70" aria-hidden="true" />
-                    <p className="mt-3 text-sm font-medium">ยังไม่มีข้อมูล Traffic</p>
-                    <p className="mt-1 text-xs leading-5 text-muted-foreground">กราฟจะแสดงเมื่อ Agent ส่ง Snapshot อย่างน้อย 2 ครั้ง</p>
+                    <p className="mt-3 font-medium text-sm">ยังไม่มีข้อมูล Traffic</p>
+                    <p className="mt-1 text-muted-foreground text-xs leading-5">กราฟจะแสดงเมื่อ Agent ส่ง Snapshot อย่างน้อย 2 ครั้ง</p>
                 </div>
             </div>
         );
@@ -148,7 +148,7 @@ function TrafficChart({ series }) {
         return `${x},${y}`;
     }).join(" ");
     return (
-        <div className="mt-5 h-52 overflow-hidden rounded-xl border border-border/50 bg-background/20 p-3 md:h-64">
+        <div className="bg-background/20 mt-5 p-3 border border-border/50 rounded-xl h-52 md:h-64 overflow-hidden">
             <svg viewBox="0 0 800 220" className="size-full" role="img" aria-label="Traffic download and upload over the latest samples">
                 {[20, 75, 130, 190].map((y) => <line key={y} x1="20" x2="780" y1={y} y2={y} className="stroke-border/60" strokeDasharray="4 6" />)}
                 <polyline points={line("download")} fill="none" stroke="rgb(14 165 233)" strokeWidth="3" strokeLinejoin="round" strokeLinecap="round" />
@@ -357,18 +357,18 @@ function NetworkMonitor() {
     const latestRates = traffic[traffic.length - 1];
 
     return (
-        <div className="mx-auto max-w-7xl space-y-5 md:space-y-6">
-            <header className="glass-surface flex flex-col gap-4 rounded-2xl p-5 sm:flex-row sm:items-center sm:justify-between md:p-6">
+        <div className="space-y-5 md:space-y-6 mx-auto max-w-7xl">
+            <header className="flex sm:flex-row flex-col sm:justify-between sm:items-center gap-4 p-5 md:p-6 rounded-2xl glass-surface">
                 <div className="flex items-center gap-4">
-                    <span className="rounded-2xl border border-primary/20 bg-primary/10 p-3 text-primary shadow-[inset_0_1px_0_var(--glass-highlight)]">
+                    <span className="bg-primary/10 shadow-[inset_0_1px_0_var(--glass-highlight)] p-3 border border-primary/20 rounded-2xl text-primary">
                         <Activity className="size-6" aria-hidden="true" />
                     </span>
                     <div>
-                        <h1 className="text-xl font-semibold tracking-tight md:text-2xl">Network Monitoring</h1>
-                        <p className="mt-1 text-sm text-muted-foreground">ภาพรวม Router และ WAN · เก็บข้อมูลขณะเปิดหน้านี้เท่านั้น</p>
+                        <h1 className="font-semibold text-xl md:text-2xl tracking-tight">Network Monitoring</h1>
+                        <p className="mt-1 text-muted-foreground text-sm">ภาพรวม Router และ WAN · เก็บข้อมูลขณะเปิดหน้านี้เท่านั้น</p>
                     </div>
                 </div>
-                <div className="flex items-center gap-3 self-start sm:self-auto">
+                <div className="flex items-center self-start sm:self-auto gap-3">
                     <StatusPill tone={agentOnline ? "good" : "muted"}>
                         {loading && !status ? "กำลังโหลด" : agentOnline ? "Agent Online" : snapshot ? "Agent Offline" : "รอข้อมูลจาก Agent"}
                     </StatusPill>
@@ -377,7 +377,7 @@ function NetworkMonitor() {
                         onClick={() => { setLoading(true); void load(); }}
                         disabled={loading}
                         title="รีเฟรชข้อมูล"
-                        className="inline-flex size-10 items-center justify-center rounded-xl border border-border/70 bg-background/30 text-muted-foreground transition hover:bg-[var(--glass-surface-hover)] disabled:opacity-50"
+                        className="inline-flex justify-center items-center bg-background/30 hover:bg-[var(--glass-surface-hover)] disabled:opacity-50 border border-border/70 rounded-xl size-10 text-muted-foreground transition"
                         aria-label="รีเฟรชข้อมูล"
                     >
                         <RefreshCw className={cx("size-4", loading && "animate-spin")} aria-hidden="true" />
@@ -385,25 +385,25 @@ function NetworkMonitor() {
                 </div>
             </header>
 
-            {error && <div role="alert" className="glass-surface rounded-xl border-amber-500/30 bg-amber-500/5 px-4 py-3 text-sm text-amber-800 dark:text-amber-200">โหลดข้อมูล Network Monitoring ไม่สำเร็จ: {error}</div>}
-            {viewerError && <div role="alert" className="glass-surface rounded-xl border-amber-500/30 bg-amber-500/5 px-4 py-3 text-sm text-amber-800 dark:text-amber-200">ยังเริ่มการเก็บข้อมูลตามการเปิดหน้านี้ไม่ได้: {viewerError}</div>}
-            {snapshot && !agentOnline && <div role="status" className="glass-surface rounded-xl border-amber-500/30 bg-amber-500/5 px-4 py-3 text-sm text-amber-800 dark:text-amber-200">กำลังแสดง Snapshot ล่าสุดจาก {bangkokStamp(snapshot.collectedAt)} · Heartbeat เกินเกณฑ์ที่กำหนด</div>}
+            {error && <div role="alert" className="bg-amber-500/5 px-4 py-3 border-amber-500/30 rounded-xl text-amber-800 dark:text-amber-200 text-sm glass-surface">โหลดข้อมูล Network Monitoring ไม่สำเร็จ: {error}</div>}
+            {viewerError && <div role="alert" className="bg-amber-500/5 px-4 py-3 border-amber-500/30 rounded-xl text-amber-800 dark:text-amber-200 text-sm glass-surface">ยังเริ่มการเก็บข้อมูลตามการเปิดหน้านี้ไม่ได้: {viewerError}</div>}
+            {snapshot && !agentOnline && <div role="status" className="bg-amber-500/5 px-4 py-3 border-amber-500/30 rounded-xl text-amber-800 dark:text-amber-200 text-sm glass-surface">กำลังแสดง Snapshot ล่าสุดจาก {bangkokStamp(snapshot.collectedAt)} · Heartbeat เกินเกณฑ์ที่กำหนด</div>}
 
             <section className={cx(glassCard, "space-y-4")}>
-                <div className="flex flex-wrap items-start justify-between gap-3">
+                <div className="flex flex-wrap justify-between items-start gap-3">
                     <div>
                         <h2 className="font-semibold">เช็ค Ping อุปกรณ์</h2>
-                        <p className="mt-1 text-sm text-muted-foreground">ใส่ IP ในวง 192.168.11.x ได้สูงสุด 20 เครื่อง แล้วกดเช็คเพื่อให้ Agent บน QNAP ตรวจสอบ</p>
+                        <p className="mt-1 text-muted-foreground text-sm">ใส่ IP ในวง 192.168.11.x ได้สูงสุด 20 เครื่อง แล้วกดเช็คเพื่อให้ Agent บน QNAP ตรวจสอบ</p>
                     </div>
                     <StatusPill tone={pingCheck?.status === "completed" ? "good" : "muted"}>
                         {pingCheck?.status === "completed" ? "ตรวจเสร็จแล้ว" : pingCheck?.status === "running" ? "กำลังตรวจ" : pingCheck ? "รอ Agent" : "พร้อมตรวจ"}
                     </StatusPill>
                 </div>
                 <form onSubmit={submitPingCheck} className="space-y-3">
-                    <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+                    <div className="gap-2 grid sm:grid-cols-2 xl:grid-cols-4">
                         {pingTargets.map((target, index) => (
-                            <label key={target.id} className="flex min-w-0 items-center gap-2 rounded-xl border border-border/70 bg-background/25 p-2">
-                                <span className="w-6 shrink-0 text-center text-xs text-muted-foreground">{index + 1}</span>
+                            <label key={target.id} className="flex items-center gap-2 bg-background/25 p-2 border border-border/70 rounded-xl min-w-0">
+                                <span className="w-6 text-muted-foreground text-xs text-center shrink-0">{index + 1}</span>
                                 <input
                                     value={target.value}
                                     onChange={(event) => updatePingTarget(target.id, event.target.value)}
@@ -411,12 +411,12 @@ function NetworkMonitor() {
                                     autoComplete="off"
                                     placeholder="192.168.11.50"
                                     aria-label={`IP address ${index + 1}`}
-                                    className="min-w-0 flex-1 bg-transparent px-1 py-1.5 font-mono text-sm outline-none placeholder:font-sans placeholder:text-muted-foreground/60"
+                                    className="flex-1 bg-transparent px-1 py-1.5 outline-none min-w-0 placeholder:font-sans font-mono placeholder:text-muted-foreground/60 text-sm"
                                 />
                                 <button
                                     type="button"
                                     onClick={() => setPingTargets((current) => current.length > 1 ? current.filter((item) => item.id !== target.id) : current.map((item) => ({ ...item, value: "" })))}
-                                    className="inline-flex size-8 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition hover:bg-[var(--glass-surface-hover)] hover:text-foreground"
+                                    className="inline-flex justify-center items-center hover:bg-[var(--glass-surface-hover)] rounded-lg size-8 text-muted-foreground hover:text-foreground transition shrink-0"
                                     aria-label={`ลบช่อง IP ${index + 1}`}
                                 >
                                     <Trash2 className="size-4" aria-hidden="true" />
@@ -429,28 +429,28 @@ function NetworkMonitor() {
                             type="button"
                             disabled={pingTargets.length >= 20}
                             onClick={addPingTargetField}
-                            className="inline-flex h-10 items-center gap-2 rounded-xl border border-border/70 bg-background/30 px-3 text-sm transition hover:bg-[var(--glass-surface-hover)] disabled:opacity-50"
+                            className="inline-flex items-center gap-2 bg-background/30 hover:bg-[var(--glass-surface-hover)] disabled:opacity-50 px-3 border border-border/70 rounded-xl h-10 text-sm transition"
                         >
                             <Plus className="size-4" aria-hidden="true" />เพิ่ม IP
                         </button>
                         <button
                             type="submit"
                             disabled={pingLoading || pingCheck?.status === "pending" || pingCheck?.status === "running"}
-                            className="inline-flex h-10 items-center gap-2 rounded-xl bg-primary px-4 text-sm font-medium text-primary-foreground shadow-sm transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                            className="inline-flex items-center gap-2 bg-primary hover:opacity-90 disabled:opacity-50 shadow-sm px-4 rounded-xl h-10 font-medium text-primary-foreground text-sm transition disabled:cursor-not-allowed"
                         >
                             {pingLoading ? <LoaderCircle className="size-4 animate-spin" aria-hidden="true" /> : <Wifi className="size-4" aria-hidden="true" />}
                             {pingLoading ? "กำลังส่งคำขอ" : "เช็ค Ping"}
                         </button>
-                        <span className="text-xs text-muted-foreground">ไม่ตอบ Ping อาจเกิดจากอุปกรณ์ปิดกั้น ICMP ไม่ได้ยืนยันว่าเครื่องปิดอยู่</span>
+                        <span className="text-muted-foreground text-xs">ไม่ตอบ Ping อาจเกิดจากอุปกรณ์ปิดกั้น ICMP ไม่ได้ยืนยันว่าเครื่องปิดอยู่</span>
                     </div>
                 </form>
-                {pingError && <p role="alert" className="text-sm text-amber-700 dark:text-amber-300">{pingError}</p>}
+                {pingError && <p role="alert" className="text-amber-700 dark:text-amber-300 text-sm">{pingError}</p>}
                 <div className="space-y-2">
-                    <h3 className="text-sm font-medium">IP ที่เคยเช็ค ({knownPingTargets.length})</h3>
+                    <h3 className="font-medium text-sm">IP ที่เคยเช็ค ({knownPingTargets.length})</h3>
                     {knownPingTargets.length ? (
-                        <div className="overflow-hidden rounded-xl border border-border/60">
+                        <div className="border border-border/60 rounded-xl overflow-hidden">
                             {knownPingTargets.map((result) => (
-                                <div key={result.ipAddress} className="grid gap-3 border-b border-border/50 bg-background/15 px-3 py-3 last:border-b-0 sm:grid-cols-[minmax(120px,1fr)_minmax(115px,0.8fr)_minmax(150px,1.2fr)_auto] sm:items-center">
+                                <div key={result.ipAddress} className="sm:items-center gap-3 grid sm:grid-cols-[minmax(120px,1fr)_minmax(115px,0.8fr)_minmax(150px,1.2fr)_auto] bg-background/15 px-3 py-3 border-border/50 border-b last:border-b-0">
                                     <span className="font-mono text-sm">{result.ipAddress}</span>
                                     <div className="flex items-center gap-2 text-sm">
                                         <span className={cx(
@@ -468,52 +468,52 @@ function NetworkMonitor() {
                                             {result.status === "online" ? "ออนไลน์" : result.status === "offline" ? "ไม่ตอบ Ping" : result.status === "error" ? "เช็คไม่สำเร็จ" : "รอ Agent"}
                                         </span>
                                     </div>
-                                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+                                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-muted-foreground text-xs">
                                         <span className="font-medium text-foreground">{result.status === "online" ? `${Number(result.latencyMs).toFixed(2)} ms` : "— ms"}</span>
                                         <span>เช็คล่าสุด {bangkokStamp(result.checkedAt)}</span>
                                     </div>
-                                    <div className="flex items-center gap-2 sm:justify-end">
+                                    <div className="flex sm:justify-end items-center gap-2">
                                         <button
                                             type="button"
                                             disabled={pingLoading || pingCheck?.status === "pending" || pingCheck?.status === "running"}
                                             onClick={() => { void queuePingCheck([result.ipAddress], true); }}
-                                            className="h-9 rounded-lg border border-border/70 bg-background/30 px-3 text-xs font-medium transition hover:bg-[var(--glass-surface-hover)] disabled:cursor-not-allowed disabled:opacity-50"
+                                            className="bg-background/30 hover:bg-[var(--glass-surface-hover)] disabled:opacity-50 px-3 border border-border/70 rounded-lg h-9 font-medium text-xs transition disabled:cursor-not-allowed"
                                         >เช็คซ้ำ</button>
                                         <button
                                             type="button"
                                             disabled={deletingPingIp === result.ipAddress || pingCheck?.status === "pending" || pingCheck?.status === "running"}
                                             onClick={() => { void deletePingTarget(result.ipAddress); }}
-                                            className="h-9 rounded-lg border border-rose-500/20 bg-rose-500/5 px-3 text-xs font-medium text-rose-600 transition hover:bg-rose-500/10 disabled:cursor-not-allowed disabled:opacity-50 dark:text-rose-300"
+                                            className="bg-rose-500/5 hover:bg-rose-500/10 disabled:opacity-50 px-3 border border-rose-500/20 rounded-lg h-9 font-medium text-rose-600 dark:text-rose-300 text-xs transition disabled:cursor-not-allowed"
                                         >{deletingPingIp === result.ipAddress ? "กำลังลบ" : "ลบข้อมูล"}</button>
                                     </div>
                                 </div>
                             ))}
                         </div>
                     ) : (
-                        <p className="rounded-xl border border-dashed border-border/70 px-4 py-5 text-center text-sm text-muted-foreground">ยังไม่มี IP ที่เคยเช็ค</p>
+                        <p className="px-4 py-5 border border-border/70 border-dashed rounded-xl text-muted-foreground text-sm text-center">ยังไม่มี IP ที่เคยเช็ค</p>
                     )}
                 </div>
             </section>
 
-            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+            <div className="gap-3 grid sm:grid-cols-2 xl:grid-cols-5">
                 <section className={cx(glassCard, "sm:col-span-2 xl:col-span-1")}>
-                    <div className="flex items-start justify-between gap-3">
+                    <div className="flex justify-between items-start gap-3">
                         <div>
-                            <p className="text-sm text-muted-foreground">Router</p>
-                            <p className="mt-2 text-base font-semibold">{snapshot?.router.identity || "MikroTik Router"}</p>
-                            <p className="mt-1 text-xs text-muted-foreground">{snapshot ? `Snapshot ${bangkokStamp(snapshot.collectedAt)}` : "ยังไม่มีข้อมูลสถานะ"}</p>
+                            <p className="text-muted-foreground text-sm">Router</p>
+                            <p className="mt-2 font-semibold text-base">{snapshot?.router.identity || "MikroTik Router"}</p>
+                            <p className="mt-1 text-muted-foreground text-xs">{snapshot ? `Snapshot ${bangkokStamp(snapshot.collectedAt)}` : "ยังไม่มีข้อมูลสถานะ"}</p>
                         </div>
-                        <span className="rounded-xl border border-border/70 bg-background/35 p-2.5"><Router className="size-5 text-primary" aria-hidden="true" /></span>
+                        <span className="bg-background/35 p-2.5 border border-border/70 rounded-xl"><Router className="size-5 text-primary" aria-hidden="true" /></span>
                     </div>
                 </section>
                 <section className={cx(glassCard, "sm:col-span-2 xl:col-span-1")}>
-                    <div className="flex items-start justify-between gap-3">
+                    <div className="flex justify-between items-start gap-3">
                         <div>
-                            <p className="text-sm text-muted-foreground">Monitoring Agent</p>
-                            <p className="mt-2 text-base font-semibold">QNAP</p>
-                            <p className="mt-1 text-xs text-muted-foreground">Heartbeat ล่าสุด {bangkokStamp(status?.agent?.lastHeartbeatAt)}</p>
+                            <p className="text-muted-foreground text-sm">Monitoring Agent</p>
+                            <p className="mt-2 font-semibold text-base">QNAP</p>
+                            <p className="mt-1 text-muted-foreground text-xs">Heartbeat ล่าสุด {bangkokStamp(status?.agent?.lastHeartbeatAt)}</p>
                         </div>
-                        <span className="rounded-xl border border-border/70 bg-background/35 p-2.5"><Bot className="size-5 text-primary" aria-hidden="true" /></span>
+                        <span className="bg-background/35 p-2.5 border border-border/70 rounded-xl"><Bot className="size-5 text-primary" aria-hidden="true" /></span>
                     </div>
                 </section>
                 <MetricCard icon={Cpu} label="CPU Load" value={snapshot ? `${snapshot.router.cpuLoad}%` : "—"} detail={snapshot ? `อัปเดต ${bangkokStamp(snapshot.collectedAt)}` : "รอ Snapshot แรก"} accent="text-sky-500" />
@@ -521,16 +521,16 @@ function NetworkMonitor() {
                 <MetricCard icon={Clock3} label="Uptime" value={snapshot?.router.uptime || "—"} detail={snapshot?.router.temperatureC === null || snapshot?.router.temperatureC === undefined ? "รอ Snapshot แรก" : `อุณหภูมิ ${snapshot.router.temperatureC}°C`} accent="text-emerald-500" />
             </div>
 
-            <div className="grid gap-4 xl:grid-cols-3">
+            <div className="gap-4 grid xl:grid-cols-3">
                 <section className={cx(glassCard, "xl:col-span-2")}>
-                    <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div className="flex flex-wrap justify-between items-center gap-3">
                         <div className="flex items-center gap-2.5">
                             <Network className="size-5 text-primary" aria-hidden="true" />
                             <h2 className="font-semibold">สถานะ WAN</h2>
                         </div>
-                        <span className="text-xs text-muted-foreground">ตรวจจากสถานะ Interface และ Counter</span>
+                        <span className="text-muted-foreground text-xs">ตรวจจากสถานะ Interface และ Counter</span>
                     </div>
-                    <div className="mt-4 grid gap-3 md:grid-cols-2">
+                    <div className="gap-3 grid md:grid-cols-2 mt-4">
                         <WanCard name="AIS PPPoE" wan={snapshot?.wan.ais} rates={latestRates?.ais} />
                         <WanCard name="True PPPoE" wan={snapshot?.wan.true} rates={latestRates?.true} />
                     </div>
@@ -541,29 +541,29 @@ function NetworkMonitor() {
                         <Router className="size-5 text-primary" aria-hidden="true" />
                         <h2 className="font-semibold">ข้อมูลอุปกรณ์ MikroTik</h2>
                     </div>
-                    <div className="mt-4 flex flex-1 flex-col justify-center rounded-xl border border-dashed border-border/70 bg-background/20 p-4 text-center">
+                    <div className="flex flex-col flex-1 justify-center bg-background/20 mt-4 p-4 border border-border/70 border-dashed rounded-xl text-center">
                         <Gauge className="mx-auto size-6 text-muted-foreground/70" aria-hidden="true" />
-                        <p className="mt-3 text-sm font-medium">{snapshot?.router.identity || "รอข้อมูลอุปกรณ์"}</p>
-                        <p className="mt-1 text-xs leading-5 text-muted-foreground">{snapshot ? `RouterOS Snapshot · ${bangkokStamp(snapshot.collectedAt)}` : "CPU, หน่วยความจำ, อุณหภูมิ และ Uptime จะแสดงเมื่อ Agent เชื่อมต่อ"}</p>
+                        <p className="mt-3 font-medium text-sm">{snapshot?.router.identity || "รอข้อมูลอุปกรณ์"}</p>
+                        <p className="mt-1 text-muted-foreground text-xs leading-5">{snapshot ? `RouterOS Snapshot · ${bangkokStamp(snapshot.collectedAt)}` : "CPU, หน่วยความจำ, อุณหภูมิ และ Uptime จะแสดงเมื่อ Agent เชื่อมต่อ"}</p>
                     </div>
                 </section>
             </div>
 
-            <div className="grid gap-4 xl:grid-cols-3">
+            <div className="gap-4 grid xl:grid-cols-3">
                 <section className={cx(glassCard, "xl:col-span-2")}>
-                    <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div className="flex flex-wrap justify-between items-center gap-3">
                         <div className="flex items-center gap-2.5"><Activity className="size-5 text-primary" aria-hidden="true" /><h2 className="font-semibold">Traffic รวม</h2></div>
-                        <span className="rounded-lg border border-border/70 bg-background/25 px-3 py-1.5 text-xs text-muted-foreground">24 ชั่วโมง</span>
+                        <span className="bg-background/25 px-3 py-1.5 border border-border/70 rounded-lg text-muted-foreground text-xs">24 ชั่วโมง</span>
                     </div>
                     <TrafficChart series={traffic} />
                 </section>
                 <section className={cx(glassCard, "flex flex-col")}>
                     <div className="flex items-center gap-2.5"><Network className="size-5 text-primary" aria-hidden="true" /><h2 className="font-semibold">Traffic แยกตาม WAN</h2></div>
-                    <div className="mt-4 grid flex-1 content-start gap-3">
+                    <div className="flex-1 content-start gap-3 grid mt-4">
                         {[{ name: "AIS", rates: latestRates?.ais }, { name: "True", rates: latestRates?.true }].map((wan) => (
-                            <div key={wan.name} className="rounded-xl border border-border/70 bg-background/20 p-3.5">
-                                <div className="flex items-center justify-between"><p className="text-sm font-medium">{wan.name}</p><span className="text-xs text-muted-foreground">↓ {readableRate(wan.rates?.download)}</span></div>
-                                <p className="mt-2 text-xs text-muted-foreground">↑ {readableRate(wan.rates?.upload)} · {snapshot?.collectedAt ? bangkokStamp(snapshot.collectedAt) : "รอข้อมูล Rate"}</p>
+                            <div key={wan.name} className="bg-background/20 p-3.5 border border-border/70 rounded-xl">
+                                <div className="flex justify-between items-center"><p className="font-medium text-sm">{wan.name}</p><span className="text-muted-foreground text-xs">↓ {readableRate(wan.rates?.download)}</span></div>
+                                <p className="mt-2 text-muted-foreground text-xs">↑ {readableRate(wan.rates?.upload)} · {snapshot?.collectedAt ? bangkokStamp(snapshot.collectedAt) : "รอข้อมูล Rate"}</p>
                             </div>
                         ))}
                     </div>
@@ -573,18 +573,18 @@ function NetworkMonitor() {
             <section className={cx(glassCard, "grid gap-5 xl:grid-cols-[1.4fr_1fr]")}>
                 <div>
                     <div className="flex items-center gap-2.5"><History className="size-5 text-primary" aria-hidden="true" /><h2 className="font-semibold">Event History</h2></div>
-                    <div className="mt-4 flex min-h-28 items-center justify-center rounded-xl border border-dashed border-border/70 bg-background/20 px-4 text-center">
+                    <div className="flex justify-center items-center bg-background/20 mt-4 px-4 border border-border/70 border-dashed rounded-xl min-h-15 text-center">
                         <div>
-                            <p className="text-sm font-medium">{events.length ? "เหตุการณ์ล่าสุด" : "ยังไม่มีเหตุการณ์"}</p>
-                            <p className="mt-1 text-xs text-muted-foreground">WAN และ Agent events จะแสดงที่นี่</p>
+                            <p className="font-medium text-sm">{events.length ? "เหตุการณ์ล่าสุด" : "ยังไม่มีเหตุการณ์"}</p>
+                            <p className="mt-1 text-muted-foreground text-xs">WAN และ Agent events จะแสดงที่นี่</p>
                         </div>
                     </div>
                     {events.length > 0 && (
-                        <ul className="mt-3 divide-y divide-border/60 rounded-xl border border-border/60 bg-background/20 px-3">
+                        <ul className="bg-background/20 mt-3 px-3 border border-border/60 rounded-xl divide-y divide-border/60">
                             {events.slice(0, 5).map((event) => (
-                                <li key={event.id} className="flex flex-wrap items-center justify-between gap-2 py-2.5 text-xs">
+                                <li key={event.id} className="flex flex-wrap justify-between items-center gap-2 py-2.5 text-xs">
                                     <span className="min-w-0"><span className="font-medium">{event.type.replaceAll("_", " ")}</span><span className="ml-2 text-muted-foreground">{event.description}</span></span>
-                                    <span className="shrink-0 text-muted-foreground">{bangkokStamp(event.occurredAt)}</span>
+                                    <span className="text-muted-foreground shrink-0">{bangkokStamp(event.occurredAt)}</span>
                                 </li>
                             ))}
                         </ul>
@@ -592,14 +592,14 @@ function NetworkMonitor() {
                 </div>
                 <div>
                     <div className="flex items-center gap-2.5"><Activity className="size-5 text-primary" aria-hidden="true" /><h2 className="font-semibold">สรุปสถานะเครือข่าย</h2></div>
-                    <ul className="mt-4 divide-y divide-border/60 rounded-xl border border-border/60 bg-background/20 px-3">
+                    <ul className="bg-background/20 mt-4 px-3 border border-border/60 rounded-xl divide-y divide-border/60">
                         {[
                             { name: "Router", value: snapshot ? "Snapshot received" : "ไม่มีข้อมูล", good: Boolean(snapshot) },
                             { name: "Monitoring Agent", value: agentOnline ? "Online" : snapshot ? "Offline" : "ไม่มีข้อมูล", good: agentOnline },
                             { name: "AIS WAN Interface", value: snapshot ? snapshot.wan.ais.running ? "Connected" : "Down" : "ไม่มีข้อมูล", good: snapshot?.wan.ais.running === true },
                             { name: "True WAN Interface", value: snapshot ? snapshot.wan.true.running ? "Connected" : "Down" : "ไม่มีข้อมูล", good: snapshot?.wan.true.running === true },
                         ].map((item) => (
-                            <li key={item.name} className="flex items-center justify-between gap-3 py-3 text-sm">
+                            <li key={item.name} className="flex justify-between items-center gap-3 py-3 text-sm">
                                 <span className="text-muted-foreground">{item.name}</span>
                                 <StatusPill tone={item.good ? "good" : "muted"}>{item.value}</StatusPill>
                             </li>
