@@ -40,12 +40,13 @@ The idle Agent remains running in QNAP Docker and makes one small control reques
 
 ## On-demand IP ping
 
-- `POST /api/network/ping/check` is Admin-only and accepts `{ "targets": ["192.168.11.20", "192.168.11.21"] }`. It queues 1–20 unique addresses for the known `192.168.11.0/24` LAN and returns `202` with a `checkId`.
-- `GET /api/network/ping/check?id=<checkId>` is Admin-only and returns the queued/running/completed state and per-IP result. Without `id`, it returns the latest check.
+- `POST /api/network/ping/check` is Admin-only and accepts `{ "targets": ["192.168.11.20", "192.168.11.21"] }`. It queues 1–20 unique addresses for the known `192.168.11.0/24` LAN and returns `202` with a `checkId`. A previously saved IP is rejected with `409`; for an explicit recheck, include `"recheck": true`.
+- `GET /api/network/ping/check?id=<checkId>` is Admin-only and returns the queued/running/completed state, per-check results, and the latest result/check time for every saved IP. Without `id`, it returns the latest check and the same saved IP list.
+- `DELETE /api/network/ping/check?ip=<address>` is Admin-only and removes that IP's result from all checks. Deletion is rejected while that IP is part of a pending/running check.
 - `GET /api/network/agent/control` includes a claimed `pingJob` when work is queued. The QNAP Agent sends one ICMP echo request per target concurrently.
 - `POST /api/network/agent/ping-report` uses the Agent Bearer token and Zero Trust Service Token to submit `online`, `offline` (no ICMP reply), or `error` plus `latencyMs` for successful replies.
 
-The Agent runs checks only after an Admin explicitly presses **Check Ping**. Only `192.168.11.1`–`192.168.11.254` are accepted; targets outside that LAN are rejected. A device that filters ICMP may be online but appear as not responding. Ping checks are retained for 30 days.
+The Agent runs checks only after an Admin explicitly presses **Check Ping** or **Recheck**. Only `192.168.11.1`–`192.168.11.254` are accepted; targets outside that LAN are rejected. A device that filters ICMP may be online but appear as not responding. Results include the timestamp of the latest check and are retained for 30 days unless an Admin deletes an IP.
 
 ## Admin dashboard
 

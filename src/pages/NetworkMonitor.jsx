@@ -161,7 +161,9 @@ function TrafficChart({ series }) {
 function NetworkMonitor() {
     const [pingTargets, setPingTargets] = useState([{ id: "initial", value: "" }]);
     const [pingCheck, setPingCheck] = useState(null);
+    const [knownPingTargets, setKnownPingTargets] = useState([]);
     const [pingLoading, setPingLoading] = useState(false);
+    const [deletingPingIp, setDeletingPingIp] = useState("");
     const [pingError, setPingError] = useState("");
     const [status, setStatus] = useState(null);
     const [snapshots, setSnapshots] = useState([]);
@@ -182,6 +184,7 @@ function NetworkMonitor() {
             setSnapshots(history.snapshots || []);
             setEvents(eventHistory.events || []);
             setPingCheck(latestPingCheck.check);
+            setKnownPingTargets(latestPingCheck.knownTargets || []);
             setError("");
         } catch (cause) {
             setError(cause.message || "โหลดข้อมูล Network Monitoring ไม่สำเร็จ");
@@ -243,6 +246,7 @@ function NetworkMonitor() {
                 const result = await api(`/api/network/ping/check?id=${encodeURIComponent(pingCheck.id)}`);
                 if (mounted) {
                     setPingCheck(result.check);
+                    setKnownPingTargets(result.knownTargets || []);
                     setPingError("");
                 }
             } catch (cause) {
@@ -259,14 +263,18 @@ function NetworkMonitor() {
 
     const updatePingTarget = (id, value) => {
         setPingTargets((current) => current.map((target) => target.id === id ? { ...target, value } : target));
+        const duplicate = knownPingTargets.find((target) => target.ipAddress === value.trim());
+        if (duplicate) setPingError(`IP ${duplicate.ipAddress} มีอยู่ในรายการที่เคยเช็คแล้ว`);
     };
 
-    const submitPingCheck = async (event) => {
-        event.preventDefault();
-        const targets = [...new Set(pingTargets.map((target) => target.value.trim()).filter(Boolean))];
-        if (!targets.length) {
-            setPingError("กรอก IP อย่างน้อย 1 หมายเลขก่อนกดเช็ค");
-            return;
+    const queuePingCheck = async (targets, recheck = false) => {
+        const knownIps = new Set(knownPingTargets.map((target) => target.ipAddress));
+        if (!recheck) {
+            const duplicates = targets.filter((target) => knownIps.has(target));
+            if (duplicates.length) {
+                setPingError(`มี IP นี้อยู่ในรายการแล้ว: ${duplicates.join(", ")}`);
+                return;
+            }
         }
         setPingLoading(true);
         setPingError("");
@@ -274,18 +282,69 @@ function NetworkMonitor() {
             const result = await api("/api/network/ping/check", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ targets }),
+                body: JSON.stringify({ targets, recheck }),
             });
+            const requestedAt = new Date().toISOString();
             setPingCheck({
                 id: result.checkId,
                 status: result.status,
-                requestedAt: new Date().toISOString(),
-                results: result.targets.map((ipAddress) => ({ ipAddress, status: "pending", latencyMs: null })),
+                requestedAt,
+                results: result.targets.map((ipAddress) => ({ ipAddress, status: "pending", latencyMs: null, checkedAt: null })),
+            });
+            setKnownPingTargets((current) => {
+                const byIp = new Map(current.map((target) => [target.ipAddress, target]));
+                for (const ipAddress of result.targets) {
+                    byIp.set(ipAddress, { ipAddress, status: "pending", latencyMs: null, checkedAt: null });
+                }
+                return [...byIp.values()].sort((left, right) => left.ipAddress.localeCompare(right.ipAddress));
             });
         } catch (cause) {
             setPingError(cause.message || "ส่งคำขอ Ping ไม่สำเร็จ");
         } finally {
             setPingLoading(false);
+        }
+    };
+
+    const submitPingCheck = async (event) => {
+        event.preventDefault();
+        const entered = pingTargets.map((target) => target.value.trim()).filter(Boolean);
+        const targets = [...new Set(entered)];
+        if (!targets.length) {
+            setPingError("กรอก IP อย่างน้อย 1 หมายเลขก่อนกดเช็ค");
+            return;
+        }
+        if (targets.length !== entered.length) {
+            setPingError("มี IP ซ้ำอยู่ในช่องที่กรอก กรุณาลบรายการที่ซ้ำก่อนเช็ค");
+            return;
+        }
+        await queuePingCheck(targets);
+    };
+
+    const addPingTargetField = () => {
+        const latestEntry = pingTargets.at(-1)?.value.trim();
+        if (latestEntry && knownPingTargets.some((target) => target.ipAddress === latestEntry)) {
+            setPingError(`IP ${latestEntry} มีอยู่ในรายการที่เคยเช็คแล้ว`);
+            return;
+        }
+        if (pingTargets.length >= 20) return;
+        setPingError("");
+        setPingTargets((current) => [...current, { id: window.crypto.randomUUID(), value: "" }]);
+    };
+
+    const deletePingTarget = async (ipAddress) => {
+        setDeletingPingIp(ipAddress);
+        setPingError("");
+        try {
+            await api(`/api/network/ping/check?ip=${encodeURIComponent(ipAddress)}`, { method: "DELETE" });
+            setKnownPingTargets((current) => current.filter((target) => target.ipAddress !== ipAddress));
+            setPingCheck((current) => current ? {
+                ...current,
+                results: (current.results || []).filter((target) => target.ipAddress !== ipAddress),
+            } : current);
+        } catch (cause) {
+            setPingError(cause.message || `ลบประวัติ ${ipAddress} ไม่สำเร็จ`);
+        } finally {
+            setDeletingPingIp("");
         }
     };
 
@@ -369,7 +428,7 @@ function NetworkMonitor() {
                         <button
                             type="button"
                             disabled={pingTargets.length >= 20}
-                            onClick={() => setPingTargets((current) => [...current, { id: window.crypto.randomUUID(), value: "" }])}
+                            onClick={addPingTargetField}
                             className="inline-flex h-10 items-center gap-2 rounded-xl border border-border/70 bg-background/30 px-3 text-sm transition hover:bg-[var(--glass-surface-hover)] disabled:opacity-50"
                         >
                             <Plus className="size-4" aria-hidden="true" />เพิ่ม IP
@@ -386,35 +445,54 @@ function NetworkMonitor() {
                     </div>
                 </form>
                 {pingError && <p role="alert" className="text-sm text-amber-700 dark:text-amber-300">{pingError}</p>}
-                {pingCheck?.results?.length > 0 && (
-                    <div className="overflow-hidden rounded-xl border border-border/60">
-                        {pingCheck.results.map((result) => (
-                            <div key={result.ipAddress} className="flex flex-wrap items-center justify-between gap-3 border-b border-border/50 bg-background/15 px-3 py-2.5 last:border-b-0">
-                                <span className="font-mono text-sm">{result.ipAddress}</span>
-                                <div className="flex items-center gap-3 text-sm">
-                                    <span className={cx(
-                                        "inline-flex items-center gap-2",
-                                        result.status === "online" && "text-emerald-600 dark:text-emerald-300",
-                                        result.status === "offline" && "text-rose-600 dark:text-rose-300",
-                                        (result.status === "pending" || result.status === "error") && "text-muted-foreground",
-                                    )}>
+                <div className="space-y-2">
+                    <h3 className="text-sm font-medium">IP ที่เคยเช็ค ({knownPingTargets.length})</h3>
+                    {knownPingTargets.length ? (
+                        <div className="overflow-hidden rounded-xl border border-border/60">
+                            {knownPingTargets.map((result) => (
+                                <div key={result.ipAddress} className="grid gap-3 border-b border-border/50 bg-background/15 px-3 py-3 last:border-b-0 sm:grid-cols-[minmax(120px,1fr)_minmax(115px,0.8fr)_minmax(150px,1.2fr)_auto] sm:items-center">
+                                    <span className="font-mono text-sm">{result.ipAddress}</span>
+                                    <div className="flex items-center gap-2 text-sm">
                                         <span className={cx(
-                                            "size-2 rounded-full",
+                                            "size-2 shrink-0 rounded-full",
                                             result.status === "online" && "bg-emerald-500",
                                             result.status === "offline" && "bg-rose-500",
                                             result.status === "pending" && "animate-pulse bg-amber-500",
                                             result.status === "error" && "bg-muted-foreground",
                                         )} />
-                                        {result.status === "online" ? "ออนไลน์" : result.status === "offline" ? "ออฟไลน์" : result.status === "error" ? "เช็คไม่สำเร็จ" : "รอ Agent"}
-                                    </span>
-                                    <span className="min-w-20 text-right font-medium tabular-nums">
-                                        {result.status === "online" ? `${Number(result.latencyMs).toFixed(2)} ms` : "—"}
-                                    </span>
+                                        <span className={cx(
+                                            result.status === "online" && "text-emerald-600 dark:text-emerald-300",
+                                            result.status === "offline" && "text-rose-600 dark:text-rose-300",
+                                            (result.status === "pending" || result.status === "error") && "text-muted-foreground",
+                                        )}>
+                                            {result.status === "online" ? "ออนไลน์" : result.status === "offline" ? "ไม่ตอบ Ping" : result.status === "error" ? "เช็คไม่สำเร็จ" : "รอ Agent"}
+                                        </span>
+                                    </div>
+                                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+                                        <span className="font-medium text-foreground">{result.status === "online" ? `${Number(result.latencyMs).toFixed(2)} ms` : "— ms"}</span>
+                                        <span>เช็คล่าสุด {bangkokStamp(result.checkedAt)}</span>
+                                    </div>
+                                    <div className="flex items-center gap-2 sm:justify-end">
+                                        <button
+                                            type="button"
+                                            disabled={pingLoading || pingCheck?.status === "pending" || pingCheck?.status === "running"}
+                                            onClick={() => { void queuePingCheck([result.ipAddress], true); }}
+                                            className="h-9 rounded-lg border border-border/70 bg-background/30 px-3 text-xs font-medium transition hover:bg-[var(--glass-surface-hover)] disabled:cursor-not-allowed disabled:opacity-50"
+                                        >เช็คซ้ำ</button>
+                                        <button
+                                            type="button"
+                                            disabled={deletingPingIp === result.ipAddress || pingCheck?.status === "pending" || pingCheck?.status === "running"}
+                                            onClick={() => { void deletePingTarget(result.ipAddress); }}
+                                            className="h-9 rounded-lg border border-rose-500/20 bg-rose-500/5 px-3 text-xs font-medium text-rose-600 transition hover:bg-rose-500/10 disabled:cursor-not-allowed disabled:opacity-50 dark:text-rose-300"
+                                        >{deletingPingIp === result.ipAddress ? "กำลังลบ" : "ลบข้อมูล"}</button>
+                                    </div>
                                 </div>
-                            </div>
-                        ))}
-                    </div>
-                )}
+                            ))}
+                        </div>
+                    ) : (
+                        <p className="rounded-xl border border-dashed border-border/70 px-4 py-5 text-center text-sm text-muted-foreground">ยังไม่มี IP ที่เคยเช็ค</p>
+                    )}
+                </div>
             </section>
 
             <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">

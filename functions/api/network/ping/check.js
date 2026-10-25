@@ -26,7 +26,10 @@ async function readPayload(request) {
         if (targets.length !== payload.targets.length || targets.some((target) => !isAllowedLanIpv4(target))) {
             return { error: jsonResponse({ success: false, message: "Targets must be unique IPv4 addresses in 192.168.11.1–254" }, 400) };
         }
-        return { targets };
+        if (payload.recheck !== undefined && typeof payload.recheck !== "boolean") {
+            return { error: jsonResponse({ success: false, message: "recheck must be a boolean" }, 400) };
+        }
+        return { targets, recheck: payload.recheck === true };
     } catch {
         return { error: jsonResponse({ success: false, message: "Request body must be valid JSON" }, 400) };
     }
@@ -46,6 +49,22 @@ export async function onRequestPost({ request, env }) {
             "SELECT id FROM network_ping_checks WHERE status IN ('pending', 'running') LIMIT 1",
         ).first();
         if (activeCheck) return jsonResponse({ success: false, message: "A ping check is already in progress" }, 409);
+
+        const existingTargets = await env.DB.prepare(
+            `SELECT DISTINCT ip_address FROM network_ping_results
+             WHERE ip_address IN (${parsed.targets.map(() => "?").join(", ")})`,
+        ).bind(...parsed.targets).all();
+        const existingIps = new Set(existingTargets.results.map((target) => target.ip_address));
+        if (!parsed.recheck && existingIps.size) {
+            return jsonResponse({
+                success: false,
+                message: `มี IP นี้อยู่ในรายการแล้ว: ${[...existingIps].join(", ")}`,
+                duplicateTargets: [...existingIps],
+            }, 409);
+        }
+        if (parsed.recheck && parsed.targets.some((target) => !existingIps.has(target))) {
+            return jsonResponse({ success: false, message: "Recheck is only available for saved IP addresses" }, 400);
+        }
 
         const statements = [
             env.DB.prepare(
@@ -76,20 +95,59 @@ export async function onRequestGet({ request, env }) {
             const latest = await env.DB.prepare(
                 "SELECT id FROM network_ping_checks ORDER BY requested_at DESC LIMIT 1",
             ).first();
-            if (!latest) return jsonResponse({ success: true, check: null });
+            if (!latest) return jsonResponse({ success: true, check: null, knownTargets: [] });
             checkId = latest.id;
         }
-        const [check, { results }] = await Promise.all([
+        const [check, { results }, { results: knownTargets }] = await Promise.all([
             env.DB.prepare(
                 "SELECT id, status, requested_at AS requestedAt, completed_at AS completedAt FROM network_ping_checks WHERE id = ?",
             ).bind(checkId).first(),
             env.DB.prepare(
                 "SELECT ip_address AS ipAddress, status, latency_ms AS latencyMs, checked_at AS checkedAt FROM network_ping_results WHERE check_id = ? ORDER BY ip_address",
             ).bind(checkId).all(),
+            env.DB.prepare(
+                `WITH ranked_targets AS (
+                    SELECT r.ip_address AS ipAddress, r.status, r.latency_ms AS latencyMs, r.checked_at AS checkedAt,
+                        ROW_NUMBER() OVER (
+                            PARTITION BY r.ip_address
+                            ORDER BY COALESCE(r.checked_at, c.requested_at) DESC, c.requested_at DESC
+                        ) AS target_order
+                    FROM network_ping_results r
+                    JOIN network_ping_checks c ON c.id = r.check_id
+                 )
+                 SELECT ipAddress, status, latencyMs, checkedAt FROM ranked_targets WHERE target_order = 1 ORDER BY ipAddress`,
+            ).all(),
         ]);
         if (!check) return jsonResponse({ success: false, message: "Ping check not found" }, 404);
-        return jsonResponse({ success: true, check: { ...check, results } });
+        return jsonResponse({ success: true, check: { ...check, results }, knownTargets });
     } catch (error) {
         return serverError(error, "Failed to load network ping check:");
+    }
+}
+
+export async function onRequestDelete({ request, env }) {
+    if (!isSameOrigin(request)) return jsonResponse({ success: false, message: "Invalid request origin" }, 403);
+    const auth = await requireRole(request, env, "admin");
+    if (auth.response) return auth.response;
+    const ipAddress = new URL(request.url).searchParams.get("ip") || "";
+    if (!isAllowedLanIpv4(ipAddress)) return jsonResponse({ success: false, message: "A valid 192.168.11.x IPv4 address is required" }, 400);
+
+    try {
+        const activeCheck = await env.DB.prepare(
+            `SELECT c.id FROM network_ping_checks c
+             JOIN network_ping_results r ON r.check_id = c.id
+             WHERE r.ip_address = ? AND c.status IN ('pending', 'running') LIMIT 1`,
+        ).bind(ipAddress).first();
+        if (activeCheck) return jsonResponse({ success: false, message: "Cannot delete an IP while its ping check is in progress" }, 409);
+
+        await env.DB.batch([
+            env.DB.prepare("DELETE FROM network_ping_results WHERE ip_address = ?").bind(ipAddress),
+            env.DB.prepare(
+                "DELETE FROM network_ping_checks WHERE status = 'completed' AND NOT EXISTS (SELECT 1 FROM network_ping_results WHERE check_id = network_ping_checks.id)",
+            ),
+        ]);
+        return jsonResponse({ success: true, ipAddress });
+    } catch (error) {
+        return serverError(error, "Failed to delete network ping history:");
     }
 }

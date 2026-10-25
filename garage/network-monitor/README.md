@@ -53,7 +53,7 @@ The Agent checks `/api/network/agent/control` every poll interval. When no Admin
 
 ## Ping checks
 
-An Admin can queue up to 20 IPs from `192.168.11.1` through `192.168.11.254` on the dashboard. The Agent claims queued jobs through its control request, sends one ICMP echo request per target, then reports the response status and latency. A non-response means ICMP did not reply; it does not prove the device is powered off. Only the Agent's `ping` executable has `CAP_NET_RAW`; the Python process stays non-root and the Compose service does not use privileged mode or additional capabilities.
+An Admin can queue up to 20 new IPs from `192.168.11.1` through `192.168.11.254` on the dashboard. Saved IPs appear with their latest status, ping latency, and check time. New checks reject saved addresses; use **Recheck** to check a saved IP again, or **Delete** to remove that IP from all saved ping results. The Agent claims queued jobs through its control request, sends one ICMP echo request per target, then reports the response status and latency. A non-response means ICMP did not reply; it does not prove the device is powered off. Only the Agent's `ping` executable has `CAP_NET_RAW`; the Python process stays non-root and the Compose service does not use privileged mode or additional capabilities.
 
 ## Data contract
 
