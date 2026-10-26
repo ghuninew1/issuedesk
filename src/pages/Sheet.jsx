@@ -446,7 +446,7 @@ export default function Sheet() {
             {/*  */}
             {selectedAsset && (
                 <div
-                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
+                    className={cx("fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/45 p-3 backdrop-blur-md sm:p-6")}
                     role="presentation"
                     onMouseDown={(event) => {
                         if (event.target === event.currentTarget)
@@ -457,15 +457,15 @@ export default function Sheet() {
                         role="dialog"
                         aria-modal="true"
                         aria-labelledby="asset-image-title"
-                        className="w-full max-w-3xl overflow-hidden rounded-2xl border border-border bg-card shadow-2xl"
+                        className={cx("glass-surface flex max-h-[calc(100dvh-1.5rem)] w-full max-w-3xl flex-col overflow-hidden rounded-3xl text-foreground backdrop-blur-[var(--glass-blur)] sm:max-h-[calc(100dvh-3rem)]")}
                     >
-                        <div className="flex items-start justify-between gap-4 border-b border-border p-4 md:p-5">
-                            <div className="min-w-0">
-                                <p className="text-xs text-muted-foreground">
+                        <div className={cx("flex shrink-0 items-start justify-between gap-4 border-b border-[var(--glass-border)] bg-[var(--glass-highlight)] p-4 md:p-5")}>
+                            <div className={cx("min-w-0")}>
+                                <p className={cx("text-xs text-muted-foreground")}>
                                     {selectedAsset.asset.assetId} · รูปอุปกรณ์{" "}
                                     {imageFields.filter((field) => selectedAsset.asset[field.key]).length} รูป
                                 </p>
-                                <h2 id="asset-image-title" className="mt-1 truncate text-lg font-semibold">
+                                <h2 id="asset-image-title" className={cx("mt-1 truncate text-lg font-semibold")}>
                                     {selectedAsset.asset.computerName || selectedAsset.asset.employeeName || "อุปกรณ์"}
                                 </h2>
                             </div>
@@ -475,11 +475,11 @@ export default function Sheet() {
                                 aria-label="ปิดภาพ"
                                 className={cx("rounded-lg p-2 text-muted-foreground transition hover:bg-[var(--glass-surface-hover)] hover:shadow-[inset_0_1px_0_var(--glass-highlight)] hover:text-foreground cursor-pointer")}
                             >
-                                <X className="size-5" />
+                                <X className={cx("size-5")} />
                             </GlassButton>
                         </div>
-                        <div className="max-h-[72vh] overflow-y-auto bg-muted/35 p-4 md:p-6">
-                            <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
+                        <div className={cx("min-h-0 flex-1 overflow-y-auto overscroll-contain p-4 md:p-6")}>
+                            <div className={cx("grid grid-cols-2 gap-3 md:grid-cols-3")}>
                                 {imageFields
                                     .filter((field) => selectedAsset.asset[field.key])
                                     .map((field) => (
@@ -491,11 +491,11 @@ export default function Sheet() {
                                             }
                                             aria-label={`ดูภาพใหญ่ ${field.label}`}
                                             className={cx(
-                                                "group overflow-hidden rounded-xl border bg-card text-left transition-colors hover:border-primary/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30",
-                                                "border-border",
+                                                "glass-surface group overflow-hidden rounded-2xl text-left transition-colors hover:border-primary/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30",
+                                                "border-[var(--glass-border)]",
                                             )}
                                         >
-                                            <span className="flex aspect-[4/3] items-center justify-center bg-muted">
+                                            <span className={cx("flex aspect-[4/3] items-center justify-center bg-muted/30 p-2")}>
                                                 {selectedAsset.asset[field.key] && (
                                                     <img
                                                         src={selectedAsset.asset[field.key]}
@@ -504,19 +504,19 @@ export default function Sheet() {
                                                         decoding="async"
                                                         width={80}
                                                         height={80}
-                                                        className="size-full object-contain transition-transform group-hover:scale-[1.03]"
+                                                        className={cx("size-full object-contain transition-transform group-hover:scale-[1.03]")}
                                                     />
                                                 )}
                                             </span>
-                                            <span className="block truncate px-2.5 py-2 text-xs font-medium">
+                                            <span className={cx("block truncate px-2.5 py-2 text-xs font-medium")}>
                                                 {field.label}
                                             </span>
                                         </GlassButton>
                                     ))}
                             </div>
                         </div>
-                        <div className="flex items-center justify-between gap-3 border-t border-border px-4 py-3 md:px-5">
-                            <p className="truncate text-sm text-muted-foreground">
+                        <div className={cx("flex shrink-0 items-center justify-between gap-3 border-t border-[var(--glass-border)] bg-[var(--glass-highlight)] px-4 py-3 md:px-5")}>
+                            <p className={cx("truncate text-sm text-muted-foreground")}>
                                 {selectedAsset.asset.employeeName} · {selectedAsset.asset.details}
                             </p>
                             <GlassButton
@@ -525,7 +525,7 @@ export default function Sheet() {
                                 className={cx("inline-flex shrink-0 items-center gap-2 rounded-lg border border-input px-3 py-2 text-sm font-medium hover:bg-[var(--glass-surface-hover)] hover:shadow-[inset_0_1px_0_var(--glass-highlight)] cursor-pointer")}
                             >
                                 ปิด
-                                <CircleX className="size-4 rotate-180" />
+                                <CircleX className={cx("size-4 rotate-180")} />
                             </GlassButton>
                         </div>
                     </section>
@@ -535,7 +535,7 @@ export default function Sheet() {
             {/*  */}
             {selectedAsset?.enlargedField && (
                 <div
-                    className="fixed inset-0 z-[60] flex items-center justify-center bg-black/85 p-4 backdrop-blur-sm"
+                    className={cx("fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-3 backdrop-blur-xl sm:p-6")}
                     role="presentation"
                     onMouseDown={(event) => {
                         if (event.target === event.currentTarget)
@@ -546,12 +546,12 @@ export default function Sheet() {
                         role="dialog"
                         aria-modal="true"
                         aria-label={`ภาพขนาดใหญ่ ${selectedAsset.enlargedField.label}`}
-                        className="relative flex max-h-[95vh] w-full max-w-6xl flex-col overflow-hidden rounded-2xl border border-white/10 bg-card shadow-2xl"
+                        className={cx("glass-surface relative flex max-h-[calc(100dvh-1.5rem)] w-full max-w-6xl flex-col overflow-hidden rounded-3xl text-foreground backdrop-blur-[var(--glass-blur)] sm:max-h-[calc(100dvh-3rem)]")}
                     >
-                        <div className="flex items-center justify-between gap-4 border-b border-border px-4 py-3">
-                            <div className="min-w-0">
-                                <p className="truncate text-sm font-medium">{selectedAsset.enlargedField.label}</p>
-                                <p className="mt-1 truncate text-xs text-muted-foreground">
+                        <div className={cx("flex shrink-0 items-center justify-between gap-4 border-b border-[var(--glass-border)] bg-[var(--glass-highlight)] px-4 py-3")}>
+                            <div className={cx("min-w-0")}>
+                                <p className={cx("truncate text-sm font-medium")}>{selectedAsset.enlargedField.label}</p>
+                                <p className={cx("mt-1 truncate text-xs text-muted-foreground")}>
                                     {selectedAsset.asset.computerName || selectedAsset.asset.assetId}
                                 </p>
                             </div>
@@ -561,17 +561,17 @@ export default function Sheet() {
                                 aria-label="ปิดภาพขนาดใหญ่"
                                 className={cx("inline-flex size-9 shrink-0 items-center justify-center rounded-lg border border-border text-muted-foreground hover:bg-[var(--glass-surface-hover)] hover:shadow-[inset_0_1px_0_var(--glass-highlight)] hover:text-foreground")}
                             >
-                                <X className="size-5" />
+                                <X className={cx("size-5")} />
                             </GlassButton>
                         </div>
-                        <div className="flex min-h-48 flex-1 items-center justify-center bg-black/5 p-3 dark:bg-black/30">
+                        <div className={cx("flex min-h-0 flex-1 items-center justify-center bg-muted/20 p-3 sm:p-5")}>
                             {selectedAsset.asset[selectedAsset.enlargedField.key] &&
                             <img
                                 src={selectedAsset.asset[selectedAsset.enlargedField.key]}
                                 alt={`${selectedAsset.enlargedField.label} — ${selectedAsset.asset.computerName || selectedAsset.asset.assetId}`}
                                 decoding="async"
                                 loading="lazy"
-                                className="max-h-[calc(95vh-72px)] max-w-full rounded-lg object-contain"
+                                className={cx("max-h-[calc(100dvh-8rem)] max-w-full rounded-xl object-contain sm:max-h-[calc(100dvh-10rem)]")}
                             />}
                         </div>
                     </section>
