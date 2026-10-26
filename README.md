@@ -8,7 +8,7 @@ IssueDesk เป็นเว็บแอป IT Help Desk สำหรับแ�
 
 ผู้ดูแลระบบเข้าสู่ระบบแล้วดู Dashboard เปลี่ยนสถานะ ดูไฟล์แนบ หรือลบ Ticket ได้จากหน้าจัดการ
 
-เวอร์ชันปัจจุบัน: `1.2.2` (อ้างอิงจาก `package.json`)
+เวอร์ชันปัจจุบัน: `1.3.3` (อ้างอิงจาก `package.json`)
 
 ## ความสามารถ
 
@@ -41,6 +41,12 @@ IssueDesk เป็นเว็บแอป IT Help Desk สำหรับแ�
 - หน้า User และ Admin แสดงเวลาทำงานสะสม; ประวัติและตาราง Admin แสดงระยะเวลารายการ โดยเวลาของรายการที่กำลังทำงานวันนี้อัปเดตทุกนาที
 - หนึ่งรายการต่อผู้ใช้ต่อวัน; ยังไม่รองรับหลายกะ กะข้ามวัน การแก้เวลา ยืนยันรายการ OT วันหยุด หรือ Grace Period
 - รายการที่ยังทำงานจากวันก่อนแสดงเป็นรายการผิดปกติ โดยระบบไม่สร้างเวลาเช็คเอาต์ให้เอง
+
+### QR Code Studio
+
+- สร้าง QR จาก URL, Text หรือ Short Link พร้อมปรับสีและโลโก้ แล้วดาวน์โหลด PNG/SVG
+- บันทึกและแก้ไข QR ของตนเอง จัดการปลายทางและเปิด/ปิด Short Link ได้
+- พัฒนา V1 ครบแล้ว อยู่ระหว่างทดลองใช้งานจริงก่อนปิดงาน ดูรายละเอียดและสถานะใน [QR Code Studio V1](#qr-code-studio-v1)
 
 ### ระบบสนับสนุน
 
@@ -91,6 +97,7 @@ flowchart LR
 | File storage | Storage API ภายนอก; เอกสารระบบจัดเก็บระบุ Garage ผ่าน S3-compatible API |
 | Email | [Resend](https://resend.com) HTTP API |
 | Auth | Session cookie + PBKDF2-SHA-256 (Web Crypto) |
+| QR rendering | qr-code-styling; สร้าง preview และ export ใน browser |
 | Package manager | pnpm |
 | Code quality | ESLint |
 
@@ -104,16 +111,25 @@ issuedesk/
 │   ├── auth/               # register, login, logout, me, session helpers
 │   ├── attendance/         # today, check-in, check-out, history
 │   ├── admin/attendance/   # summary และ records สำหรับ Admin
+│   ├── network/            # status/history/events, viewer lease, ping และ agent APIs
+│   ├── storage/            # admin management และ authenticated file proxy
 │   ├── issues.js           # สร้าง Ticket + ส่งอีเมล และรายการ Ticket
 │   ├── issues/             # รายละเอียด, สถานะ, ลบ, ไฟล์แนบ
+│   ├── qr-codes/           # CRUD QR ของสมาชิก
+│   ├── short-links/        # CRUD และตรวจ slug ของ Short Link
+│   ├── qr-logos/           # อัปโหลด/อ่านโลโก้ตามเจ้าของ
 │   ├── track/              # ติดตามสาธารณะ
 │   ├── health.js
 │   └── storage-health.js
+├── functions/q/[slug].js   # public Short Link redirect 302
 ├── migrations/             # D1 schema
 ├── scripts/bootstrap-admin.py
+├── scripts/qr-studio-dev.mjs   # local QR sandbox: pnpm dev:qr
+├── scripts/qr-studio-checks.mjs # QR regression: pnpm test:qr
 ├── src/
 │   ├── auth/               # AuthProvider, ProtectedRoute
 │   ├── components/         # layout, dashboard, report form, theme
+│   ├── pages/qr/           # Create QR, Short Links, My QR Codes
 │   ├── pages/              # Portal, Report, Track, Login, Issues
 │   └── services/issues.js
 ├── public/                 # manifest, ไอคอน, เอกสาร Storage API
@@ -135,10 +151,14 @@ issuedesk/
 | `/storage/images` | Admin | จัดการภาพใน Storage: ดูตัวอย่าง อัปโหลด ดาวน์โหลด ลบ และคัดลอกลิงก์ |
 | `/sheet` | Admin | ทะเบียนอุปกรณ์จาก Google Sheets; ค้นหา กรองสถานะ และดูรูปอุปกรณ์ |
 | `/attendance` | ผู้ใช้ที่เข้าสู่ระบบ | พนักงานเช็คอิน/เช็คเอาต์และดูประวัติ; Admin ดูภาพรวมและรายการของทีม |
+| `/qr-studio` | ผู้ใช้ที่เข้าสู่ระบบ | Create QR: ปรับเนื้อหา/ดีไซน์ ดู preview บันทึก และ export |
+| `/qr-studio/links` | ผู้ใช้ที่เข้าสู่ระบบ | จัดการ Short Links ของตนเอง |
+| `/qr-studio/saved` | ผู้ใช้ที่เข้าสู่ระบบ | My QR Codes: ค้นหา เปิดแก้ไข ดาวน์โหลด และลบ QR ของตนเอง |
+| `/q/:slug` | สาธารณะ | redirect 302 ไปปลายทางของ Short Link ที่ active |
 
 ## Image Storage API
 
-API กลุ่มนี้เป็น proxy ของ IssueDesk ไปยัง Storage API ใช้ Cookie session ของ IssueDesk และอนุญาตเฉพาะ Admin ทุกคำขอจากหน้าเว็บควรเรียก API ผ่าน `src/services/storage.js` เพื่อให้แนบ session cookie แบบ same-origin โดยอัตโนมัติ ค่า credential ของ Storage และ Cloudflare Access อยู่ฝั่ง Pages Functions เท่านั้น
+API กลุ่มนี้เป็น proxy ของ IssueDesk ไปยัง Storage API ใช้ Cookie session ของ IssueDesk การเรียกรายการ อัปโหลด ลบ และดาวน์โหลดไฟล์ที่ไม่ใช่ภาพจำกัดเฉพาะ Admin ส่วนการดู/ดาวน์โหลดภาพ raster ที่รองรับเปิดให้สมาชิกที่มี session ทุกคำขอจากหน้าเว็บควรเรียก API ผ่าน `src/services/storage.js` เพื่อให้แนบ session cookie แบบ same-origin โดยอัตโนมัติ ค่า credential ของ Storage และ Cloudflare Access อยู่ฝั่ง Pages Functions เท่านั้น
 
 | Method | Endpoint | การทำงาน |
 | --- | --- | --- |
@@ -401,37 +421,182 @@ pnpm migrate-apply
 
 ## API
 
-สิทธิ์ด้านล่างอ้างอิงการตรวจสอบใน Pages Functions ปัจจุบัน
+รายการนี้ตรวจจาก exports `onRequestGet/Post/Patch/Delete` ใน `functions/api/` เมื่อ 26 ตุลาคม 2026 ครบ **37 ไฟล์ endpoint / 53 คู่ method + route** และแยก helper 6 ไฟล์ออกจาก API สาธารณะ ตารางอธิบายพฤติกรรมใน source ไม่ได้ยืนยันว่า configuration, migrations หรือบริการภายนอกพร้อมในทุก environment
 
-| Method | Route | สิทธิ์/หน้าที่ |
-| --- | --- | --- |
-| `GET` | `/api/health` | ตรวจการเชื่อมต่อ D1 |
-| `GET` | `/api/storage-health` | ตรวจการเชื่อมต่อ Storage API |
-| `POST` | `/api/auth/register` | สมัครสมาชิก; role ใหม่เป็น `user` เสมอ |
-| `POST` | `/api/auth/login` | ตรวจรหัสผ่านและออก Session Cookie |
-| `GET` | `/api/auth/me` | แสดงผู้ใช้ของ Session ปัจจุบัน |
-| `POST` | `/api/auth/logout` | ยกเลิก Session และล้าง Cookie |
-| `GET` | `/api/auth/oauth?provider=google\|facebook` | เริ่ม OAuth sign-in และตรวจ CSRF ด้วย state cookie |
-| `GET` | `/api/auth/oauth/callback/:provider` | ตรวจ callback, สร้าง/ค้นหาบัญชี OAuth และออก Session Cookie |
-| `GET` | `/api/attendance/today` | สถานะลงเวลาวันนี้ของ Session ปัจจุบัน |
-| `POST` | `/api/attendance/check-in` | เช็คอินผู้ใช้ปัจจุบัน; เวลาและ `user_id` มาจาก server/session |
-| `POST` | `/api/attendance/check-out` | เช็คเอาต์รายการที่กำลังทำงานของผู้ใช้ปัจจุบัน |
-| `GET` | `/api/attendance/history` | ประวัติของผู้ใช้ปัจจุบัน; รองรับ `page` และ `limit` |
-| `GET` | `/api/admin/attendance/summary` | สรุปการลงเวลาทั้งหมดและของวันนี้; ต้องเป็น Admin |
-| `GET` | `/api/admin/attendance/records` | รายการลงเวลาทั้งทีม; รองรับ `date`, `q`, `page`, `limit`; ต้องเป็น Admin |
-| `POST` | `/api/issues` | สร้าง Ticket แล้วพยายามส่งอีเมลแจ้งทีม IT |
-| `GET` | `/api/issues` | รายการ Ticket; ต้องเป็น Admin |
-| `GET` | `/api/issues/stats` | สถิติ Ticket; ต้องเป็น Admin |
-| `GET` | `/api/issues/:ticketNumber` | รายละเอียด Ticket; ต้องเป็น Admin |
-| `PATCH` | `/api/issues/:ticketNumber` | เปลี่ยนสถานะ Ticket; ต้องเป็น Admin |
-| `DELETE` | `/api/issues/:ticketNumber` | ลบ Ticket และไฟล์แนบใน Storage; ต้องเป็น Admin |
-| `GET` | `/api/issues/:ticketNumber/attachments` | รายการไฟล์แนบ; ต้องเป็น Admin |
-| `POST` | `/api/issues/:ticketNumber/attachments` | อัปโหลดไฟล์แนบของ Ticket |
-| `GET` | `/api/issues/:ticketNumber/attachments/:attachmentId` | ดาวน์โหลดหรือแสดงไฟล์; ต้องเป็น Admin |
-| `DELETE` | `/api/issues/:ticketNumber/attachments/:attachmentId` | ลบไฟล์แนบ; ต้องเป็น Admin |
-| `GET` / `POST` | `/api/storage/files` | แสดงรายการไฟล์ทั้งหมดและอัปโหลดไฟล์ไปยัง Storage API; ต้องเป็น Admin |
-| `GET` / `DELETE` | `/api/storage/files/:fileId` | แสดงตัวอย่าง/ดาวน์โหลด หรือลบรูปจาก Storage API; ต้องเป็น Admin |
-| `GET` | `/api/track/:ticketNumber` | ติดตามสาธารณะ; คืนเฉพาะหมายเลข สถานะ และเวลา |
+ความหมายของสิทธิ์:
+
+- **สาธารณะ**: handler ไม่บังคับ session; endpoint ที่ระบุ same-origin ยังต้องส่ง `Origin` ตรงกับโดเมนแอป
+- **Session**: ต้องมี `issuedesk_session` ที่ยังใช้ได้และบัญชี active; Admin เข้าถึง endpoint ระดับ Session ได้ด้วย
+- **Admin**: ตรวจ role `admin` ใน Pages Function
+- **เจ้าของ**: ตรวจ session และ scope ข้อมูลด้วยเจ้าของปัจจุบัน; Admin ไม่ข้าม ownership ของ QR/Short Link/โลโก้
+- **Agent**: ใช้ `Authorization: Bearer <NETWORK_AGENT_TOKEN>` ผ่าน `authorizeAgent()` แยกจาก cookie session และ Cloudflare Access service credentials
+
+### Health และการเชื่อมต่อ
+
+Source: [health.js](functions/api/health.js), [storage-health.js](functions/api/storage-health.js)
+
+| Method | Route | สิทธิ์ | หน้าที่/ข้อมูลสำคัญ |
+| --- | --- | --- | --- |
+| `GET` | `/api/health` | สาธารณะ | ตรวจ D1 ด้วย `SELECT 1`; ไม่ใช่การตรวจ schema/migrations ทั้งหมด |
+| `GET` | `/api/storage-health` | สาธารณะ | ตรวจ configuration และการเรียกรายการไฟล์ของ Storage project; คืนสถานะเชื่อมต่อและจำนวนไฟล์ ไม่ใช่การทดสอบ upload |
+
+### Authentication และ OAuth
+
+Source: [functions/api/auth/](functions/api/auth/)
+
+| Method | Route | สิทธิ์ | หน้าที่/ข้อมูลสำคัญ |
+| --- | --- | --- | --- |
+| `POST` | `/api/auth/register` | สาธารณะ + same-origin | JSON `name`, `email`, `password`; สร้าง role `user`, คืน 201; ไม่ออก session ให้อัตโนมัติ; มี rate limit |
+| `POST` | `/api/auth/login` | สาธารณะ + same-origin | JSON `email`, `password`; ตรวจบัญชี active/รหัสผ่าน แล้วออก HttpOnly session cookie; มี rate limit |
+| `GET` | `/api/auth/me` | Session | คืน `user` ของ session; ไม่มี session ที่ใช้ได้คืน 401 |
+| `POST` | `/api/auth/logout` | same-origin; session optional | revoke token ถ้ามี แล้วล้าง cookie; ไม่บังคับว่าต้องมี session ที่ยัง active |
+| `GET` | `/api/auth/oauth` | สาธารณะ | query `provider=google` หรือ `provider=facebook`; ตั้ง state cookie แล้ว redirect ไป provider เมื่อ configured |
+| `GET` | `/api/auth/oauth/callback/:provider` | สาธารณะ + OAuth state cookie | query `code`, `state` หรือ provider error; ตรวจ state/account mapping, ออก session แล้ว redirect; ไม่ใช่ JSON endpoint |
+
+OAuth มี routes ไม่ได้แปลว่า provider พร้อมใช้งาน ต้องตั้งค่า credentials/callback ให้ตรงกับ environment และมี state cookie ที่ถูกต้องก่อน callback
+
+### Tickets และ public tracking
+
+Source: [issues.js](functions/api/issues.js), [functions/api/issues/](functions/api/issues/), [track/[ticketNumber].js](functions/api/track/[ticketNumber].js)
+
+| Method | Route | สิทธิ์ | หน้าที่/ข้อมูลสำคัญ |
+| --- | --- | --- | --- |
+| `POST` | `/api/issues` | สาธารณะ | JSON `reporter`, `title`, `category`, `priority`, `description`; สร้าง Ticket `Open`, คืน 201 และพยายามส่งอีเมล; email ล้มเหลวไม่ยกเลิก Ticket |
+| `GET` | `/api/issues` | Admin | รายการ Ticket ล่าสุดพร้อมจำนวนไฟล์แนบ; query `limit` ค่าเริ่มต้น 20 สูงสุด 100; ไม่มี server-side search/status filter ใน handler นี้ |
+| `GET` | `/api/issues/stats` | Admin | จำนวน Ticket ทั้งหมดและแยก `Open`, `In Progress`, `Resolved` |
+| `GET` | `/api/issues/:ticketNumber` | Admin | อ่านรายละเอียด Ticket |
+| `PATCH` | `/api/issues/:ticketNumber` | Admin | JSON `status` เป็น `Open`, `In Progress` หรือ `Resolved`; อัปเดตสถานะและ timestamp ตามโค้ด |
+| `DELETE` | `/api/issues/:ticketNumber` | Admin | ลบ Ticket และจัดการไฟล์แนบ/metadata ที่เกี่ยวข้อง |
+| `GET` | `/api/track/:ticketNumber` | สาธารณะ | คืนเฉพาะ `ticket_number`, `status`, `created_at`, `updated_at`, `in_progress_at`; ไม่คืน reporter/issue details |
+
+### ไฟล์แนบของ Ticket
+
+Source: [attachments/index.js](functions/api/issues/[ticketNumber]/attachments/index.js), [attachments/[attachmentId].js](functions/api/issues/[ticketNumber]/attachments/[attachmentId].js)
+
+| Method | Route | สิทธิ์ | หน้าที่/ข้อมูลสำคัญ |
+| --- | --- | --- | --- |
+| `GET` | `/api/issues/:ticketNumber/attachments` | Admin | รายการ metadata ไฟล์แนบของ Ticket |
+| `POST` | `/api/issues/:ticketNumber/attachments` | สาธารณะ | `multipart/form-data` field `file`; ตรวจว่า Ticket มีอยู่และชนิด/ขนาดไฟล์ผ่านเกณฑ์; อัปโหลดไป Storage แล้วบันทึก `issue_attachments` |
+| `GET` | `/api/issues/:ticketNumber/attachments/:attachmentId` | Admin | ดาวน์โหลดไฟล์; query `inline=1` สำหรับแสดง inline; ตรวจความสัมพันธ์ไฟล์กับ Ticket |
+| `DELETE` | `/api/issues/:ticketNumber/attachments/:attachmentId` | Admin | ลบไฟล์แนบจาก Storage และ metadata ของ Ticket |
+
+ขีดจำกัดของ API upload ไฟล์แนบคือ 10 MiB ต่อไฟล์ตาม `attachments/index.js`; รูปแบบ/จำนวน/ขนาดที่หน้า Report ยอมรับอาจเข้มกว่านี้ การ POST ไฟล์แนบสาธารณะไม่ได้ให้สิทธิ์เรียกรายการหรืออ่านไฟล์แนบแบบ Admin
+
+### Storage management และ file proxy
+
+Source: [storage/files.js](functions/api/storage/files.js), [storage/files/[fileId].js](functions/api/storage/files/[fileId].js)
+
+| Method | Route | สิทธิ์ | หน้าที่/ข้อมูลสำคัญ |
+| --- | --- | --- | --- |
+| `GET` | `/api/storage/files` | Admin | รายการไฟล์ใน Storage project |
+| `POST` | `/api/storage/files` | Admin | `multipart/form-data` field `file`; รองรับ MIME ตาม allowlist สูงสุด 10 MiB ต่อไฟล์ |
+| `GET` | `/api/storage/files/:fileId` | Session สำหรับภาพ; Admin สำหรับ non-image download | แสดง JPEG/PNG/WebP/GIF/AVIF แบบ inline; `download=1` เปลี่ยนเป็นดาวน์โหลด และ `name` กำหนดชื่อไฟล์; non-image ต้องดาวน์โหลดและเป็น Admin |
+| `DELETE` | `/api/storage/files/:fileId` | Admin | ลบไฟล์ใน Storage และล้าง `issue_attachments` ที่อ้างถึงไฟล์นั้น |
+
+รายละเอียดและตัวอย่างอยู่ใน [Image Storage API](#image-storage-api); Storage credentials ถูกใช้ฝั่ง Pages Functions
+
+### Attendance
+
+Source: [functions/api/attendance/](functions/api/attendance/), [functions/api/admin/attendance/](functions/api/admin/attendance/)
+
+| Method | Route | สิทธิ์ | หน้าที่/ข้อมูลสำคัญ |
+| --- | --- | --- | --- |
+| `GET` | `/api/attendance/today` | Session | อ่านสถานะลงเวลาวันนี้ของเจ้าของ session และ `workDate` ตาม Asia/Bangkok |
+| `POST` | `/api/attendance/check-in` | Session + same-origin | สร้าง check-in ของวันนี้; identity และเวลาเป็นของ server/session; ซ้ำวันเดิมคืน 409 |
+| `POST` | `/api/attendance/check-out` | Session + same-origin | ปิดรายการ `working` ของวันนี้ของ session; ไม่มีรายการที่ปิดได้คืน 409 |
+| `GET` | `/api/attendance/history` | Session | ประวัติของตนเอง, ระยะเวลารวม และ pagination; query `page`, `limit` (ค่าเริ่มต้น 20 สูงสุด 50) |
+| `GET` | `/api/admin/attendance/summary` | Admin | สรุปจำนวนรายการทั้งหมด, กำลังทำงานวันนี้, เสร็จวันนี้, ค้างจากวันก่อน และเวลารวม |
+| `GET` | `/api/admin/attendance/records` | Admin | รายการทั้งทีมพร้อมระยะเวลา; query `date` รูปแบบ YYYY-MM-DD, `q` ค้นชื่อ/อีเมล, `page`, `limit` (ค่าเริ่มต้น 30 สูงสุด 100) |
+
+### Network Monitor — browser/admin
+
+Source: [functions/api/network/](functions/api/network/), [network/ping/check.js](functions/api/network/ping/check.js)
+
+| Method | Route | สิทธิ์ | หน้าที่/ข้อมูลสำคัญ |
+| --- | --- | --- | --- |
+| `GET` | `/api/network/status` | Admin | snapshot ล่าสุด, heartbeat และ online/stale ของ agent; WAN `running` เป็นสถานะ interface |
+| `GET` | `/api/network/history` | Admin | snapshot ย้อนหลัง; query `hours` (ค่าเริ่มต้น 24, ช่วง 1–720), `limit` (ค่าเริ่มต้น 3000, ช่วง 1–5000) |
+| `GET` | `/api/network/events` | Admin | events ล่าสุดและสถานะ offline ที่อนุมานจาก heartbeat; query `limit` (ค่าเริ่มต้น 100, ช่วง 1–500) |
+| `POST` | `/api/network/viewers` | Admin + same-origin | JSON `viewerId` เป็น UUID v4; สร้าง/ต่ออายุ lease 90 วินาทีสำหรับหน้า monitor |
+| `DELETE` | `/api/network/viewers` | Admin + same-origin | JSON `viewerId`; ยกเลิก viewer lease |
+| `POST` | `/api/network/ping/check` | Admin + same-origin | JSON `targets` เป็น 1–20 IP ไม่ซ้ำใน 192.168.11.1–254, optional `recheck`; queue ping job และคืน 202; มี pending/duplicate protections |
+| `GET` | `/api/network/ping/check` | Admin | query `id` เพื่ออ่าน job หรือไม่ระบุเพื่ออ่านล่าสุด; คืนผลและ `knownTargets` ที่บันทึกไว้ |
+| `DELETE` | `/api/network/ping/check` | Admin + same-origin | query `ip` เพื่อลบประวัติ IP ที่บันทึกไว้; ไม่ลบระหว่าง IP นั้นมี job pending/running |
+
+หน้า monitor ต่อ lease ทุก 30 วินาทีเพื่อให้ agent รวบรวม snapshot เฉพาะเมื่อมีผู้ดู การ ping เกิดจากคำขอ Admin ผ่าน queue/agent/report เท่านั้น ไม่ใช่การ probe อัตโนมัติ
+
+### Network Monitor — agent
+
+Source: [functions/api/network/agent/](functions/api/network/agent/), [network/_utils.js](functions/api/network/_utils.js)
+
+| Method | Route | สิทธิ์ | หน้าที่/ข้อมูลสำคัญ |
+| --- | --- | --- | --- |
+| `GET` | `/api/network/agent/control` | Agent | คืน `active`, `pollIntervalSeconds`, `pingJob`; ตรวจ lease, นำ running job ที่เกินกำหนดกลับคิว และ claim pending job จึงมีการเปลี่ยนสถานะงานแม้ใช้ GET |
+| `POST` | `/api/network/agent/report` | Agent | JSON `collectedAt`, `router`, `wan.ais`, `wan.true`; บันทึก snapshot/heartbeat/events ของ `qnap-agent`, คืน 201; snapshot timestamp ซ้ำคืน 409 |
+| `POST` | `/api/network/agent/ping-report` | Agent | JSON `checkId`, `results` ของ targets ที่ queue ไว้; ตรวจ job เป็น running, status/latency ถูกต้อง และบันทึกผลเป็น completed |
+
+Agent POST ต้องเป็น `application/json` และ body ไม่เกิน 32 KiB; token ต้อง configured ยาวอย่างน้อย 32 ตัวอักษร ไม่เช่นนั้นคืน 503 ดู schema/ขั้นตอนเพิ่มเติมใน [NETWORK_MONITORING_API.md](NETWORK_MONITORING_API.md)
+
+### QR Codes
+
+Source: [functions/api/qr-codes/](functions/api/qr-codes/)
+
+| Method | Route | สิทธิ์ | หน้าที่/ข้อมูลสำคัญ |
+| --- | --- | --- | --- |
+| `GET` | `/api/qr-codes` | เจ้าของ | รายการ QR ของ session; query `search`, `type`, `limit` (ค่าเริ่มต้น 20, ช่วง 1–100), `offset` |
+| `POST` | `/api/qr-codes` | เจ้าของ + same-origin | JSON `name`, `type`, `content` หรือ `short_link_id` พร้อม design และ optional `logo_url`; validate แล้วสร้าง metadata QR, คืน 201 |
+| `GET` | `/api/qr-codes/:id` | เจ้าของ | อ่าน QR พร้อม slug ของ Short Link ที่อ้างอิง; ของผู้อื่นหรือไม่พบคืน 404 |
+| `PATCH` | `/api/qr-codes/:id` | เจ้าของ + same-origin | แก้ fields ที่ส่งมาหลังรวมกับข้อมูลเดิมและ validate; Short Link/โลโก้ที่อ้างอิงต้องเป็นของ session |
+| `DELETE` | `/api/qr-codes/:id` | เจ้าของ + same-origin | ลบ metadata QR; คง Short Link ไว้ |
+
+`type` รองรับ `url`, `short-link`, `text`; API fields ของ design คือ `foreground_color`, `background_color`, `error_correction`, `logo_size`, `logo_background` ไม่รับ `user_id` จาก body และไม่เก็บ rendered PNG/SVG ใน D1
+
+### Short Links
+
+Source: [functions/api/short-links/](functions/api/short-links/)
+
+| Method | Route | สิทธิ์ | หน้าที่/ข้อมูลสำคัญ |
+| --- | --- | --- | --- |
+| `GET` | `/api/short-links` | เจ้าของ | รายการลิงก์ของ session; query `search` ค้น slug/destination, `limit` (ค่าเริ่มต้น 20, ช่วง 1–100), `offset` |
+| `POST` | `/api/short-links` | เจ้าของ + same-origin | JSON `destination_url`, optional `slug`; ไม่ระบุ slug ให้ server สุ่ม, คืน 201; slug ซ้ำคืน 409 |
+| `GET` | `/api/short-links/check` | Session | query `slug`; ตรวจรูปแบบ/reserved names และความว่างของ slug ทั้งระบบ; ไม่คืนข้อมูลเจ้าของหรือ destination |
+| `GET` | `/api/short-links/:id` | เจ้าของ | อ่านลิงก์ของ session; ของผู้อื่นหรือไม่พบคืน 404 |
+| `PATCH` | `/api/short-links/:id` | เจ้าของ + same-origin | JSON `destination_url` และ/หรือ `is_active` (0/1); ห้ามส่งแก้ `slug` ใน V1 |
+| `DELETE` | `/api/short-links/:id` | เจ้าของ + same-origin | ลบลิงก์ที่ยังไม่มี QR อ้างอิง; ถ้าใช้งานอยู่คืน `409 SHORT_LINK_IN_USE` ให้ปิดลิงก์แทน |
+
+### QR Logos
+
+Source: [functions/api/qr-logos/](functions/api/qr-logos/)
+
+| Method | Route | สิทธิ์ | หน้าที่/ข้อมูลสำคัญ |
+| --- | --- | --- | --- |
+| `POST` | `/api/qr-logos` | เจ้าของ + same-origin | `multipart/form-data` field `file`; PNG/JPEG/WebP สูงสุด 2 MiB พร้อมตรวจ signature; อัปโหลด Storage แล้วบันทึกเจ้าของลง `qr_logos`, คืน `logo_url` กับ 201 |
+| `GET` | `/api/qr-logos/:id` | เจ้าของ | อ่านภาพผ่าน Storage proxy; ตรวจเจ้าของด้วย Storage file ID ใน `qr_logos`; ไม่พบ/ของผู้อื่นคืน 404 |
+
+ไม่มี endpoint DELETE โลโก้ใน V1; ดูข้อจำกัดและประวัติแก้ upload ใน [QR Code Studio V1](#qr-code-studio-v1)
+
+### Public Short Link redirect นอก /api
+
+Source: [functions/q/[slug].js](functions/q/[slug].js) อยู่ภายนอก `functions/api/` จึงไม่นับรวม 53 คู่ method + route ด้านบน
+
+| Method | Route | สิทธิ์ | หน้าที่/ข้อมูลสำคัญ |
+| --- | --- | --- | --- |
+| `GET` | `/q/:slug` | สาธารณะ | active slug เท่านั้น redirect HTTP 302 พร้อม `Cache-Control: no-store`; ไม่พบ/ปิดอยู่คืน 404 |
+
+### Helpers, response formats และขอบเขตการตรวจ
+
+ไฟล์ต่อไปนี้ไม่มี `onRequest*` export จึงเป็น helper ไม่ใช่ endpoint ที่ให้เรียกโดยตรง:
+
+- `functions/api/auth/_utils.js` — session, role, same-origin, password hashing และ cookie
+- `functions/api/attendance/_utils.js` — Bangkok date, select fields และ attendance errors
+- `functions/api/network/_utils.js` — agent authentication, snapshot/body validation และ response helpers
+- `functions/api/storage/_utils.js` — Storage configuration, admin guard, upstream headers และ file normalization
+- `functions/api/qr-codes/_utils.js` — QR/Short Link session/origin wrapper, validation, pagination และ errors
+- `functions/api/qr-logos/_storage.js` — แยก upstream upload errors และ log ที่ไม่เปิดเผย secrets
+
+Endpoints ส่วนใหญ่ใช้ `{ success: false, message: "..." }`; QR Codes/Short Links/QR Logos ใช้ `{ success: false, error: { code, message } }` อย่าสมมติว่า error envelope ของ API ทุกกลุ่มเหมือนกัน OAuth/public redirect คืน HTTP redirect และ file proxy คืน binary เมื่อสำเร็จ
+
+same-origin checks มีใน login/register/logout, Attendance check-in/out, Network viewer/ping mutations และ QR/Short Link/logo mutations ตามตาราง ไม่มีการเพิ่มหรือเปลี่ยน authorization ของ endpoint ใดในการอัปเดต README นี้ รายการนี้เป็นการตรวจ source และเทียบ inventory กับเอกสาร ไม่ได้เรียกทุก endpoint กับ production หรือเปลี่ยน remote data
 
 ## สร้าง Admin คนแรก
 
@@ -475,6 +640,14 @@ python3 scripts/bootstrap-admin.py
 
 ## QR Code Studio V1
 
+### สถานะล่าสุด — 26 ตุลาคม 2026
+
+**พัฒนา V1 ครบแล้ว และอยู่ระหว่างทดลองใช้งานจริงก่อนปิดงาน** ผู้ใช้ยืนยันว่าหลังแก้ ownership ของฐานข้อมูล Storage แล้ว อัปโหลดไฟล์ได้ทั้ง Storage Images และ QR Studio ปัญหา upload 502 เดิมแก้ไขได้แล้วตามผลทดสอบที่ผู้ใช้รายงาน
+
+จะทดลองใช้งานต่อเนื่องเพื่อดูว่ามีปัญหาเพิ่มเติมหรือไม่ โดยติดตามการบันทึก QR พร้อม/ไม่มีโลโก้ การเปิดแก้ไข การ export PNG/SVG การใช้งาน Short Link และการแสดงผลบนมือถือ หากไม่พบปัญหาเพิ่มเติมจึงพิจารณาปิดงานหน้า QR Studio โดยยังไม่ได้กำหนดระยะเวลาทดลองหรือประกาศปิดงานในขั้นนี้
+
+### ความสามารถและสิทธิ์
+
 สมาชิกที่เข้าสู่ระบบเข้า `/qr-studio` (Create QR), `/qr-studio/links` (Short Links) และ `/qr-studio/saved` (My QR Codes) ผ่าน AppShell เดิมได้ ข้อมูลแต่ละรายการแยกตามเจ้าของ session รวมถึง admin ซึ่งไม่สามารถอ่าน QR ส่วนตัวของสมาชิกอื่นผ่าน API นี้
 
 - สร้าง QR จาก HTTP(S) URL, ข้อความไม่เกิน 2,000 ตัวอักษร หรือ Short Link ปรับสี HEX, error correction M/Q/H และโลโก้ แล้วดาวน์โหลด PNG 1024px หรือ SVG ได้โดยไม่เก็บภาพ QR ใน D1
@@ -485,11 +658,19 @@ python3 scripts/bootstrap-admin.py
 - Mutation ตรวจ same-origin และ session; resource ของผู้อื่นคืน 404 ข้อผิดพลาดใหม่ใช้ `{ success: false, error: { code, message } }`
 - ลบ QR ไม่ลบ Short Link; ลบ Short Link ที่ถูก QR อ้างอิงคืน `409 SHORT_LINK_IN_USE` ให้ปิดลิงก์แทน
 
-ใช้ migration `0010_create_qr_studio_tables.sql` ที่มีอยู่ และ `0011_create_qr_logo_ownership.sql` สำหรับ metadata เจ้าของโลโก้ ต้องตรวจและ apply migrations บนระบบเป้าหมายโดยผู้ดูแลก่อนใช้งานจริง งานนี้ยังไม่ได้ apply remote migrations หรือ deploy และไม่ได้ยืนยัน Storage credentials/บริการ remote
+ใช้ migration `0010_create_qr_studio_tables.sql` สำหรับ Short Links/QR และ `0011_create_qr_logo_ownership.sql` สำหรับ metadata เจ้าของโลโก้ สำหรับการติดตั้งระบบใหม่ ผู้ดูแลต้องตรวจ migration status และ apply migrations บนเป้าหมายก่อนใช้งาน ข้อมูลการใช้งานจริงข้างต้นอ้างอิงผลที่ผู้ใช้รายงาน ไม่ได้ตรวจ migration status หรือ configuration ของ production ซ้ำในการอัปเดตเอกสารครั้งนี้
+
+### ปัญหาอัปโหลดโลโก้ที่แก้ไขแล้ว
+
+Storage API เคยคืน 502 เพราะ SQLite metadata ใน container เขียนไม่ได้ (`SQLITE_READONLY`) ตัว service รันด้วย UID/GID `1000:1000` แต่ directory `/app/data` และ `storage.db` เป็นของ `0:0` โดยใช้ mode `755`/`644` เมื่อแก้ ownership ให้ตรงกับ runtime user แล้ว ผู้ใช้ยืนยันว่าอัปโหลดได้ทั้งหมด ทั้ง Storage Images และ QR Studio
+
+เมื่อ upload ล้มเหลว QR จะยังไม่บันทึก `qr_logos` ใน D1 เพราะต้องรอ Storage ส่งผลสำเร็จก่อน ส่วน preview/export สร้างใน browser จึงยังใช้ได้ระหว่างที่ Storage มีปัญหา อ่านลำดับเหตุการณ์และวิธีตรวจสิทธิ์ใน [QR Studio Storage upload troubleshooting](QR_STUDIO_STORAGE_UPLOAD_TROUBLESHOOTING.md)
+
+### ข้อจำกัด V1 และการตรวจสอบ
 
 การอัปโหลดโลโก้กับการบันทึก QR เป็นคนละ operation หากบันทึก QR ล้มเหลว หน้าเดิมจะ reuse โลโก้ที่อัปโหลดแล้วเมื่อ retry; Short Link ที่สร้างแล้วจะยังอยู่ในหน้าจัดการ ระบบ V1 ยังไม่มี automatic cleanup สำหรับโลโก้ที่เลิกใช้หรือ draft ที่ถูกทิ้ง และการแก้ destination จะมีผลต่อทุก QR ที่ใช้ลิงก์เดียวกัน
 
-ตรวจ regression ของ QR APIs/validation/schema ด้วย `node --test scripts/qr-studio-checks.mjs` (Node ที่รองรับ `node:sqlite`; ใช้ SQLite ในหน่วยความจำและ mock Storage ไม่แตะข้อมูลจริง) `pnpm dev` ใช้ตรวจ frontend; ทดสอบ redirect/session/D1 บน Cloudflare runtime ต้องใช้ Pages/Wrangler workflow ของโครงการ
+ตรวจ regression ของ QR APIs/validation/schema ด้วย `pnpm test:qr` (Node ที่รองรับ `node:sqlite`; ใช้ SQLite ในหน่วยความจำและ mock Storage ไม่แตะข้อมูลจริง) `pnpm dev` ใช้ตรวจ frontend; ทดสอบ redirect/session/D1 บน Cloudflare runtime ต้องใช้ Pages/Wrangler workflow ของโครงการ
 
 ### ทดสอบ QR Studio โดยไม่ถอด ProtectedRoute
 

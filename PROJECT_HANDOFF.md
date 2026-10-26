@@ -223,3 +223,9 @@ pnpm dev
 Regression suite เพิ่มกรณี failure และตรวจว่าไม่เขียน ownership metadata หรือเปิดเผยข้อความลับจาก upstream ผ่าน response/logs การแก้ diagnostics ไม่ถือว่าแก้สาเหตุ production แล้ว ต้องตรวจสถานะ Storage/Garage จริงหลัง deploy ที่ได้รับอนุญาต
 
 ดูผลเปรียบเทียบ upload ของ `StorageImages.jsx` กับ QR Studio และสาเหตุที่ยืนยันได้/ยังยืนยันไม่ได้ใน [QR_STUDIO_STORAGE_UPLOAD_TROUBLESHOOTING.md](QR_STUDIO_STORAGE_UPLOAD_TROUBLESHOOTING.md) มี regression test เทียบ upstream multipart ของทั้งสอง Pages handlers และคง admin boundary ของ Storage management
+
+### ยืนยันสาเหตุ upload 502 จาก Storage log
+
+ผู้ใช้ทดสอบ Storage Images แล้วล้มเหลวเหมือน QR และส่ง `Upload project file failed: SqliteError: attempt to write a readonly database` / `SQLITE_READONLY` ที่ `.run()` ของ INSERT `files` ใน `garage/storage/src/index.js` สาเหตุที่ยืนยันคือ SQLite metadata ของ Storage เขียนไม่ได้ ไม่ใช่ D1 `qr_logos` หรือความต่างของ multipart ส่วน owner/mode/ACL/mount ที่ทำให้ readonly ยังต้องตรวจ Docker host จริง Dockerfile ใช้ `USER node` แต่ Compose bind-mount host `./storage/data` ทับ `/app/data` จึงต้องตรวจสิทธิ์ host directory/DB/WAL/SHM ตาม UID/GID จริง ดูคำสั่งตรวจแบบอ่านอย่างเดียวและแนวทางแก้ใน `QR_STUDIO_STORAGE_UPLOAD_TROUBLESHOOTING.md` ยังไม่ได้แก้ permissions หรือ restart production และยังไม่มีผล retry หลังแก้
+
+ผู้ใช้ตรวจพบ permission mismatch ใน container แล้ว: `storage-api` คือ UID/GID `1000:1000`; `/app/data` และ `storage.db` เป็น `0:0` mode `755`/`644` ทำให้เขียน SQLite/WAL ไม่ได้ สอดคล้องกับ `SQLITE_READONLY` ต้องยืนยัน host bind mount source กับ `rw=true` แล้วให้ owner ของ Storage data directory ตรงกับ UID/GID ของ service ก่อน retry แนวทาง exact commands อยู่ใน troubleshooting/Storage README ไม่มีการเปลี่ยน production permissions จาก workspace
