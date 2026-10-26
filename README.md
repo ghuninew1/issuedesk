@@ -277,6 +277,8 @@ DELETE /api/storage/files/:fileId
 
 เมื่อ `POST /api/issues` สร้าง Ticket สำเร็จ Pages Function เรียก Resend เพื่อส่งอีเมลไปยังกล่องจดหมายของทีม IT
 
+หากต้องการใช้ Resend จากเว็บไซต์อื่น เช่น Portfolio ให้ใช้ `POST /api/resend` ตามคู่มือแยก [RESEND_API.md](RESEND_API.md) โดยตั้ง allowlist ของ Origin และผู้รับอีเมลบน Cloudflare Pages ก่อน
+
 จดหมายมีทั้ง HTML และข้อความล้วน หัวข้อรูปแบบ `[IssueDesk] New Issue IT-YYYYMM-NNNN` และมีหมายเลข Ticket ชื่อผู้แจ้ง หัวข้อ หมวดหมู่ ความสำคัญ สถานะ เวลาที่ส่ง และรายละเอียด โดย escape HTML ก่อนใส่ในแม่แบบ
 
 ค่าที่ต้องตั้งใน Cloudflare Pages (production/preview) หรือ `.dev.vars` (เครื่องพัฒนา):

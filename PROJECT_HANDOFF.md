@@ -70,6 +70,7 @@ Schema รองรับหนึ่ง record ต่อ user ต่อวั�
 | Method / route | สิทธิ์ / พฤติกรรม |
 | --- | --- |
 | `POST /api/issues` | สาธารณะ; ตรวจข้อมูล, ออก Ticket `IT-YYYYMM-NNNN` ตามเวลา Bangkok, บันทึก D1 และพยายามส่งอีเมล Resend |
+| `POST /api/resend` | contact form จาก Origin ที่อนุญาต; ส่งอีเมลถึงผู้รับที่กำหนดใน server environment เท่านั้น ดู `RESEND_API.md` |
 | `GET /api/issues` | Admin; รายการและตัวกรอง/limit |
 | `GET /api/issues/stats` | Admin; สถิติ Dashboard |
 | `GET /api/issues/:ticketNumber` | Admin; รายละเอียด Ticket |
