@@ -1,5 +1,6 @@
 import GlassButton from "../GlassButton";
 import { NavLink } from "react-router-dom";
+import { useAuth } from "../../auth/useAuth";
 import { cx } from "../../utils/cx";
 import { glassHover } from "../../utils/utils";
 import {
@@ -17,15 +18,28 @@ import {
 import logoFull from "../../assets/GhuniNew_full_color.avif";
 import logo from "../../assets/logo.avif";
 
-const navLinks = [
-    { icon: LayoutDashboard, label: "Dashboard", to: "/dashboard" },
-    { icon: ClipboardList, label: "Issues", to: "/issues" },
-    { icon: ClipboardPlus, label: "Report", to: "/report" },
-    { icon: Clock3, label: "Attendance", to: "/attendance" },
-    { icon: Images, label: "Storage", to: "/storage/images" },
-    { icon: FileSpreadsheet, label: "Sheet", to: "/sheet" },
-    { icon: Network, label: "Network Monitor", to: "/network-monitor" },
-    { icon: QrCode, label: "QR Studio", to: "/qr-studio" },
+const navGroups = [
+    {
+        label: "Workspace",
+        links: [
+            { icon: ClipboardPlus, label: "Report", to: "/report" },
+            { icon: Clock3, label: "Attendance", to: "/attendance", requiresSession: true },
+            { icon: FileSpreadsheet, label: "Sheet", to: "/sheet", requiresSession: true },
+        ],
+    },
+    {
+        label: "Administration",
+        links: [
+            { icon: LayoutDashboard, label: "Dashboard", to: "/dashboard", requiredRole: "admin" },
+            { icon: ClipboardList, label: "Issues", to: "/issues", requiredRole: "admin" },
+            { icon: Images, label: "Storage", to: "/storage/images", requiredRole: "admin" },
+            { icon: Network, label: "Network Monitor", to: "/network-monitor", requiredRole: "admin" },
+        ],
+    },
+    {
+        label: "Tools",
+        links: [{ icon: QrCode, label: "QR Studio", to: "/qr-studio", requiresSession: true }],
+    },
 ];
 
 const handleGlowMove = (e) => {
@@ -36,6 +50,16 @@ const handleGlowMove = (e) => {
 };
 
 const SidebarContent = ({ isCollapsed, onNavigate, onToggleSidebar, mobile = false }) => {
+    const { user, isLoading } = useAuth();
+    const visibleGroups = navGroups.map((group) => ({
+        ...group,
+        links: group.links.filter((link) => {
+            if (link.requiredRole) return !isLoading && user?.role === link.requiredRole;
+            if (link.requiresSession) return !isLoading && Boolean(user);
+            return true;
+        }),
+    })).filter((group) => group.links.length > 0);
+
     return (
         <>
             {/* Brand */}
@@ -80,43 +104,50 @@ const SidebarContent = ({ isCollapsed, onNavigate, onToggleSidebar, mobile = fal
                     mobile || !isCollapsed ? "w-56" : "overflow-x-hidden",
                 )}
             >
-                <p
-                    className={cx(
-                        "px-3 pb-2 pt-3 text-xs font-medium uppercase tracking-wider",
-                        "text-muted-foreground",
-                        mobile || !isCollapsed ? "block" : "hidden",
-                    )}
-                >
-                    Workspace
-                </p>
-
-                {/* Navigation links */}
-                {navLinks.map((link) => (
-                    <NavLink
-                        key={link.to}
-                        to={link.to}
-                        title={isCollapsed ? link.label : undefined}
-                        onClick={onNavigate}
-                        onPointerMove={handleGlowMove}
-                        className={({ isActive }) =>
-                            cx(
-                                "flex min-h-11 items-center rounded-xl px-3 py-2.5",
-                                mobile || !isCollapsed ? "w-full gap-3" : "mx-auto size-11 justify-center px-0",
-                                "animate-fadeInLeft",
-                                "focus-visible:outline-none focus-visible:ring-2",
-                                "focus-visible:ring-inset focus-visible:ring-ring/50",
-                                isActive
-                                    ? "glass-nav-active font-medium text-sidebar-accent-foreground"
-                                    : "text-muted-foreground hover:text-sidebar-accent-foreground",
-                                glassHover,
-                            )
-                        }
+                {visibleGroups.map((group, index) => (
+                    <section
+                        key={group.label}
+                        aria-label={group.label}
+                        className={cx(index > 0 && "mt-3 border-t border-sidebar-border pt-3")}
                     >
-                        <link.icon className="relative size-5 shrink-0" aria-hidden="true" />
-                        <span className={cx("relative text-sm", mobile || !isCollapsed ? "inline" : "sr-only")}>
-                            {link.label}
-                        </span>
-                    </NavLink>
+                        <h2
+                            className={cx(
+                                "px-3 pb-2 pt-3 text-xs font-medium uppercase tracking-wider text-muted-foreground",
+                                mobile || !isCollapsed ? "block" : "sr-only",
+                            )}
+                        >
+                            {group.label}
+                        </h2>
+                        <div className={cx("space-y-1")}>
+                            {group.links.map((link) => (
+                                <NavLink
+                                    key={link.to}
+                                    to={link.to}
+                                    title={isCollapsed ? link.label : undefined}
+                                    onClick={onNavigate}
+                                    onPointerMove={handleGlowMove}
+                                    className={({ isActive }) =>
+                                        cx(
+                                            "flex min-h-11 items-center rounded-xl px-3 py-2.5",
+                                            mobile || !isCollapsed ? "w-full gap-3" : "mx-auto size-11 justify-center px-0",
+                                            "animate-fadeInLeft",
+                                            "focus-visible:outline-none focus-visible:ring-2",
+                                            "focus-visible:ring-inset focus-visible:ring-ring/50",
+                                            isActive
+                                                ? "glass-nav-active font-medium text-sidebar-accent-foreground"
+                                                : "text-muted-foreground hover:text-sidebar-accent-foreground",
+                                            glassHover,
+                                        )
+                                    }
+                                >
+                                    <link.icon className={cx("relative size-5 shrink-0")} aria-hidden="true" />
+                                    <span className={cx("relative text-sm", mobile || !isCollapsed ? "inline" : "sr-only")}>
+                                        {link.label}
+                                    </span>
+                                </NavLink>
+                            ))}
+                        </div>
+                    </section>
                 ))}
             </nav>
 
