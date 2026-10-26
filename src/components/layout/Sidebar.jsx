@@ -18,7 +18,6 @@ import logoFull from "../../assets/GhuniNew_full_color.avif";
 import logo from "../../assets/logo.avif";
 
 const navLinks = [
-    { icon: QrCode, label: "QR Studio", to: "/qr-studio" },
     { icon: LayoutDashboard, label: "Dashboard", to: "/dashboard" },
     { icon: ClipboardList, label: "Issues", to: "/issues" },
     { icon: ClipboardPlus, label: "Report", to: "/report" },
@@ -26,6 +25,7 @@ const navLinks = [
     { icon: Images, label: "Storage", to: "/storage/images" },
     { icon: FileSpreadsheet, label: "Sheet", to: "/sheet" },
     { icon: Network, label: "Network Monitor", to: "/network-monitor" },
+    { icon: QrCode, label: "QR Studio", to: "/qr-studio" },
 ];
 
 const handleGlowMove = (e) => {
