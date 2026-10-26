@@ -34,6 +34,7 @@ Version ใน `package.json` ปัจจุบันคือ `1.3.3`.
 | `/attendance` | Login required | `src/pages/Attendance.jsx`; User เห็นข้อมูลตนเอง ส่วน Admin เห็นภาพรวม/รายการทีมแบบอ่านอย่างเดียว |
 | `/network-monitor` | Admin | `src/pages/NetworkMonitor.jsx`; ดูข้อมูล RouterOS และเรียก ping ผ่าน queue/agent |
 | `/qr-studio`, `/qr-studio/links`, `/qr-studio/saved` | Login required | `src/pages/qr/QRCodeStudio.jsx` และหน้าภายใต้ QR Studio |
+| `/image-converter` | Login required | `src/pages/ImageConverter.jsx`; แปลงและ resize รูปใน browser |
 
 `src/auth/ProtectedRoute.jsx` คุมหน้า Admin ฝั่ง client; Pages Functions ต้องคุม role ซ้ำที่ API ด้วย `requireRole` ใน `functions/api/auth/_utils.js`.
 
@@ -196,6 +197,7 @@ pnpm dev
 | Time Attendance UI/API | `src/pages/Attendance.jsx`, `src/App.jsx`, `src/components/layout/Sidebar.jsx`, `functions/api/attendance/`, `functions/api/admin/attendance/`, `migrations/0006_create_attendance_records.sql` |
 | Network Monitor UI/API/agent | `src/pages/NetworkMonitor.jsx`, `functions/api/network/`, `garage/network-monitor/`, `migrations/0007_create_network_monitoring.sql`–`0009_create_network_ping_checks.sql` |
 | QR Studio, short links, logo upload | `src/pages/qr/`, `src/components/qr/`, `functions/api/qr-codes/`, `functions/api/short-links/`, `functions/api/qr-logos/`, `shared/qr.js`, `migrations/0010_create_qr_studio_tables.sql`, `migrations/0011_create_qr_logo_ownership.sql` |
+| Image Converter | `src/pages/ImageConverter.jsx`, `src/components/tools/`, `src/utils/imageConverter.js`, `src/utils/createZip.js`, `src/utils/imageDimensions.js`, `src/workers/image.worker.js` |
 | Storage UI/API | `src/pages/StorageImages.jsx`, `src/services/storage.js`, `functions/api/storage/`, `STORAGE_DOCS_API_REFERENCE.md` |
 | Google Sheet inventory | `src/pages/Sheet.jsx`, `src/hooks/useGoogleSheet.js` |
 | D1 setup/Admin bootstrap | `migrations/`, `wrangler.jsonc`, `scripts/bootstrap-admin.py` |

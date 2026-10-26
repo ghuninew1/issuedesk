@@ -6,6 +6,7 @@ import { useAuth } from "./auth/useAuth";
 const QRCodeStudio = lazy(() => import("./pages/qr/QRCodeStudio"));
 const QRLinks = lazy(() => import("./pages/qr/QRLinks"));
 const SavedQRCodes = lazy(() => import("./pages/qr/SavedQRCodes"));
+const ImageConverter = lazy(() => import("./pages/ImageConverter"));
 
 const AppShell = lazy(() => import("./components/layout/AppShell"));
 const DashboardStats = lazy(() => import("./components/dashboard/DashboardStats"));
@@ -105,6 +106,14 @@ function App() {
                         element={
                             <ProtectedRoute>
                                 <SavedQRCodes />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/image-converter"
+                        element={
+                            <ProtectedRoute>
+                                <ImageConverter />
                             </ProtectedRoute>
                         }
                     />

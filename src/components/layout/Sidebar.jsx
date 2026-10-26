@@ -12,6 +12,7 @@ import {
     Clock3,
     Network,
     QrCode,
+    Image,
     PanelLeftClose,
     PanelLeftOpen,
 } from "lucide-react";
@@ -38,7 +39,10 @@ const navGroups = [
     },
     {
         label: "Tools",
-        links: [{ icon: QrCode, label: "QR Studio", to: "/qr-studio", requiresSession: true }],
+        links: [
+            { icon: QrCode, label: "QR Studio", to: "/qr-studio", requiresSession: true },
+            { icon: Image, label: "Image Converter", to: "/image-converter", requiresSession: true },
+        ],
     },
 ];
 
