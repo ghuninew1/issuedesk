@@ -1,18 +1,18 @@
-# ตรวจปัญหา Save QR Code: Unable to upload logo
+# QR Studio — Storage integration และการดูแลระบบ
 
-วันที่ตรวจ: 26 ตุลาคม 2026
+อัปเดต: 27 ตุลาคม 2026
 
-## ข้อสรุปที่ยืนยันได้
+## สถานะปัจจุบัน
 
-ตรวจ source ตั้งแต่ `src/pages/StorageImages.jsx` ถึง Storage API/Garage แล้ว **QR Studio ใช้รูปแบบอัปโหลดเดียวกับหน้า Storage Images** ไม่พบความต่างของ endpoint ปลายทาง, project ID, ชื่อ field, MIME/bytes ของไฟล์ หรือชุด headers สำหรับ Storage authentication
+ปัญหาอัปโหลดโลโก้ได้รับการแก้ไขแล้ว ผู้ใช้ยืนยันว่าอัปโหลดได้ทั้ง Storage Images และ QR Studio หลังแก้ ownership ของ Storage data directory และฐานข้อมูลให้ตรงกับ runtime user เอกสารนี้เก็บรายละเอียด integration, สิทธิ์การเข้าถึง, สาเหตุและวิธีแก้ที่ใช้ รวมถึงแนวทางตรวจเมื่อเกิดอาการเดิมซ้ำ
 
-สิ่งที่ทำให้ผู้ใช้เห็น **HTTP 500 + `Unable to upload logo`** ใน implementation เดิม คือ Pages Function ของ QR ตรวจพบว่า Storage ตอบ non-2xx แล้วคืนข้อความนี้โดยไม่เก็บ upstream status จึงซ่อนสาเหตุจริงไว้
+สาเหตุที่พบคือ `storage-api` รันด้วย UID/GID `1000:1000` แต่ bind mount `/app/data` และ `storage.db` เป็นของ `0:0` โดยใช้ mode `755`/`644` ทำให้ SQLite เขียน metadata/WAL ไม่ได้และคืน `SQLITE_READONLY` การแก้ ownership ทำให้ service เขียนฐานข้อมูลได้อีกครั้ง สถานะการแก้ไขอ้างอิงผลที่ผู้ใช้ยืนยัน; การอัปเดตเอกสารนี้ไม่ได้รันคำสั่งบน Docker host ซ้ำ
 
-**อัปเดต: ยืนยันจาก log ที่ผู้ใช้ส่งแล้วว่า Storage API เขียน metadata ลง SQLite ไม่ได้ (`SQLITE_READONLY: attempt to write a readonly database`) ขณะ INSERT ตาราง `files`** ไม่ใช่ความต่างของ QR upload หรือ D1 `qr_logos` ส่วนสาเหตุระดับ filesystem ว่าเกิดจาก สิทธิ์บน path ที่แสดงใน container ไม่อนุญาตให้ UID 1000 เขียน จาก output ที่ส่งมา owner/mode เป็นสาเหตุที่ยืนยันได้ ส่วน source path/host ACL/mount write mode ยังให้ตรวจเพิ่มที่ host และยังไม่มีผลทดสอบหลังแก้สิทธิ์
+Storage Images และ QR Studio ส่งไฟล์ไป Storage endpoint เดียวกัน ใช้ project, multipart field และ authentication headers ร่วมกัน โดยคงสิทธิ์ของแต่ละหน้าไว้ตามรายละเอียดด้านล่าง
 
-## สาเหตุจริงจาก Docker storage-api
+## เหตุการณ์ที่แก้ไขแล้ว: SQLite metadata เขียนไม่ได้
 
-ผู้ใช้ยืนยันว่าอัปโหลด `logo.webp` ผ่าน Storage Images ก็ล้มเหลวเหมือน QR Studio และส่ง log:
+ในเหตุการณ์เดิม การอัปโหลด `logo.webp` ผ่าน Storage Images เคยล้มเหลวเช่นเดียวกับ QR Studio โดยผู้ใช้ส่ง log:
 
 ```text
 Upload project file failed: SqliteError: attempt to write a readonly database
@@ -41,7 +41,7 @@ code: SQLITE_READONLY
 - `garage/storage/src/db.js` เปิด `better-sqlite3` โดยไม่ได้ขอ readonly และตั้ง `journal_mode = WAL`
 - ต้องตรวจสิทธิ์ directory, `storage.db` และไฟล์ `storage.db-wal`/`storage.db-shm` ที่มีอยู่ รวมถึง effective UID/GID และ host ACL/mount mode ไม่ใช่ตรวจไฟล์ `.db` อย่างเดียว
 
-### ตรวจบนเครื่องที่รัน Docker จริง — ไม่อ่าน secret และไม่เขียน database
+### คำสั่งตรวจสิทธิ์สำหรับผู้ดูแล
 
 ```sh
 docker exec storage-api id
@@ -79,7 +79,7 @@ id: uid=1000(node) gid=1000(node)
 
 ผลนี้ยืนยัน permission mismatch บน path ที่แอปเปิดใช้งานจริง: UID 1000 ไม่มี write permission ของ owner บน directory `/app/data` หรือ `storage.db` ซึ่งทั้งคู่เป็น UID/GID 0 และ directory mode `755` / file mode `644` ให้สิทธิ์เขียนเฉพาะ root จึงสอดคล้องตรงกับ `SQLITE_READONLY` แน่นอน Dockerfile chown directory ใน image แต่ host bind mount ทับ path นั้นและนำ owner `0:0` ของ host มาใช้
 
-จาก prompt `root@sky:~/garage` Compose source น่าจะเป็น `./storage/data` ใต้ project directory แต่ควรยืนยัน source จาก Docker mount metadata ก่อนแก้:
+ก่อนใช้ขั้นตอนแก้ ownership ให้ยืนยัน source จาก Docker mount metadata ของ deployment นั้น:
 
 ```sh
 docker inspect storage-api --format '{{range .Mounts}}{{if eq .Destination "/app/data"}}{{.Source}} rw={{.RW}}{{end}}{{end}}'
@@ -99,7 +99,7 @@ docker exec storage-api ls -ln /app/data/storage.db
 
 หลังแก้ควรเห็น owner `1000:1000` ที่ directory และ DB; directory ต้องเขียน/เข้าได้ และ DB เขียนได้สำหรับ owner หาก mount `rw=false`, path จริงต่างออกไป, มี host ACL, NAS permission mapping หรือ SELinux policy ต้องแก้ที่สาเหตุนั้นแทน `chown` ตัวอย่างนี้ การหยุด service ก่อนช่วยไม่ให้แก้ ownership ระหว่างที่ SQLite ยังเปิดใช้งานอยู่ ไม่ลบหรือสร้างฐานข้อมูลใหม่ หลัง service กลับมาทำงานให้ตรวจ `docker compose logs --tail=100 storage-api` แล้วค่อยลอง upload ไฟล์ใหม่
 
-### แนวทางแก้โดยผู้ดูแลหลังตรวจผล
+### การแก้ไขและป้องกันเมื่อย้ายหรือติดตั้งระบบใหม่
 
 1. ยืนยัน source directory จาก mount metadata และ UID/GID จาก `docker exec storage-api id` ก่อน ไม่เดาว่า `node` ต้องเป็น UID 1000 เสมอ โดยเฉพาะ NAS, rootless Docker หรือ user namespace
 2. หยุดเฉพาะ `storage-api` ตามขั้นตอนของผู้ดูแล แล้วสำรอง directory ฐานข้อมูลทั้งชุดอย่างสอดคล้องกัน รวม WAL/SHM ที่ยังมีอยู่ ไม่คัดลอกเฉพาะ `.db` ขณะมี writer ทำงาน
@@ -107,7 +107,7 @@ docker exec storage-api ls -ln /app/data/storage.db
 4. ถ้า mount `.RW` เป็น false หรือ host filesystem เป็น read-only ต้องแก้ mount/สาเหตุ filesystem ตามผลตรวจ การ chmod อย่างเดียวไม่แก้กรณีนี้
 5. เริ่ม `storage-api` แล้วให้ผู้ใช้ทดสอบ upload PNG/WebP ผ่าน Storage Images และ Save QR พร้อม logo อีกครั้ง ตรวจว่า SQLite `files` และ D1 `qr_logos` ถูกบันทึกตามลำดับ และไม่มี SQLITE_READONLY ใหม่
 
-ยังไม่ได้รันคำสั่งเหล่านี้บน Docker host หรือเปลี่ยน ownership, ACL, mount, service และข้อมูล production จึงยังไม่ยืนยันว่าแก้ปัญหาแล้ว ไม่จำเป็นต้องแก้ React หรือสร้าง D1 migration เพื่อแก้ SQLITE_READONLY ของฐาน Storage นี้
+ขั้นตอนข้างต้นเป็นคู่มือสำหรับผู้ดูแลเมื่อพบ permission mismatch แบบเดียวกัน เหตุการณ์เดิมแก้ไขแล้วตามผลที่ผู้ใช้ยืนยัน การแก้ไขอยู่ที่ ownership ของ Storage metadata directory/DB; ไม่ต้องเพิ่ม D1 migration หรือเปลี่ยน QR upload flow เพื่อแก้สาเหตุนี้
 
 อ้างอิง: [Docker bind mounts](https://docs.docker.com/engine/storage/bind-mounts/), [SQLite WAL](https://www.sqlite.org/wal.html)
 
@@ -192,25 +192,4 @@ session/origin + file validation ผ่าน
 
 ทดสอบ failure จำลองครอบคลุม redirect, 401/403, 404, 413, 502, network และ invalid response พร้อมตรวจว่าไม่เขียน metadata หรือเปิดเผย upstream body ที่มีข้อความลับ
 
-ทั้งหมดเป็น local tests ด้วย mock Storage ไม่ได้อัปโหลดไฟล์จริงไป production และยังไม่ได้ deploy การเปลี่ยนแปลงชุด diagnostics ในงานตรวจนี้
-
-## หลักฐานก่อนพบ Storage log: Cloudflare origin_bad_gateway
-
-ผู้ใช้รายงาน response ต่อไปนี้จากระบบที่ deploy แล้ว:
-
-- `error_code/status: 502`, `error_name: origin_bad_gateway`
-- `zone: issuedesk.bigbrain-studio.com`
-- `ray_id/instance: a509c7dd3c3b4296`
-- `timestamp: 2026-10-26T13:24:21Z` = **26 ตุลาคม 2026 เวลา 20:24:21 น. Asia/Bangkok**
-- `retry_after: 60`, `retryable: true`, `owner_action_required: true`
-- ข้อความระบุว่า Cloudflare สร้าง error response แทนเจ้าของเว็บไซต์
-
-นี่เป็น Cloudflare error envelope ไม่ใช่ `{ success: false, error: { code, message } }` ที่ QR Function สร้าง ต้องแยกให้ได้ว่า gateway/origin ล้มเหลวโดยตรง หรือ Function คืน 502 จาก upstream แล้ว Cloudflare ปรับ error response ระหว่างทาง จึงยังใช้ข้อมูลนี้สรุปว่า Function ไม่ทำงาน หรือ Garage ล่มแน่นอนไม่ได้ `zone` ระบุโดเมนที่ส่ง error ไม่ได้ยืนยัน hostname ของ Storage service
-
-โค้ด diagnostics ปัจจุบันคืน 502 เมื่อ Storage ล้มเหลวอยู่แล้ว จึงต้องเทียบ Pages Function logs โดยค้น `QR logo Storage request failed` พร้อมเวลาและ Ray ID นี้ ถ้าพบ `upstreamStatus` ให้ใช้สถานะนั้นไล่ต่อ; ถ้าไม่พบ log ต้องยืนยัน deployment ที่ใช้งานและตรวจ routing/custom errors/proxy ของโดเมนก่อน อย่าใช้การไม่มี log เพียงอย่างเดียวสรุปว่า request ไม่เข้า Function
-
-ควรรออย่างน้อย 60 วินาทีตาม response ก่อน retry และหลีกเลี่ยงการกด Save ซ้ำถี่ ๆ หากปัญหาคงอยู่ให้ผู้ดูแลตรวจ Pages logs กับ Storage/Garage logs ในช่วงเวลาเดียวกัน หากมี Tunnel/reverse proxy อยู่ใน deployment จริงจึงค่อยตรวจ logs ของบริการนั้น ไม่สมมติว่ามี Tunnel จากเลข 502 อย่างเดียว
-
-การตรวจ GET `/api/auth/me` แบบไม่ส่ง cookie จากสภาพแวดล้อมผู้ช่วยบน custom domain และ `issuedesk.pages.dev` ได้ HTTP 403 / Cloudflare error 1010 ทั้งสองโดเมน การตรวจนี้ถูกปฏิเสธและไม่ยืนยันอาการ 502 ที่ผู้ใช้พบ ไม่พยายามหลบ security rule หรือเปลี่ยนการตั้งค่า production
-
-แหล่งอ้างอิง: [Cloudflare error responses](https://developers.cloudflare.com/fundamentals/reference/error-responses/), [Error 502/504](https://developers.cloudflare.com/support/troubleshooting/http-status-codes/cloudflare-5xx-errors/error-502-504/), [Custom Errors](https://developers.cloudflare.com/rules/custom-errors/)
+ผล regression ที่บันทึกไว้ข้างต้นเป็น local tests ด้วย mock Storage แยกจากผลใช้งานจริงที่ผู้ใช้ยืนยันหลังแก้ ownership การอัปเดตเอกสารครั้งนี้ไม่ได้รัน suite ซ้ำ

@@ -666,7 +666,7 @@ python3 scripts/bootstrap-admin.py
 
 Storage API เคยคืน 502 เพราะ SQLite metadata ใน container เขียนไม่ได้ (`SQLITE_READONLY`) ตัว service รันด้วย UID/GID `1000:1000` แต่ directory `/app/data` และ `storage.db` เป็นของ `0:0` โดยใช้ mode `755`/`644` เมื่อแก้ ownership ให้ตรงกับ runtime user แล้ว ผู้ใช้ยืนยันว่าอัปโหลดได้ทั้งหมด ทั้ง Storage Images และ QR Studio
 
-เมื่อ upload ล้มเหลว QR จะยังไม่บันทึก `qr_logos` ใน D1 เพราะต้องรอ Storage ส่งผลสำเร็จก่อน ส่วน preview/export สร้างใน browser จึงยังใช้ได้ระหว่างที่ Storage มีปัญหา อ่านลำดับเหตุการณ์และวิธีตรวจสิทธิ์ใน [QR Studio Storage upload troubleshooting](QR_STUDIO_STORAGE_UPLOAD_TROUBLESHOOTING.md)
+เมื่อ upload ล้มเหลว QR จะยังไม่บันทึก `qr_logos` ใน D1 เพราะต้องรอ Storage ส่งผลสำเร็จก่อน ส่วน preview/export สร้างใน browser จึงยังใช้ได้ระหว่างที่ Storage มีปัญหา อ่านรายละเอียด integration สาเหตุที่แก้ไขแล้ว และวิธีดูแลสิทธิ์ใน [QR Studio Storage documentation](QR_STUDIO_STORAGE_DOCS.md)
 
 ### ข้อจำกัด V1 และการตรวจสอบ
 

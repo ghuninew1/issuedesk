@@ -1,6 +1,6 @@
 # IssueDesk — Project Handoff
 
-สรุปสถานะจาก source code ใน repository ณ วันที่ 24 ตุลาคม 2026 เพื่อให้กลับมาพัฒนาต่อได้โดยไม่ต้องไล่อ่านทั้งโปรเจกต์ เอกสารนี้อธิบายสิ่งที่โค้ดทำและค่าที่ต้องตั้งก่อนเปิดใช้ ส่วนการตั้งค่า production และสถานะ migration บน Cloudflare ต้องตรวจจาก Cloudflare ก่อนเปลี่ยนแปลงเสมอ
+สรุปสถานะจาก source code ใน repository ณ วันที่ 27 ตุลาคม 2026 เพื่อให้กลับมาพัฒนาต่อได้โดยไม่ต้องไล่อ่านทั้งโปรเจกต์ เอกสารนี้อธิบายสิ่งที่โค้ดทำและค่าที่ต้องตั้งก่อนเปิดใช้ ส่วนการตั้งค่า production และสถานะ migration บน Cloudflare ต้องตรวจจาก Cloudflare ก่อนเปลี่ยนแปลงเสมอ
 
 ## ภาพรวม
 
@@ -16,7 +16,7 @@ IssueDesk เป็นระบบ IT Help Desk ภายในองค์ก�
 | Asset inventory | Google Sheets API โดยตรงจาก browser |
 | Package manager | pnpm |
 
-Version ใน `package.json` ปัจจุบันคือ `1.2.2`.
+Version ใน `package.json` ปัจจุบันคือ `1.3.3`.
 
 ## เส้นทางหน้าเว็บ
 
@@ -32,6 +32,8 @@ Version ใน `package.json` ปัจจุบันคือ `1.2.2`.
 | `/storage/images` | Admin | `src/pages/StorageImages.jsx` |
 | `/sheet` | Admin | `src/pages/Sheet.jsx` |
 | `/attendance` | Login required | `src/pages/Attendance.jsx`; User เห็นข้อมูลตนเอง ส่วน Admin เห็นภาพรวม/รายการทีมแบบอ่านอย่างเดียว |
+| `/network-monitor` | Admin | `src/pages/NetworkMonitor.jsx`; ดูข้อมูล RouterOS และเรียก ping ผ่าน queue/agent |
+| `/qr-studio`, `/qr-studio/links`, `/qr-studio/saved` | Login required | `src/pages/qr/QRCodeStudio.jsx` และหน้าภายใต้ QR Studio |
 
 `src/auth/ProtectedRoute.jsx` คุมหน้า Admin ฝั่ง client; Pages Functions ต้องคุม role ซ้ำที่ API ด้วย `requireRole` ใน `functions/api/auth/_utils.js`.
 
@@ -97,7 +99,7 @@ Schema รองรับหนึ่ง record ต่อ user ต่อวั�
 
 ## Google Sheets: ทะเบียนอุปกรณ์
 
-`src/hooks/useGoogleSheet.js` เรียก Google Sheets API โดยตรงจาก browser อ่าน tab `issuedesk` ช่วง `A1:L`; แถวแรกต้องเป็น header และแถวถัดไปถูก map เป็น object ตามชื่อ column เช่น `assetId`, `employeeName`, `department`, `computerName`, `computerImage`, `monitor1Image`, `monitor2Image`, `mouseImage`, `keyboardImage`, `wacomImage`, `status`, `notes`.
+`src/hooks/useGoogleSheet.js` เรียก Google Sheets API โดยตรงจาก browser อ่าน tab `issuedesk` ช่วง `A1:L`; แถวแรกต้องเป็น header และแถวถัดไปถูก map เป็น object ตามชื่อ column เช่น `assetId`, `employeeName`, `details`, `computerName`, `computerImage`, `monitor1Image`, `monitor2Image`, `mouseImage`, `keyboardImage`, `wacomImage`, `status`, `notes`.
 
 `src/pages/Sheet.jsx` ค้นหาและกรองข้อมูล แสดง 20 รายการต่อหน้า และโหลดรูปตัวอย่างเดียวต่ออุปกรณ์ในตาราง รูปช่องอื่นโหลดเมื่อเปิด preview/เลือกช่องรูป
 
@@ -122,8 +124,13 @@ Sheet ต้องอนุญาตให้อ่านผ่าน API key �
 | `0004_add_issue_in_progress_at.sql` | เพิ่ม `issues.in_progress_at` และ backfill สำหรับ Ticket ที่กำลังดำเนินการ |
 | `0005_create_oauth_accounts.sql` | ตาราง provider identity และ unique `(provider, provider_user_id)` |
 | `0006_create_attendance_records.sql` | `attendance_records`, foreign key ไป `users`, unique `(user_id, work_date)` และ index ตามวัน/user |
+| `0007_create_network_monitoring.sql` | ข้อมูล snapshot/heartbeat สำหรับ Network Monitor |
+| `0008_create_network_monitor_viewers.sql` | viewer leases สำหรับเปิดเก็บข้อมูลตามการใช้งานหน้า Admin |
+| `0009_create_network_ping_checks.sql` | คิวและผลการตรวจ ping ที่ร้องขอโดย Admin |
+| `0010_create_qr_studio_tables.sql` | QR codes และ short links |
+| `0011_create_qr_logo_ownership.sql` | เจ้าของและ MIME type ของโลโก้ QR |
 
-ตารางหลัก: `issues`, `issue_attachments`, `users`, `sessions`, `login_attempts`, `oauth_accounts`, `attendance_records`. มี migration file ใน repo ไม่ได้ยืนยันว่า migration ถูก apply แล้วใน remote D1; ใช้ `pnpm migrate` ตรวจสถานะก่อน และตรวจ target/environment ก่อน `pnpm migrate-apply`. การตรวจสถานะ remote ครั้งล่าสุด (24 ต.ค. 2026) ทำไม่สำเร็จเพราะ Wrangler auth token หมดอายุและเชื่อมต่อ Cloudflare auth server ไม่ได้; สถานะ `0006` จึงยังไม่ยืนยัน
+ตารางหลักยังรวมข้อมูล Network Monitor, QR Studio, short links และ QR logo ownership ตาม migrations `0007`–`0011`. มี migration file ใน repo ไม่ได้ยืนยันว่า migration ถูก apply แล้วใน remote D1; ใช้ `pnpm migrate` ตรวจสถานะก่อน และตรวจ target/environment ก่อน `pnpm migrate-apply`. การตรวจสถานะ remote ครั้งล่าสุด (24 ต.ค. 2026) ทำไม่สำเร็จเพราะ Wrangler auth token หมดอายุและเชื่อมต่อ Cloudflare auth server ไม่ได้; สถานะ migrations หลัง `0005` จึงยังไม่ยืนยันจากการตรวจครั้งนั้น `0007`–`0011`. ยืนยันแล้วว่า migrate-apply ทั้งหมดแล้ว
 
 ## Environment และ secrets
 
@@ -163,25 +170,23 @@ pnpm dev
 
 ## สถานะและสิ่งที่ต้องจำ
 
-ฟีเจอร์หลักมีหน้าและ Pages API แล้ว: แจ้ง/ติดตาม Ticket, Admin dashboard/list/detail/status/delete, upload/preview/download/delete attachment, Storage image manager, email notification, email/password authentication, Google/Facebook OAuth flow, asset inventory จาก Sheets และ Time Attendance (พนักงานเช็คอิน/เช็คเอาต์/ดูประวัติ, Admin dashboard/list)
+ฟีเจอร์ที่มีใน source ปัจจุบัน: แจ้ง/ติดตาม Ticket, Admin dashboard/list/detail/status/delete, attachments, Storage image manager, email notification, email/password authentication, Google/Facebook OAuth flow, asset inventory จาก Sheets, Time Attendance, Network Monitor และ QR Studio/short links
 
-สิ่งที่ต้องยืนยันก่อนถือว่า production ครบ:
+ตามสถานะที่ผู้ใช้แจ้ง งานแก้ไขที่เคยระบุให้ทำต่อเสร็จแล้ว รายการต่อไปนี้เป็นการตรวจสอบภายนอกหรือข้อจำกัดที่ต้องสื่อสาร ไม่ใช่งานแก้โค้ดที่ค้างอยู่:
 
-1. ตรวจ migrations `0001`–`0006` บน remote D1 และ apply เฉพาะเมื่อ target ถูกต้อง (`0005` สำหรับ OAuth, `0006` สำหรับ Attendance)
-2. ตรวจ Cloudflare Pages variables/secrets ของ production และ preview แยกกัน รวมทั้ง OAuth redirect URLs, Resend verified sender และ Storage Access
-3. Facebook ต้องใช้ `FACEBOOK_GRAPH_API_VERSION` เป็นเลข version เช่น `v26.0`, ไม่ใช่ credential/token; ค่าใน local config เคยถูกแก้แล้ว แต่ยังต้องยืนยันกับ environment ที่กำลังทดสอบ
-4. ปุ่ม “Forgot Password?” ใน `LoginRegister.jsx` ยังเป็นข้อความ toast เท่านั้น ไม่มี password reset API
-5. หน้า Sheet ใช้ Google API key ที่ frontend มองเห็นได้ตามธรรมชาติของ `VITE_*`; ต้องจำกัด key ด้วย referrer/API restrictions และระวังความเป็นส่วนตัวของข้อมูลใน sheet
-6. ทำ regression บน deployed/preview: สมัครและ login, role user/admin, OAuth provider, create Ticket + email, แนบไฟล์, status timeline, delete Ticket + Storage files, image management และโหลด Sheet ที่มีรูปหลายรายการ
-7. หลังยืนยันว่า `0006` ถูก apply ใน environment ที่ทดสอบแล้ว ทดสอบ Attendance: user ไม่มี Session ได้ 401, user check-in/check-out/history ได้เฉพาะข้อมูลตัวเอง, check-in/check-out ซ้ำได้ 409, user เรียก Admin API ได้ 403, Admin อ่าน summary/records ได้ และ work date ใกล้เที่ยงคืนไทยถูกต้อง
+- การตรวจ migrations `0001`–`0011` บน remote D1 และการ apply ต้องตรวจ target/environment ก่อน; การตรวจ remote ครั้งล่าสุดในเอกสารนี้เกิดวันที่ 24 ต.ค. 2026 และยังยืนยันสถานะไม่ได้
+- ตรวจ Cloudflare Pages variables/secrets ของ production และ preview แยกกัน รวม OAuth redirect URLs, Resend verified sender และ Storage Access ก่อนถือว่า production พร้อม
+- Facebook ใช้ `FACEBOOK_GRAPH_API_VERSION` รูปแบบเลข version เช่น `v26.0`; ค่าและการทำงานจริงต้องยืนยันกับ environment ที่ใช้งาน
+- หน้า Sheet เรียก Google Sheets จาก browser ด้วย `VITE_*`; จำกัด API key ด้วย referrer/API restrictions และตรวจการเปิดเผยข้อมูลใน Sheet
+- การทดสอบ production/preview ของ auth, OAuth, Ticket/email, attachments, Storage, Sheet และ Attendance ยังต้องทำใน environment จริงหลังตรวจการตั้งค่าและ migration
 
-ในรอบพัฒนา Attendance ตรวจ `pnpm lint` และ `pnpm build` ผ่าน; build ยังแสดงคำเตือนเรื่อง bundle ขนาดใหญ่ที่มีอยู่ก่อนแล้ว. ไม่ได้ apply migration หรือ deploy
+ข้อจำกัดผลิตภัณฑ์ที่ source ปัจจุบันยังแสดงอยู่: ปุ่ม “Forgot Password?” ใน `src/pages/LoginRegister.jsx` แสดง toast เท่านั้นและยังไม่มี password reset API; Google Sheets API key อยู่ใน frontend ตามธรรมชาติของ `VITE_*` และต้องจำกัดสิทธิ์ตามข้างต้น
 
-เมื่อเขียนสรุปนี้ Git working tree แสดง `src/pages/Sheet.jsx` เป็นไฟล์ที่แก้ค้างอยู่ โปรดเก็บการเปลี่ยนแปลงนั้นไว้และตรวจ diff ก่อนทับหรือ checkout
+การตรวจ local ที่บันทึกไว้: Attendance เคยผ่าน `pnpm lint` และ `pnpm build` (มีคำเตือน bundle ขนาดใหญ่); QR Studio และ sandbox ผ่าน regression/local browser checks ตามรายละเอียดด้านล่าง ทั้งหมดนี้ไม่ใช่หลักฐานว่า migrations ถูก apply, Storage เขียนได้ หรือ deploy production แล้ว
 
-## แผนผังไฟล์สำหรับแก้ต่อ
+## แผนผังไฟล์ตามส่วนงาน
 
-| ต้องแก้อะไร | เริ่มดูที่ |
+| ส่วนงาน | จุดเริ่มต้น |
 | --- | --- |
 | route/guard | `src/App.jsx`, `src/auth/ProtectedRoute.jsx` |
 | session/password/OAuth | `functions/api/auth/`, `src/auth/`, `src/pages/LoginRegister.jsx`, `migrations/0005_create_oauth_accounts.sql` |
@@ -189,6 +194,8 @@ pnpm dev
 | Ticket list/detail/delete/attachments | `src/pages/Issues.jsx`, `src/pages/IssueDetail.jsx`, `functions/api/issues/[ticketNumber].js`, `functions/api/issues/[ticketNumber]/attachments/` |
 | public tracking timeline | `src/pages/TrackTicket.jsx`, `functions/api/track/[ticketNumber].js`, `migrations/0004_add_issue_in_progress_at.sql` |
 | Time Attendance UI/API | `src/pages/Attendance.jsx`, `src/App.jsx`, `src/components/layout/Sidebar.jsx`, `functions/api/attendance/`, `functions/api/admin/attendance/`, `migrations/0006_create_attendance_records.sql` |
+| Network Monitor UI/API/agent | `src/pages/NetworkMonitor.jsx`, `functions/api/network/`, `garage/network-monitor/`, `migrations/0007_create_network_monitoring.sql`–`0009_create_network_ping_checks.sql` |
+| QR Studio, short links, logo upload | `src/pages/qr/`, `src/components/qr/`, `functions/api/qr-codes/`, `functions/api/short-links/`, `functions/api/qr-logos/`, `shared/qr.js`, `migrations/0010_create_qr_studio_tables.sql`, `migrations/0011_create_qr_logo_ownership.sql` |
 | Storage UI/API | `src/pages/StorageImages.jsx`, `src/services/storage.js`, `functions/api/storage/`, `STORAGE_DOCS_API_REFERENCE.md` |
 | Google Sheet inventory | `src/pages/Sheet.jsx`, `src/hooks/useGoogleSheet.js` |
 | D1 setup/Admin bootstrap | `migrations/`, `wrangler.jsonc`, `scripts/bootstrap-admin.py` |
@@ -207,7 +214,7 @@ pnpm dev
 - `qr_codes.logo_url` เป็น same-origin `/api/qr-logos/:id` ไม่รับ remote URL หรือ Base64 โลโก้; rendered PNG/SVG สร้างใน browser ไม่เก็บ D1
 - การบันทึก Storage/Short Link/QR ไม่ใช่ transaction ข้าม service: retry ในหน้าเดิม reuse uploaded logo และลิงก์ที่สร้างสำเร็จแล้ว ไม่มี automatic orphan-logo cleanup ใน V1; ห้ามสรุปว่า remote Storage พร้อมจากโค้ดเท่านั้น
 - Regression suite: `node --test scripts/qr-studio-checks.mjs` ใช้ `scripts/qr-fixture.mjs` เป็น in-memory SQLite D1 adapter; Storage ถูก mock ไม่อ่าน secrets หรือ DB จริง
-- ยังไม่ได้ apply migrations, deploy หรือยืนยัน production D1/Storage; ต้องตรวจใน Pages runtime และอุปกรณ์สแกน QR ก่อนนำไปพิมพ์ใช้งานจริง
+- ผลใช้งานจริงล่าสุด: ผู้ใช้ยืนยันว่าอัปโหลดได้ทั้ง Storage Images และ QR Studio หลังแก้ ownership ของ Storage metadata directory/DB; การตรวจ local ด้านล่างเป็นผลจากรอบพัฒนาเดิม
 - ผลตรวจ local: `pnpm lint`, `pnpm build`, regression suite 5 กลุ่ม และ `wrangler pages functions build` ผ่าน (build มีคำเตือน chunk ของ `heic2any` เดิม) Playwright บน Chrome ที่ `127.0.0.1:5173` ตรวจ desktop 1440px/mobile 390px, light/dark, preview/export/save/edit/search, slug availability, link toggle/in-use deletion และ object URL cleanup ผ่าน โดยใช้ Pages handlers + in-memory SQLite และ mock Storage มี HTTP 409 ที่ตั้งใจทดสอบหนึ่งครั้ง ไม่มี app runtime error อื่น
 - PNG ที่ export ถูก decode กลับด้วย macOS Vision ตรงทั้ง URL และข้อความ `สวัสดี IssueDesk`; ไม่ใช่การรับรองการสแกนทุกสี/ขนาดโลโก้หรืออุปกรณ์จริง
 
@@ -221,12 +228,10 @@ pnpm dev
 
 ข้อความเดิม `Unable to upload logo`/HTTP 500 หมายถึง Storage ตอบ non-2xx หลัง session/file validation ผ่าน แต่ก่อน INSERT `qr_logos`; ยังไม่บอก upstream status และไม่ได้พิสูจน์ว่าเป็นสิทธิ์ user หรือ D1 migration เพิ่ม `functions/api/qr-logos/_storage.js` เพื่อแยก upstream redirect, 401/403, 404, 413, service error, connection/timeout และ invalid JSON/contract เป็น error code พร้อม HTTP 502 ตามแนวทาง Storage proxy เดิม Log เฉพาะ status, response type และ CF Ray ที่ผ่าน validation ไม่ส่งต่อ body/URL/headers/credentials ของ upstream จำกัด fetch 15 วินาทีและไม่ follow redirect
 
-Regression suite เพิ่มกรณี failure และตรวจว่าไม่เขียน ownership metadata หรือเปิดเผยข้อความลับจาก upstream ผ่าน response/logs การแก้ diagnostics ไม่ถือว่าแก้สาเหตุ production แล้ว ต้องตรวจสถานะ Storage/Garage จริงหลัง deploy ที่ได้รับอนุญาต
+Regression suite ครอบคลุมกรณี failure และตรวจว่าไม่เขียน ownership metadata หรือเปิดเผยข้อความลับจาก upstream ผ่าน response/logs ส่วนสาเหตุ Storage ที่พบได้รับการแก้ไขแล้วตามผลที่ผู้ใช้ยืนยันด้านล่าง
 
-ดูผลเปรียบเทียบ upload ของ `StorageImages.jsx` กับ QR Studio และสาเหตุที่ยืนยันได้/ยังยืนยันไม่ได้ใน [QR_STUDIO_STORAGE_UPLOAD_TROUBLESHOOTING.md](QR_STUDIO_STORAGE_UPLOAD_TROUBLESHOOTING.md) มี regression test เทียบ upstream multipart ของทั้งสอง Pages handlers และคง admin boundary ของ Storage management
+ดูรายละเอียด integration และสิทธิ์ของ `StorageImages.jsx` กับ QR Studio, error codes, คำสั่งตรวจสิทธิ์ และแนวทางดูแลระบบใน [QR Studio Storage documentation](QR_STUDIO_STORAGE_DOCS.md)
 
-### ยืนยันสาเหตุ upload 502 จาก Storage log
+### ปัญหา upload 502 ที่แก้ไขแล้ว
 
-ผู้ใช้ทดสอบ Storage Images แล้วล้มเหลวเหมือน QR และส่ง `Upload project file failed: SqliteError: attempt to write a readonly database` / `SQLITE_READONLY` ที่ `.run()` ของ INSERT `files` ใน `garage/storage/src/index.js` สาเหตุที่ยืนยันคือ SQLite metadata ของ Storage เขียนไม่ได้ ไม่ใช่ D1 `qr_logos` หรือความต่างของ multipart ส่วน owner/mode/ACL/mount ที่ทำให้ readonly ยังต้องตรวจ Docker host จริง Dockerfile ใช้ `USER node` แต่ Compose bind-mount host `./storage/data` ทับ `/app/data` จึงต้องตรวจสิทธิ์ host directory/DB/WAL/SHM ตาม UID/GID จริง ดูคำสั่งตรวจแบบอ่านอย่างเดียวและแนวทางแก้ใน `QR_STUDIO_STORAGE_UPLOAD_TROUBLESHOOTING.md` ยังไม่ได้แก้ permissions หรือ restart production และยังไม่มีผล retry หลังแก้
-
-ผู้ใช้ตรวจพบ permission mismatch ใน container แล้ว: `storage-api` คือ UID/GID `1000:1000`; `/app/data` และ `storage.db` เป็น `0:0` mode `755`/`644` ทำให้เขียน SQLite/WAL ไม่ได้ สอดคล้องกับ `SQLITE_READONLY` ต้องยืนยัน host bind mount source กับ `rw=true` แล้วให้ owner ของ Storage data directory ตรงกับ UID/GID ของ service ก่อน retry แนวทาง exact commands อยู่ใน troubleshooting/Storage README ไม่มีการเปลี่ยน production permissions จาก workspace
+Storage API เคยคืน `SQLITE_READONLY: attempt to write a readonly database` ขณะ INSERT metadata ใน SQLite ของ Storage เพราะ `storage-api` รันด้วย UID/GID `1000:1000` แต่ bind mount `/app/data` และ `storage.db` เป็นของ `0:0` mode `755`/`644` เมื่อแก้ ownership ให้ตรงกับ runtime user แล้ว ผู้ใช้ยืนยันว่าอัปโหลดได้ทั้ง Storage Images และ QR Studio ปัญหานี้ปิดแล้ว; เก็บสาเหตุและวิธีแก้ไว้ในเอกสาร Storage ข้างต้นสำหรับดูแลการติดตั้งครั้งต่อไป
