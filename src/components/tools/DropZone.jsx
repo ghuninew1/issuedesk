@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
-import { ImagePlus, Upload } from "lucide-react";
+import GlassButton from "../GlassButton";
+import { Images } from "lucide-react";
 import { cx } from "../../utils/cx";
 
 function DropZone({ onFiles }) {
@@ -28,37 +29,8 @@ function DropZone({ onFiles }) {
         event.target.value = "";
     };
 
-    const handleKeyDown = (event) => {
-        if (event.key === "Enter" || event.key === " ") {
-            event.preventDefault();
-            inputRef.current?.click();
-        }
-    };
-
-    const handleZoneClick = (event) => {
-        if (event.target !== inputRef.current) {
-            inputRef.current?.click();
-        }
-    };
-
     return (
-        <div
-            onDragOver={(event) => {
-                event.preventDefault();
-                setIsDragging(true);
-            }}
-            onDragLeave={() => setIsDragging(false)}
-            onDrop={handleDrop}
-            onClick={handleZoneClick}
-            onKeyDown={handleKeyDown}
-            role="button"
-            tabIndex={0}
-            aria-label="Choose images to convert"
-            className={cx(
-                "glass-surface flex min-h-52 cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed p-6 text-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 md:min-h-64",
-                isDragging ? "border-primary bg-primary/5" : "border-border/80 hover:border-primary/50",
-            )}
-        >
+        <div className={cx("space-y-3")}>
             <input
                 ref={inputRef}
                 type="file"
@@ -70,20 +42,46 @@ function DropZone({ onFiles }) {
                 aria-hidden="true"
             />
 
-            <span className={cx("mb-4 flex size-14 items-center justify-center rounded-2xl bg-primary/10 text-primary")}>
-                {isDragging ? <Upload className={cx("size-7")} aria-hidden="true" /> : <ImagePlus className={cx("size-7")} aria-hidden="true" />}
-            </span>
+            <GlassButton
+                type="button"
+                aria-label="Choose images to convert"
+                onClick={() => inputRef.current?.click()}
+                onDragEnter={(event) => {
+                    event.preventDefault();
+                    setIsDragging(true);
+                }}
+                onDragOver={(event) => {
+                    event.preventDefault();
+                    setIsDragging(true);
+                }}
+                onDragLeave={(event) => {
+                    if (!event.currentTarget.contains(event.relatedTarget)) {
+                        setIsDragging(false);
+                    }
+                }}
+                onDrop={handleDrop}
+                className={cx(
+                    "flex min-h-36 w-full flex-col items-center justify-center rounded-xl border-2 border-dashed p-6 text-center",
+                    "transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                    isDragging
+                        ? "border-cyan-500/60 bg-cyan-500/10"
+                        : "border-white/70 bg-white/30 hover:border-cyan-400/50 hover:bg-white/55 dark:border-white/10 dark:bg-white/[.02] dark:hover:bg-white/5",
+                )}
+            >
+                <Images className={cx("mb-3 size-10 text-muted-foreground")} aria-hidden="true" />
 
-            <h2 className={cx("text-lg font-semibold md:text-xl")}>Drop images here</h2>
+                <span className={cx("text-sm font-medium")}>
+                    คลิกเพื่อเลือกรูปภาพ หรือลากไฟล์มาวางที่นี่
+                </span>
 
-            <p className={cx("mt-1 text-sm text-muted-foreground")}>or click to browse files</p>
+                <span className={cx("mt-2 text-xs text-muted-foreground")}>
+                    JPG, PNG, WebP, AVIF และรูปแบบอื่นที่เบราว์เซอร์รองรับ · เลือกได้หลายภาพ
+                </span>
+            </GlassButton>
 
-            <p className={cx("mt-4 text-xs text-muted-foreground")}>
-                JPG, PNG, WebP, AVIF and other browser-supported formats
-            </p>
             {rejectedFiles > 0 && (
-                <p className={cx("mt-2 text-xs text-destructive")} role="status">
-                    {rejectedFiles} non-image {rejectedFiles === 1 ? "file was" : "files were"} skipped.
+                <p className={cx("whitespace-pre-line text-sm text-destructive")} role="alert">
+                    ข้าม {rejectedFiles} ไฟล์ที่ไม่ใช่รูปภาพ
                 </p>
             )}
         </div>
