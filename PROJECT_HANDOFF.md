@@ -215,3 +215,11 @@ pnpm dev
 `pnpm dev:qr` รัน `scripts/qr-studio-dev.mjs` ที่ `127.0.0.1:5174/qr-studio` โดยคง ProtectedRoute และ production auth เดิม ใช้ fixture session ของสมาชิกธรรมดา, Pages handlers เดิม, SQLite และไฟล์โลโก้ในหน่วยความจำ ปิดการอ่าน Vite env files (`envDir: false`) และไม่ใช้ remote D1/Garage ข้อมูลหายเมื่อหยุด script หลัง Sign out ต้อง restart เพื่อเริ่ม session จำลองใหม่ API นอก QR Studio ไม่รองรับใน sandbox
 
 `pnpm test:qr` รัน regression suite เดิม ทดสอบ script sandbox ผ่าน Chrome/Playwright แล้ว: auto session, Save QR/โลโก้, saved list, redirect 302, same-origin rejection และ Sign out → ProtectedRoute redirect ไป login/API 401 ผ่าน; ตรวจ syntax, lint และ diff whitespace ผ่าน ไม่ได้เปลี่ยน client bundle จึงไม่รัน build ซ้ำในงาน script นี้
+
+### QR logo upload diagnostics
+
+ข้อความเดิม `Unable to upload logo`/HTTP 500 หมายถึง Storage ตอบ non-2xx หลัง session/file validation ผ่าน แต่ก่อน INSERT `qr_logos`; ยังไม่บอก upstream status และไม่ได้พิสูจน์ว่าเป็นสิทธิ์ user หรือ D1 migration เพิ่ม `functions/api/qr-logos/_storage.js` เพื่อแยก upstream redirect, 401/403, 404, 413, service error, connection/timeout และ invalid JSON/contract เป็น error code พร้อม HTTP 502 ตามแนวทาง Storage proxy เดิม Log เฉพาะ status, response type และ CF Ray ที่ผ่าน validation ไม่ส่งต่อ body/URL/headers/credentials ของ upstream จำกัด fetch 15 วินาทีและไม่ follow redirect
+
+Regression suite เพิ่มกรณี failure และตรวจว่าไม่เขียน ownership metadata หรือเปิดเผยข้อความลับจาก upstream ผ่าน response/logs การแก้ diagnostics ไม่ถือว่าแก้สาเหตุ production แล้ว ต้องตรวจสถานะ Storage/Garage จริงหลัง deploy ที่ได้รับอนุญาต
+
+ดูผลเปรียบเทียบ upload ของ `StorageImages.jsx` กับ QR Studio และสาเหตุที่ยืนยันได้/ยังยืนยันไม่ได้ใน [QR_STUDIO_STORAGE_UPLOAD_TROUBLESHOOTING.md](QR_STUDIO_STORAGE_UPLOAD_TROUBLESHOOTING.md) มี regression test เทียบ upstream multipart ของทั้งสอง Pages handlers และคง admin boundary ของ Storage management

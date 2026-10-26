@@ -1,5 +1,6 @@
 import { endpoint, assert, fail, jsonResponse } from "../qr-codes/_utils.js";
 import { getStorageConfig, storageHeaders, STORAGE_PROJECT_ID, normalizeStorageFile } from "../storage/_utils.js";
+import { storageFailure, uploadFailure } from "./_storage.js";
 import { LOGO_TYPES, MAX_LOGO_SIZE } from "../../../shared/qr.js";
 export const onRequestPost = endpoint(async ({ request, env, user }) => {
     const storage = getStorageConfig(env);
@@ -37,16 +38,29 @@ export const onRequestPost = endpoint(async ({ request, env, user }) => {
     );
     const payload = new FormData();
     payload.append("file", file, file.name || "qr-logo");
-    const response = await fetch(`${storage.baseUrl}/v2/projects/${STORAGE_PROJECT_ID}/files`, {
-        method: "POST",
-        headers: storageHeaders(env),
-        body: payload,
-    });
-    if (!response.ok) return fail("STORAGE_UNAVAILABLE", "Unable to upload logo", 500);
-    const data = await response.json(),
-        uploaded = data.file && normalizeStorageFile(data.file);
-    if (!data.success || !uploaded?.id || !/^[a-zA-Z0-9-]+$/.test(uploaded.id))
-        return fail("STORAGE_UNAVAILABLE", "Invalid Storage upload response", 500);
+    let response;
+    try {
+        response = await fetch(`${storage.baseUrl}/v2/projects/${STORAGE_PROJECT_ID}/files`, {
+            method: "POST",
+            headers: storageHeaders(env),
+            body: payload,
+            redirect: "manual",
+            signal: AbortSignal.timeout(15_000),
+        });
+    } catch {
+        return storageFailure(null, "STORAGE_CONNECTION_FAILED", "Unable to connect to Storage within 15 seconds. Check Storage availability and connectivity.");
+    }
+    if (!response.ok) return uploadFailure(response);
+    let data;
+    try {
+        data = await response.json();
+    } catch {
+        return storageFailure(response, "STORAGE_INVALID_RESPONSE", "Storage returned a non-JSON or invalid response. Check the Storage API URL and Cloudflare Access policy.");
+    }
+    const uploaded = data?.file && normalizeStorageFile(data.file);
+    if (data?.success !== true || !uploaded?.id || !/^[a-zA-Z0-9-]+$/.test(uploaded.id)) {
+        return storageFailure(response, "STORAGE_INVALID_RESPONSE", "Storage did not confirm the uploaded logo. Check the Storage API version and logs.");
+    }
     try {
         await env.DB.prepare("INSERT INTO qr_logos (id, user_id, mime_type) VALUES (?, ?, ?)")
             .bind(uploaded.id, user.id, file.type)

@@ -7,6 +7,7 @@ import * as check from "../functions/api/short-links/check.js";
 import * as codes from "../functions/api/qr-codes/index.js";
 import * as code from "../functions/api/qr-codes/[id].js";
 import * as redirect from "../functions/q/[slug].js";
+import * as storageFiles from "../functions/api/storage/files.js";
 import * as logos from "../functions/api/qr-logos/index.js";
 import * as logo from "../functions/api/qr-logos/[id].js";
 import { validSlug, validUrl, downloadName } from "../shared/qr.js";
@@ -176,6 +177,101 @@ test("logo upload validates file and reuses Storage contract with private owners
         assert.equal((await response.json()).logo_url, "/api/qr-logos/test-logo");
         assert.equal(uploadCount, 1);
         assert.equal(db.prepare("SELECT user_id FROM qr_logos").get().user_id, "alice");
+    } finally {
+        globalThis.fetch = originalFetch;
+        db.close();
+    }
+});
+
+test("logo upload exposes safe, actionable upstream failures without writing metadata", async () => {
+    const { env, db } = await fixture();
+    Object.assign(env, {
+        STORAGE_API_URL: "https://storage.test", STORAGE_APP_SECRET: "private-test-secret",
+        CF_ACCESS_CLIENT_ID: "test-only", CF_ACCESS_CLIENT_SECRET: "test-only",
+    });
+    const originalFetch = globalThis.fetch, originalError = console.error, logs = [];
+    console.error = (...values) => logs.push(values);
+    async function upload() {
+        const form = new FormData();
+        form.append("file", new File([new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10])], "logo.png", { type: "image/png" }));
+        return logos.onRequestPost({ env, request: new Request("https://issuedesk.test/api/qr-logos", {
+            method: "POST", headers: { Origin: "https://issuedesk.test", Cookie: "issuedesk_session=alice" }, body: form,
+        }) });
+    }
+    try {
+        for (const [status, code] of [[302, "STORAGE_ACCESS_REDIRECT"], [401, "STORAGE_AUTH_FAILED"], [403, "STORAGE_AUTH_FAILED"], [404, "STORAGE_PROJECT_NOT_FOUND"], [413, "STORAGE_UPLOAD_LIMIT"], [502, "STORAGE_UPSTREAM_FAILED"]]) {
+            globalThis.fetch = async (_url, options) => {
+                assert.equal(options.redirect, "manual"); assert.ok(options.signal);
+                return new Response("private-test-secret", { status, headers: { "Content-Type": "text/html", "cf-ray": "abc123-BKK" } });
+            };
+            const response = await upload();
+            assert.equal(response.status, 502);
+            const data = await response.json(); assert.equal(data.error.code, code);
+            assert.equal(JSON.stringify(data).includes("private-test-secret"), false);
+        }
+        globalThis.fetch = async () => { throw new Error("private-test-secret"); };
+        assert.equal((await (await upload()).json()).error.code, "STORAGE_CONNECTION_FAILED");
+        for (const response of [new Response("<html>private-test-secret</html>"), Response.json(null), Response.json({ success: false, message: "private-test-secret" })]) {
+            globalThis.fetch = async () => response;
+            assert.equal((await (await upload()).json()).error.code, "STORAGE_INVALID_RESPONSE");
+        }
+        assert.equal(db.prepare("SELECT count(*) AS total FROM qr_logos").get().total, 0);
+        assert.equal(JSON.stringify(logs).includes("private-test-secret"), false);
+        assert.ok(logs.some((entry) => entry[1].upstreamStatus === 403));
+    } finally { globalThis.fetch = originalFetch; console.error = originalError; db.close(); }
+});
+
+test("QR logo upload matches StorageImages upstream multipart contract and retains role boundaries", async () => {
+    const { env, db } = await fixture();
+    db.prepare("UPDATE users SET role = 'admin' WHERE id = 'bob'").run();
+    Object.assign(env, {
+        STORAGE_API_URL: "https://storage.test",
+        STORAGE_APP_SECRET: "test-only",
+        CF_ACCESS_CLIENT_ID: "access-id-test-only",
+        CF_ACCESS_CLIENT_SECRET: "access-secret-test-only",
+    });
+    const originalFetch = globalThis.fetch;
+    const calls = [];
+    const imageBytes = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10]);
+    function request(path, user) {
+        const form = new FormData();
+        form.append("file", new File([imageBytes], "office-logo.png", { type: "image/png" }));
+        return new Request(`https://issuedesk.test${path}`, {
+            method: "POST",
+            headers: { Origin: "https://issuedesk.test", Cookie: `issuedesk_session=${user}` },
+            body: form,
+        });
+    }
+    globalThis.fetch = async (url, options) => {
+        assert.equal(new Headers(options.headers).has("Content-Type"), false);
+        const wireRequest = new Request(url, options);
+        assert.match(wireRequest.headers.get("Content-Type"), /^multipart\/form-data; boundary=/);
+        const form = await wireRequest.formData();
+        assert.deepEqual([...form.keys()], ["file"]);
+        const file = form.get("file");
+        calls.push({
+            url, method: options.method, headers: options.headers,
+            file: { name: file.name, type: file.type, bytes: [...new Uint8Array(await file.arrayBuffer())] },
+        });
+        return Response.json({ success: true, file: { id: `contract-logo-${calls.length}` } }, { status: 201 });
+    };
+    try {
+        const storage = await storageFiles.onRequestPost({ env, request: request("/api/storage/files", "bob") });
+        assert.equal(storage.status, 201);
+        const qr = await logos.onRequestPost({ env, request: request("/api/qr-logos", "alice") });
+        assert.equal(qr.status, 201);
+        assert.equal(calls.length, 2);
+        assert.deepEqual(calls[0], calls[1]);
+        assert.equal(calls[0].url, "https://storage.test/v2/projects/6832c1ea-1826-4775-80ef-153bab766e4c/files");
+        assert.deepEqual(calls[0].file.bytes, [...imageBytes]);
+        assert.equal(calls[0].headers.Authorization, "Bearer test-only");
+        assert.equal(calls[0].headers["CF-Access-Client-Id"], "access-id-test-only");
+        assert.equal(calls[0].headers["CF-Access-Client-Secret"], "access-secret-test-only");
+        assert.equal(db.prepare("SELECT user_id FROM qr_logos WHERE id = 'contract-logo-2'").get().user_id, "alice");
+        // Do not route ordinary QR users through the admin-only management endpoint.
+        const forbidden = await storageFiles.onRequestPost({ env, request: request("/api/storage/files", "alice") });
+        assert.equal(forbidden.status, 403);
+        assert.equal(calls.length, 2);
     } finally {
         globalThis.fetch = originalFetch;
         db.close();
