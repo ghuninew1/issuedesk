@@ -1,3 +1,4 @@
+import GlassButton from "../components/GlassButton";
 import { useCallback, useEffect, useState } from "react";
 import {
     Activity,
@@ -372,16 +373,16 @@ function NetworkMonitor() {
                     <StatusPill tone={agentOnline ? "good" : "muted"}>
                         {loading && !status ? "กำลังโหลด" : agentOnline ? "Agent Online" : snapshot ? "Agent Offline" : "รอข้อมูลจาก Agent"}
                     </StatusPill>
-                    <button
+                    <GlassButton
                         type="button"
                         onClick={() => { setLoading(true); void load(); }}
                         disabled={loading}
                         title="รีเฟรชข้อมูล"
-                        className="inline-flex justify-center items-center bg-background/30 hover:bg-[var(--glass-surface-hover)] disabled:opacity-50 border border-border/70 rounded-xl size-10 text-muted-foreground transition"
+                        className={cx("inline-flex justify-center items-center bg-background/30 hover:bg-[var(--glass-surface-hover)] disabled:opacity-50 border border-border/70 rounded-xl size-10 text-muted-foreground transition")}
                         aria-label="รีเฟรชข้อมูล"
                     >
                         <RefreshCw className={cx("size-4", loading && "animate-spin")} aria-hidden="true" />
-                    </button>
+                    </GlassButton>
                 </div>
             </header>
 
@@ -413,34 +414,34 @@ function NetworkMonitor() {
                                     aria-label={`IP address ${index + 1}`}
                                     className="flex-1 bg-transparent px-1 py-1.5 outline-none min-w-0 placeholder:font-sans font-mono placeholder:text-muted-foreground/60 text-sm"
                                 />
-                                <button
+                                <GlassButton
                                     type="button"
                                     onClick={() => setPingTargets((current) => current.length > 1 ? current.filter((item) => item.id !== target.id) : current.map((item) => ({ ...item, value: "" })))}
-                                    className="inline-flex justify-center items-center hover:bg-[var(--glass-surface-hover)] rounded-lg size-8 text-muted-foreground hover:text-foreground transition shrink-0"
+                                    className={cx("inline-flex justify-center items-center hover:bg-[var(--glass-surface-hover)] rounded-lg size-8 text-muted-foreground hover:text-foreground transition shrink-0")}
                                     aria-label={`ลบช่อง IP ${index + 1}`}
                                 >
                                     <Trash2 className="size-4" aria-hidden="true" />
-                                </button>
+                                </GlassButton>
                             </label>
                         ))}
                     </div>
                     <div className="flex flex-wrap items-center gap-2">
-                        <button
+                        <GlassButton
                             type="button"
                             disabled={pingTargets.length >= 20}
                             onClick={addPingTargetField}
-                            className="inline-flex items-center gap-2 bg-background/30 hover:bg-[var(--glass-surface-hover)] disabled:opacity-50 px-3 border border-border/70 rounded-xl h-10 text-sm transition"
+                            className={cx("inline-flex items-center gap-2 bg-background/30 hover:bg-[var(--glass-surface-hover)] disabled:opacity-50 px-3 border border-border/70 rounded-xl h-10 text-sm transition")}
                         >
                             <Plus className="size-4" aria-hidden="true" />เพิ่ม IP
-                        </button>
-                        <button
+                        </GlassButton>
+                        <GlassButton
                             type="submit"
                             disabled={pingLoading || pingCheck?.status === "pending" || pingCheck?.status === "running"}
-                            className="inline-flex items-center gap-2 bg-primary hover:opacity-90 disabled:opacity-50 shadow-sm px-4 rounded-xl h-10 font-medium text-primary-foreground text-sm transition disabled:cursor-not-allowed"
+                            className={cx("inline-flex items-center gap-2 bg-primary hover:opacity-90 disabled:opacity-50 shadow-sm px-4 rounded-xl h-10 font-medium text-primary-foreground text-sm transition disabled:cursor-not-allowed")}
                         >
                             {pingLoading ? <LoaderCircle className="size-4 animate-spin" aria-hidden="true" /> : <Wifi className="size-4" aria-hidden="true" />}
                             {pingLoading ? "กำลังส่งคำขอ" : "เช็ค Ping"}
-                        </button>
+                        </GlassButton>
                         <span className="text-muted-foreground text-xs">ไม่ตอบ Ping อาจเกิดจากอุปกรณ์ปิดกั้น ICMP ไม่ได้ยืนยันว่าเครื่องปิดอยู่</span>
                     </div>
                 </form>
@@ -473,18 +474,18 @@ function NetworkMonitor() {
                                         <span>เช็คล่าสุด {bangkokStamp(result.checkedAt)}</span>
                                     </div>
                                     <div className="flex sm:justify-end items-center gap-2">
-                                        <button
+                                        <GlassButton
                                             type="button"
                                             disabled={pingLoading || pingCheck?.status === "pending" || pingCheck?.status === "running"}
                                             onClick={() => { void queuePingCheck([result.ipAddress], true); }}
-                                            className="bg-background/30 hover:bg-[var(--glass-surface-hover)] disabled:opacity-50 px-3 border border-border/70 rounded-lg h-9 font-medium text-xs transition disabled:cursor-not-allowed"
-                                        >เช็คซ้ำ</button>
-                                        <button
+                                            className={cx("bg-background/30 hover:bg-[var(--glass-surface-hover)] disabled:opacity-50 px-3 border border-border/70 rounded-lg h-9 font-medium text-xs transition disabled:cursor-not-allowed")}
+                                        >เช็คซ้ำ</GlassButton>
+                                        <GlassButton
                                             type="button"
                                             disabled={deletingPingIp === result.ipAddress || pingCheck?.status === "pending" || pingCheck?.status === "running"}
                                             onClick={() => { void deletePingTarget(result.ipAddress); }}
-                                            className="bg-rose-500/5 hover:bg-rose-500/10 disabled:opacity-50 px-3 border border-rose-500/20 rounded-lg h-9 font-medium text-rose-600 dark:text-rose-300 text-xs transition disabled:cursor-not-allowed"
-                                        >{deletingPingIp === result.ipAddress ? "กำลังลบ" : "ลบข้อมูล"}</button>
+                                            className={cx("bg-rose-500/5 hover:bg-rose-500/10 disabled:opacity-50 px-3 border border-rose-500/20 rounded-lg h-9 font-medium text-rose-600 dark:text-rose-300 text-xs transition disabled:cursor-not-allowed")}
+                                        >{deletingPingIp === result.ipAddress ? "กำลังลบ" : "ลบข้อมูล"}</GlassButton>
                                     </div>
                                 </div>
                             ))}

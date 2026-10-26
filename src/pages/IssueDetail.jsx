@@ -1,3 +1,4 @@
+import GlassButton from "../components/GlassButton";
 import { useCallback, useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import {
@@ -387,7 +388,7 @@ const IssueDetail = () => {
                     <p className="mt-2 text-sm text-destructive">{error}</p>
 
                     <div className="mt-4 flex flex-wrap gap-3">
-                        <button
+                        <GlassButton
                             type="button"
                             onClick={handleRetry}
                             disabled={isLoading}
@@ -401,7 +402,7 @@ const IssueDetail = () => {
                             )}
                         >
                             Try again
-                        </button>
+                        </GlassButton>
 
                         <Link
                             to="/issues"
@@ -423,7 +424,7 @@ const IssueDetail = () => {
                                 <div className="flex flex-wrap items-center gap-3">
                                     <p className="text-sm font-medium text-muted-foreground">{issue.ticket_number}</p>
 
-                                    <button
+                                    <GlassButton
                                         type="button"
                                         onClick={handleCopyTicket}
                                         className={cx(
@@ -439,7 +440,7 @@ const IssueDetail = () => {
                                         ) : (
                                             <Copy size={16} aria-hidden="true" />
                                         )}
-                                    </button>
+                                    </GlassButton>
                                 </div>
 
                                 <h3 className="mt-2 break-words text-xl font-semibold tracking-tight">{issue.title}</h3>
@@ -483,7 +484,7 @@ const IssueDetail = () => {
                                     {issue.priority} Priority
                                 </Badge>
 
-                                <button
+                                <GlassButton
                                     type="button"
                                     onClick={handleDeleteIssue}
                                     disabled={isDeleting || isUpdatingStatus}
@@ -497,7 +498,7 @@ const IssueDetail = () => {
                                 >
                                     <Trash2 size={14} aria-hidden="true" />
                                     {isDeleting ? "Deleting..." : "Delete issue"}
-                                </button>
+                                </GlassButton>
                             </div>
 
                             {isUpdatingStatus && (

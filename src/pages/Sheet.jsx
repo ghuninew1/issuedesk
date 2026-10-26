@@ -1,3 +1,4 @@
+import GlassButton from "../components/GlassButton";
 import { useMemo, useState } from "react";
 import {
     Search,
@@ -132,7 +133,7 @@ export default function Sheet() {
         return <div className="mx-auto max-w-7xl rounded-2xl border border-destructive/25 bg-destructive/5 p-6" role="alert">
             <h1 className="text-lg font-semibold">ไม่สามารถโหลดข้อมูลอุปกรณ์ได้</h1>
             <p className="mt-2 text-sm text-muted-foreground">{error}</p>
-            <button type="button" onClick={() => window.location.reload()} className="mt-4 inline-flex items-center gap-2 rounded-lg border border-input px-3 py-2 text-sm font-medium hover:bg-[var(--glass-surface-hover)] hover:shadow-[inset_0_1px_0_var(--glass-highlight)]"><RefreshCw className="size-4" />ลองอีกครั้ง</button>
+            <GlassButton type="button" onClick={() => window.location.reload()} className={cx("mt-4 inline-flex items-center gap-2 rounded-lg border border-input px-3 py-2 text-sm font-medium hover:bg-[var(--glass-surface-hover)] hover:shadow-[inset_0_1px_0_var(--glass-highlight)]")}><RefreshCw className="size-4" />ลองอีกครั้ง</GlassButton>
         </div>;
     }
 
@@ -418,25 +419,25 @@ export default function Sheet() {
                             รายการ
                         </p>
                         <div className="flex items-center gap-2">
-                            <button
+                            <GlassButton
                                 type="button"
                                 onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
                                 disabled={displayPage === 1}
-                                className="rounded-lg border border-input px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-50"
+                                className={cx("rounded-lg border border-input px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-50")}
                             >
                                 ก่อนหน้า
-                            </button>
+                            </GlassButton>
                             <span className="min-w-16 text-center text-sm tabular-nums">
                                 {displayPage} / {pageCount}
                             </span>
-                            <button
+                            <GlassButton
                                 type="button"
                                 onClick={() => setCurrentPage((page) => Math.min(pageCount, page + 1))}
                                 disabled={displayPage === pageCount}
-                                className="rounded-lg border border-input px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-50"
+                                className={cx("rounded-lg border border-input px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-50")}
                             >
                                 ถัดไป
-                            </button>
+                            </GlassButton>
                         </div>
                     </div>
                 )}
@@ -468,21 +469,21 @@ export default function Sheet() {
                                     {selectedAsset.asset.computerName || selectedAsset.asset.employeeName || "อุปกรณ์"}
                                 </h2>
                             </div>
-                            <button
+                            <GlassButton
                                 type="button"
                                 onClick={() => setSelectedAsset(null)}
                                 aria-label="ปิดภาพ"
-                                className="rounded-lg p-2 text-muted-foreground transition hover:bg-[var(--glass-surface-hover)] hover:shadow-[inset_0_1px_0_var(--glass-highlight)] hover:text-foreground cursor-pointer"
+                                className={cx("rounded-lg p-2 text-muted-foreground transition hover:bg-[var(--glass-surface-hover)] hover:shadow-[inset_0_1px_0_var(--glass-highlight)] hover:text-foreground cursor-pointer")}
                             >
                                 <X className="size-5" />
-                            </button>
+                            </GlassButton>
                         </div>
                         <div className="max-h-[72vh] overflow-y-auto bg-muted/35 p-4 md:p-6">
                             <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
                                 {imageFields
                                     .filter((field) => selectedAsset.asset[field.key])
                                     .map((field) => (
-                                        <button
+                                        <GlassButton
                                             key={field.key}
                                             type="button"
                                             onClick={() =>
@@ -510,7 +511,7 @@ export default function Sheet() {
                                             <span className="block truncate px-2.5 py-2 text-xs font-medium">
                                                 {field.label}
                                             </span>
-                                        </button>
+                                        </GlassButton>
                                     ))}
                             </div>
                         </div>
@@ -518,14 +519,14 @@ export default function Sheet() {
                             <p className="truncate text-sm text-muted-foreground">
                                 {selectedAsset.asset.employeeName} · {selectedAsset.asset.details}
                             </p>
-                            <button
+                            <GlassButton
                                 type="button"
                                 onClick={() => setSelectedAsset(null)}
-                                className="inline-flex shrink-0 items-center gap-2 rounded-lg border border-input px-3 py-2 text-sm font-medium hover:bg-[var(--glass-surface-hover)] hover:shadow-[inset_0_1px_0_var(--glass-highlight)] cursor-pointer"
+                                className={cx("inline-flex shrink-0 items-center gap-2 rounded-lg border border-input px-3 py-2 text-sm font-medium hover:bg-[var(--glass-surface-hover)] hover:shadow-[inset_0_1px_0_var(--glass-highlight)] cursor-pointer")}
                             >
                                 ปิด
                                 <CircleX className="size-4 rotate-180" />
-                            </button>
+                            </GlassButton>
                         </div>
                     </section>
                 </div>
@@ -554,14 +555,14 @@ export default function Sheet() {
                                     {selectedAsset.asset.computerName || selectedAsset.asset.assetId}
                                 </p>
                             </div>
-                            <button
+                            <GlassButton
                                 type="button"
                                 onClick={() => setSelectedAsset((selected) => ({ ...selected, enlargedField: null }))}
                                 aria-label="ปิดภาพขนาดใหญ่"
-                                className="inline-flex size-9 shrink-0 items-center justify-center rounded-lg border border-border text-muted-foreground hover:bg-[var(--glass-surface-hover)] hover:shadow-[inset_0_1px_0_var(--glass-highlight)] hover:text-foreground"
+                                className={cx("inline-flex size-9 shrink-0 items-center justify-center rounded-lg border border-border text-muted-foreground hover:bg-[var(--glass-surface-hover)] hover:shadow-[inset_0_1px_0_var(--glass-highlight)] hover:text-foreground")}
                             >
                                 <X className="size-5" />
-                            </button>
+                            </GlassButton>
                         </div>
                         <div className="flex min-h-48 flex-1 items-center justify-center bg-black/5 p-3 dark:bg-black/30">
                             {selectedAsset.asset[selectedAsset.enlargedField.key] &&

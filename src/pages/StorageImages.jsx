@@ -1,3 +1,4 @@
+import GlassButton from "../components/GlassButton";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Check, ChevronLeft, ChevronRight, Copy, Download, Eye, File as FileIcon, ImagePlus,Image, LoaderCircle, RefreshCw, Search, Trash2, Upload, X } from "lucide-react";
 import { useDocumentTitle } from "../hooks/useDocumentTitle";
@@ -25,7 +26,7 @@ function formatDate(value) {
 
 function IconButton({ label, onClick, children, disabled = false, destructive = false }) {
     return (
-        <button
+        <GlassButton
             type="button"
             aria-label={label}
             title={label}
@@ -40,7 +41,7 @@ function IconButton({ label, onClick, children, disabled = false, destructive = 
             )}
         >
             {children}
-        </button>
+        </GlassButton>
     );
 }
 
@@ -205,7 +206,7 @@ export default function StorageImages() {
                 </div>
 
                 <div className="flex w-full gap-2 md:w-auto">
-                    <button
+                    <GlassButton
                         type="button"
                         onClick={() => loadImages()}
                         disabled={isLoading || isUploading}
@@ -219,8 +220,8 @@ export default function StorageImages() {
                         )}
                     >
                         <RefreshCw size={16} className={cx(isLoading && "animate-spin")} aria-hidden="true" />
-                    </button>
-                    <button
+                    </GlassButton>
+                    <GlassButton
                         type="button"
                         onClick={() => inputRef.current?.click()}
                         disabled={isUploading}
@@ -233,7 +234,7 @@ export default function StorageImages() {
                     >
                         {isUploading ? <LoaderCircle size={16} className="animate-spin" /> : <Upload size={16} />}
                         {isUploading ? `อัปโหลด ${uploadProgress.completed}/${uploadProgress.total}…` : "อัปโหลดไฟล์"}
-                    </button>
+                    </GlassButton>
                     <input
                         ref={inputRef}
                         type="file"
@@ -352,17 +353,17 @@ export default function StorageImages() {
                                         <tr key={image.id} className="transition-colors hover:bg-[var(--glass-surface-hover)] hover:shadow-[inset_0_1px_0_var(--glass-highlight)]">
                                             <td className="w-24 px-4 py-3">
                                                 {isPreviewableImage(image) ? (
-                                                    <button
+                                                    <GlassButton
                                                         type="button"
                                                         onClick={() => setSelectedImage(image)}
-                                                        className="group relative flex size-10 overflow-hidden rounded-lg border border-border bg-muted cursor-pointer items-center justify-center p-2"
+                                                        className={cx("group relative flex size-10 overflow-hidden rounded-lg border border-border bg-muted cursor-pointer items-center justify-center p-2")}
                                                         aria-label={`ดูตัวอย่าง ${image.file_name}`}
                                                     >
                                                         <Image />
                                                         <span className="absolute inset-0 flex items-center justify-center bg-black/0 text-white opacity-0 transition group-hover:bg-black/35 group-hover:opacity-100">
                                                             <Eye size={18} aria-hidden="true" />
                                                         </span>
-                                                    </button>
+                                                    </GlassButton>
                                                 ) : (
                                                     <span
                                                         className="flex size-10 items-center justify-center rounded-lg border border-border bg-muted text-muted-foreground"
@@ -429,14 +430,14 @@ export default function StorageImages() {
                                 <article key={image.id} className="space-y-3 p-4">
                                     <div className="flex min-w-0 items-start gap-3">
                                         {isPreviewableImage(image) ? (
-                                            <button
+                                            <GlassButton
                                                 type="button"
                                                 onClick={() => setSelectedImage(image)}
-                                                className="size-10 shrink-0 overflow-hidden rounded-lg border border-border bg-muted flex cursor-pointer items-center justify-center p-2"
+                                                className={cx("size-10 shrink-0 overflow-hidden rounded-lg border border-border bg-muted flex cursor-pointer items-center justify-center p-2")}
                                                 aria-label={`ดูตัวอย่าง ${image.file_name}`}
                                             >
                                                 <Image />
-                                            </button>
+                                            </GlassButton>
                                         ) : (
                                             <span
                                                 className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-border bg-muted text-muted-foreground"
@@ -496,22 +497,22 @@ export default function StorageImages() {
                                     หน้า {displayPage} จาก {pageCount} · {PAGE_SIZE} รูปต่อหน้า
                                 </p>
                                 <div className="flex items-center gap-2">
-                                    <button
+                                    <GlassButton
                                         type="button"
                                         onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
                                         disabled={displayPage === 1}
-                                        className="inline-flex h-9 items-center gap-1 rounded-lg border border-input px-3 text-sm font-medium hover:bg-[var(--glass-surface-hover)] hover:shadow-[inset_0_1px_0_var(--glass-highlight)] disabled:pointer-events-none disabled:opacity-50"
+                                        className={cx("inline-flex h-9 items-center gap-1 rounded-lg border border-input px-3 text-sm font-medium hover:bg-[var(--glass-surface-hover)] hover:shadow-[inset_0_1px_0_var(--glass-highlight)] disabled:pointer-events-none disabled:opacity-50")}
                                     >
                                         <ChevronLeft size={16} aria-hidden="true" /> ก่อนหน้า
-                                    </button>
-                                    <button
+                                    </GlassButton>
+                                    <GlassButton
                                         type="button"
                                         onClick={() => setCurrentPage((page) => Math.min(pageCount, page + 1))}
                                         disabled={displayPage === pageCount}
-                                        className="inline-flex h-9 items-center gap-1 rounded-lg border border-input px-3 text-sm font-medium hover:bg-[var(--glass-surface-hover)] hover:shadow-[inset_0_1px_0_var(--glass-highlight)] disabled:pointer-events-none disabled:opacity-50"
+                                        className={cx("inline-flex h-9 items-center gap-1 rounded-lg border border-input px-3 text-sm font-medium hover:bg-[var(--glass-surface-hover)] hover:shadow-[inset_0_1px_0_var(--glass-highlight)] disabled:pointer-events-none disabled:opacity-50")}
                                     >
                                         ถัดไป <ChevronRight size={16} aria-hidden="true" />
-                                    </button>
+                                    </GlassButton>
                                 </div>
                             </nav>
                         )}
@@ -539,14 +540,14 @@ export default function StorageImages() {
                                     {formatSize(selectedImage.file_size)} · {selectedImage.mime_type}
                                 </p>
                             </div>
-                            <button
+                            <GlassButton
                                 type="button"
                                 onClick={() => setSelectedImage(null)}
                                 aria-label="ปิดตัวอย่าง"
-                                className="inline-flex size-9 shrink-0 items-center justify-center rounded-lg border border-border text-muted-foreground hover:bg-[var(--glass-surface-hover)] hover:shadow-[inset_0_1px_0_var(--glass-highlight)] hover:text-foreground"
+                                className={cx("inline-flex size-9 shrink-0 items-center justify-center rounded-lg border border-border text-muted-foreground hover:bg-[var(--glass-surface-hover)] hover:shadow-[inset_0_1px_0_var(--glass-highlight)] hover:text-foreground")}
                             >
                                 <X size={18} aria-hidden="true" />
-                            </button>
+                            </GlassButton>
                         </div>
                         <div className="flex max-h-[calc(90vh-64px)] min-h-48 items-center justify-center bg-black/5 p-3 dark:bg-black/30">
                             {getStorageImageUrl(selectedImage.id) && (

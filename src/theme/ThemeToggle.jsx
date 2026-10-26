@@ -1,3 +1,4 @@
+import GlassButton from "../components/GlassButton";
 import { useEffect, useRef, useState } from "react";
 import { useTheme } from "../hooks/useTheme";
 import { cx } from "../utils/cx";
@@ -87,7 +88,7 @@ const ThemeToggle = () => {
                   const isActive = theme === value;
 
                   return (
-                      <button
+                      <GlassButton
                           key={value}
                           type="button"
                           onClick={() => handleThemeChange(value)}
@@ -105,13 +106,13 @@ const ThemeToggle = () => {
                           )}
                       >
                           {icon}
-                      </button>
+                      </GlassButton>
                   );
               })}
           </div>
 
           {/* Current theme */}
-          <button
+          <GlassButton
               type="button"
               aria-label={`Theme: ${currentOption.label}`}
               aria-expanded={isOpen}
@@ -128,7 +129,7 @@ const ThemeToggle = () => {
               )}
           >
               {currentOption.icon}
-          </button>
+          </GlassButton>
       </div>
   );
 };

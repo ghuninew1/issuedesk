@@ -1,3 +1,4 @@
+import GlassButton from "../components/GlassButton";
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { getIssues } from '../services/issues'
@@ -160,7 +161,7 @@ const Issues = () => {
                     </p>
                 </div>
 
-                <button
+                <GlassButton
                     type="button"
                     onClick={handleRefresh}
                     disabled={isLoading}
@@ -176,7 +177,7 @@ const Issues = () => {
                     <span aria-hidden="true" className={cx(isLoading && "animate-spin")}>
                         {isLoading ? <Loader /> : <RefreshCw />}
                     </span>
-                </button>
+                </GlassButton>
             </div>
 
             <div className="mb-6 flex flex-col gap-4 md:flex-row">
@@ -215,7 +216,7 @@ const Issues = () => {
                 <div role="alert" className="rounded-lg border border-destructive/30 bg-destructive/5 p-4">
                     <p className="text-sm text-destructive">{error}</p>
 
-                    <button
+                    <GlassButton
                         type="button"
                         onClick={handleRefresh}
                         disabled={isLoading}
@@ -229,7 +230,7 @@ const Issues = () => {
                         )}
                     >
                         Try again
-                    </button>
+                    </GlassButton>
                 </div>
             ) : isLoading ? (
                 <div

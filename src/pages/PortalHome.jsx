@@ -1,3 +1,4 @@
+import GlassButton from "../components/GlassButton";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ArrowRight, ClipboardCheck, LifeBuoy, Search, TicketPlus, ClipboardPaste } from "lucide-react";
@@ -168,17 +169,17 @@ const PortalHome = () => {
                                 />
 
                                 <p className="mt-2 text-xs text-muted-foreground">เลขทิกเก็ตที่ได้รับหลังแจ้งปัญหา</p>
-                                <button
+                                <GlassButton
                                     type="button"
                                     onClick={handlePaste}
                                     title="Paste from clipboard"
-                                    className="absolute right-2 top-2 -translate-y-1 p-2 cursor-pointer hover:opacity-70"
+                                    className={cx("absolute right-2 top-2 -translate-y-1 p-2 cursor-pointer hover:opacity-70")}
                                 >
                                     <ClipboardPaste size={17} aria-hidden="true" />
-                                </button>
+                                </GlassButton>
                             </div>
 
-                            <button
+                            <GlassButton
                                 type="submit"
                                 disabled={!ticketNumber.trim()}
                                 className={cx(
@@ -197,7 +198,7 @@ const PortalHome = () => {
                                     aria-hidden="true"
                                     className={cx(ticketNumber && "animate-bounceRight")}
                                 />
-                            </button>
+                            </GlassButton>
                         </form>
                     </article>
                 </ElectricBorder>

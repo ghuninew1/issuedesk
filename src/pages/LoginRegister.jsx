@@ -1,3 +1,5 @@
+import { cx } from "../utils/cx";
+import GlassButton from "../components/GlassButton";
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { User, Mail, Lock, Eye, EyeOff, ArrowRight, ShieldCheck, Sparkles, ArrowLeft } from "lucide-react";
@@ -198,13 +200,13 @@ export default function LoginRegister() {
                                             <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider">
                                                 Password
                                             </label>
-                                            <button
+                                            <GlassButton
                                                 type="button"
                                                 onClick={() => triggerToast("Password reset link sent to your email.")}
-                                                className="text-xs text-cyan-400 hover:text-cyan-300 transition-colors font-medium hover:underline cursor-pointer"
+                                                className={cx("text-xs text-cyan-400 hover:text-cyan-300 transition-colors font-medium hover:underline cursor-pointer")}
                                             >
                                                 Forgot Password?
-                                            </button>
+                                            </GlassButton>
                                         </div>
                                         <div className="relative">
                                             <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
@@ -217,29 +219,29 @@ export default function LoginRegister() {
                                                 placeholder="••••••••"
                                                 className="w-full pl-11 pr-11 py-3 bg-slate-950/60 border border-slate-800 rounded-2xl text-slate-100 placeholder-slate-500 text-sm focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all duration-200"
                                             />
-                                            <button
+                                            <GlassButton
                                                 type="button"
                                                 onClick={() => setShowLoginPassword(!showLoginPassword)}
-                                                className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-200 transition-colors cursor-pointer"
+                                                className={cx("absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-200 transition-colors cursor-pointer")}
                                             >
                                                 {showLoginPassword ? (
                                                     <EyeOff className="w-5 h-5" />
                                                 ) : (
                                                     <Eye className="w-5 h-5" />
                                                 )}
-                                            </button>
+                                            </GlassButton>
                                         </div>
                                     </div>
 
                                     {/* Primary Gradient Login Button */}
-                                    <button
+                                    <GlassButton
                                         type="submit"
                                         disabled={isSubmitting}
-                                        className="w-full py-3.5 px-4 mt-2 bg-gradient-to-r from-cyan-500 via-indigo-500 to-purple-600 hover:from-cyan-400 hover:via-indigo-400 hover:to-purple-500 text-white font-semibold rounded-2xl shadow-lg shadow-cyan-500/25 hover:shadow-cyan-500/40 active:scale-[0.99] transition-all duration-200 flex items-center justify-center gap-2 group cursor-pointer"
+                                        className={cx("w-full py-3.5 px-4 mt-2 bg-gradient-to-r from-cyan-500 via-indigo-500 to-purple-600 hover:from-cyan-400 hover:via-indigo-400 hover:to-purple-500 text-white font-semibold rounded-2xl shadow-lg shadow-cyan-500/25 hover:shadow-cyan-500/40 active:scale-[0.99] transition-all duration-200 flex items-center justify-center gap-2 group cursor-pointer")}
                                     >
                                         <span>{isSubmitting ? "PLEASE WAIT…" : "LOGIN"}</span>
                                         <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                                    </button>
+                                    </GlassButton>
                                 </form>
 
                                 {/* Divider */}
@@ -257,10 +259,10 @@ export default function LoginRegister() {
                                 {/* Social Buttons */}
                                 <div className="space-y-3">
                                     {/* Google Sign In */}
-                                    <button
+                                    <GlassButton
                                         type="button"
                                         onClick={() => handleSocialAuth("Google")}
-                                        className="w-full py-3 px-4 bg-slate-950/50 hover:bg-slate-800/80 border border-slate-800 hover:border-slate-700 text-slate-200 font-medium rounded-2xl text-sm transition-all duration-200 flex items-center justify-center gap-3 group cursor-pointer"
+                                        className={cx("w-full py-3 px-4 bg-slate-950/50 hover:bg-slate-800/80 border border-slate-800 hover:border-slate-700 text-slate-200 font-medium rounded-2xl text-sm transition-all duration-200 flex items-center justify-center gap-3 group cursor-pointer")}
                                     >
                                         {/* Google Custom SVG Icon */}
                                         <svg className="w-5 h-5" viewBox="0 0 24 24">
@@ -282,33 +284,33 @@ export default function LoginRegister() {
                                             />
                                         </svg>
                                         <span>Continue with Google</span>
-                                    </button>
+                                    </GlassButton>
 
                                     {/* Facebook Sign In */}
-                                    <button
+                                    <GlassButton
                                         type="button"
                                         onClick={() => handleSocialAuth("Facebook")}
-                                        className="w-full py-3 px-4 bg-slate-950/50 hover:bg-slate-800/80 border border-slate-800 hover:border-slate-700 text-slate-200 font-medium rounded-2xl text-sm transition-all duration-200 flex items-center justify-center gap-3 group"
+                                        className={cx("w-full py-3 px-4 bg-slate-950/50 hover:bg-slate-800/80 border border-slate-800 hover:border-slate-700 text-slate-200 font-medium rounded-2xl text-sm transition-all duration-200 flex items-center justify-center gap-3 group")}
                                     >
                                         {/* Facebook SVG Icon */}
                                         <svg className="w-5 h-5 fill-[#1877F2]" viewBox="0 0 24 24">
                                             <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
                                         </svg>
                                         <span>Continue with Facebook</span>
-                                    </button>
+                                    </GlassButton>
                                 </div>
 
                                 {/* Bottom Switcher Link */}
                                 <div className="mt-8 text-center">
                                     <p className="text-sm text-slate-400">
                                         Don't have an account?{" "}
-                                        <button
+                                        <GlassButton
                                             type="button"
                                             onClick={() => setPage("register")}
-                                            className="text-cyan-400 font-semibold hover:text-cyan-300 hover:underline transition-colors ml-1 cursor-pointer"
+                                            className={cx("text-cyan-400 font-semibold hover:text-cyan-300 hover:underline transition-colors ml-1 cursor-pointer")}
                                         >
                                             Register
-                                        </button>
+                                        </GlassButton>
                                     </p>
                                 </div>
                             </div>
@@ -384,29 +386,29 @@ export default function LoginRegister() {
                                                 placeholder="••••••••"
                                                 className="w-full pl-11 pr-11 py-3 bg-slate-950/60 border border-slate-800 rounded-2xl text-slate-100 placeholder-slate-500 text-sm focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all duration-200"
                                             />
-                                            <button
+                                            <GlassButton
                                                 type="button"
                                                 onClick={() => setShowRegPassword(!showRegPassword)}
-                                                className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-200 transition-colors cursor-pointer"
+                                                className={cx("absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-200 transition-colors cursor-pointer")}
                                             >
                                                 {showRegPassword ? (
                                                     <EyeOff className="w-5 h-5" />
                                                 ) : (
                                                     <Eye className="w-5 h-5" />
                                                 )}
-                                            </button>
+                                            </GlassButton>
                                         </div>
                                     </div>
 
                                     {/* Primary Gradient Register Button */}
-                                    <button
+                                    <GlassButton
                                         type="submit"
                                         disabled={isSubmitting}
-                                        className="w-full py-3.5 px-4 mt-2 bg-gradient-to-r from-purple-600 via-indigo-500 to-cyan-500 hover:from-purple-500 hover:via-indigo-400 hover:to-cyan-400 text-white font-semibold rounded-2xl shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 active:scale-[0.99] transition-all duration-200 flex items-center justify-center gap-2 group cursor-pointer"
+                                        className={cx("w-full py-3.5 px-4 mt-2 bg-gradient-to-r from-purple-600 via-indigo-500 to-cyan-500 hover:from-purple-500 hover:via-indigo-400 hover:to-cyan-400 text-white font-semibold rounded-2xl shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 active:scale-[0.99] transition-all duration-200 flex items-center justify-center gap-2 group cursor-pointer")}
                                     >
                                         <span>{isSubmitting ? "PLEASE WAIT…" : "REGISTER"}</span>
                                         <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                                    </button>
+                                    </GlassButton>
                                 </form>
 
                                 {/* Divider */}
@@ -424,10 +426,10 @@ export default function LoginRegister() {
                                 {/* Social Buttons */}
                                 <div className="space-y-3">
                                     {/* Google Register */}
-                                    <button
+                                    <GlassButton
                                         type="button"
                                         onClick={() => handleSocialAuth("Google")}
-                                        className="w-full py-3 px-4 bg-slate-950/50 hover:bg-slate-800/80 border border-slate-800 hover:border-slate-700 text-slate-200 font-medium rounded-2xl text-sm transition-all duration-200 flex items-center justify-center gap-3 group cursor-pointer"
+                                        className={cx("w-full py-3 px-4 bg-slate-950/50 hover:bg-slate-800/80 border border-slate-800 hover:border-slate-700 text-slate-200 font-medium rounded-2xl text-sm transition-all duration-200 flex items-center justify-center gap-3 group cursor-pointer")}
                                     >
                                         <svg className="w-5 h-5" viewBox="0 0 24 24">
                                             <path
@@ -448,32 +450,32 @@ export default function LoginRegister() {
                                             />
                                         </svg>
                                         <span>Sign up with Google</span>
-                                    </button>
+                                    </GlassButton>
 
                                     {/* Facebook Register */}
-                                    <button
+                                    <GlassButton
                                         type="button"
                                         onClick={() => handleSocialAuth("Facebook")}
-                                        className="w-full py-3 px-4 bg-slate-950/50 hover:bg-slate-800/80 border border-slate-800 hover:border-slate-700 text-slate-200 font-medium rounded-2xl text-sm transition-all duration-200 flex items-center justify-center gap-3 group cursor-pointer"
+                                        className={cx("w-full py-3 px-4 bg-slate-950/50 hover:bg-slate-800/80 border border-slate-800 hover:border-slate-700 text-slate-200 font-medium rounded-2xl text-sm transition-all duration-200 flex items-center justify-center gap-3 group cursor-pointer")}
                                     >
                                         <svg className="w-5 h-5 fill-[#1877F2]" viewBox="0 0 24 24">
                                             <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
                                         </svg>
                                         <span>Sign up with Facebook</span>
-                                    </button>
+                                    </GlassButton>
                                 </div>
 
                                 {/* Bottom Switcher Link */}
                                 <div className="mt-8 text-center">
                                     <p className="text-sm text-slate-400">
                                         Already have an account?{" "}
-                                        <button
+                                        <GlassButton
                                             type="button"
                                             onClick={() => setPage("login")}
-                                            className="text-purple-400 font-semibold hover:text-purple-300 hover:underline transition-colors ml-1 cursor-pointer"
+                                            className={cx("text-purple-400 font-semibold hover:text-purple-300 hover:underline transition-colors ml-1 cursor-pointer")}
                                         >
                                             Login
-                                        </button>
+                                        </GlassButton>
                                     </p>
                                 </div>
                             </div>

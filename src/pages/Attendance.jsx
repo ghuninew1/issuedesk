@@ -1,3 +1,5 @@
+import { cx } from "../utils/cx";
+import GlassButton from "../components/GlassButton";
 import { useCallback, useEffect, useState } from "react";
 import {
     Activity,
@@ -196,21 +198,21 @@ export default function Attendance() {
                             </div>
                         </div>
                         {!today ? (
-                            <button
+                            <GlassButton
                                 disabled={pending}
                                 onClick={() => punch("check-in")}
-                                className="inline-flex h-16 w-full max-w-lg items-center justify-center gap-3 rounded-2xl bg-slate-900 px-8 text-lg font-semibold text-white shadow-xl shadow-cyan-900/15 transition hover:-translate-y-0.5 hover:bg-cyan-800 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-cyan-400/40 disabled:opacity-50 dark:bg-cyan-500 dark:text-slate-950 dark:hover:bg-cyan-400"
+                                className={cx("inline-flex h-16 w-full max-w-lg items-center justify-center gap-3 rounded-2xl bg-slate-900 px-8 text-lg font-semibold text-white shadow-xl shadow-cyan-900/15 transition hover:-translate-y-0.5 hover:bg-cyan-800 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-cyan-400/40 disabled:opacity-50 dark:bg-cyan-500 dark:text-slate-950 dark:hover:bg-cyan-400")}
                             >
                                 <ArrowDownToLine size={21} /> เช็คอิน
-                            </button>
+                            </GlassButton>
                         ) : working ? (
-                            <button
+                            <GlassButton
                                 disabled={pending}
                                 onClick={() => punch("check-out")}
-                                className="inline-flex h-16 w-full max-w-lg items-center justify-center gap-3 rounded-2xl bg-amber-500 px-8 text-lg font-semibold text-white shadow-xl shadow-amber-900/15 transition hover:-translate-y-0.5 hover:bg-amber-600 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-amber-300/50 disabled:opacity-50"
+                                className={cx("inline-flex h-16 w-full max-w-lg items-center justify-center gap-3 rounded-2xl bg-amber-500 px-8 text-lg font-semibold text-white shadow-xl shadow-amber-900/15 transition hover:-translate-y-0.5 hover:bg-amber-600 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-amber-300/50 disabled:opacity-50")}
                             >
                                 <ArrowUpFromLine size={21} /> เช็คเอาต์
-                            </button>
+                            </GlassButton>
                         ) : (
                             <span className="inline-flex h-14 w-full max-w-lg items-center justify-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50/70 px-6 font-medium text-emerald-700 dark:border-emerald-300/15 dark:bg-emerald-400/10 dark:text-emerald-300">
                                 <Check size={18} /> เสร็จสิ้นวันนี้
@@ -384,25 +386,25 @@ export default function Attendance() {
                         <div className="flex items-center justify-between border-t border-slate-200/70 px-4 py-4 text-sm dark:border-white/10 md:px-5">
                             <span className="text-muted-foreground">ทั้งหมด {pagination.total} รายการ</span>
                             <div className="flex items-center gap-2">
-                                <button
+                                <GlassButton
                                     aria-label="หน้าก่อน"
                                     disabled={page <= 1}
                                     onClick={() => setPage((n) => n - 1)}
-                                    className="rounded-lg border border-slate-200/70 p-2 disabled:opacity-40 dark:border-white/10"
+                                    className={cx("rounded-lg border border-slate-200/70 p-2 disabled:opacity-40 dark:border-white/10")}
                                 >
                                     <ChevronLeft size={16} />
-                                </button>
+                                </GlassButton>
                                 <span>
                                     {page} / {pagination.pages}
                                 </span>
-                                <button
+                                <GlassButton
                                     aria-label="หน้าถัดไป"
                                     disabled={page >= pagination.pages}
                                     onClick={() => setPage((n) => n + 1)}
-                                    className="rounded-lg border border-slate-200/70 p-2 disabled:opacity-40 dark:border-white/10"
+                                    className={cx("rounded-lg border border-slate-200/70 p-2 disabled:opacity-40 dark:border-white/10")}
                                 >
                                     <ChevronRight size={16} />
-                                </button>
+                                </GlassButton>
                             </div>
                         </div>
                     </section>

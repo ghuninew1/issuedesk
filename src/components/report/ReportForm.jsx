@@ -1,3 +1,4 @@
+import GlassButton from "../GlassButton";
 import { useState } from "react";
 import { createIssue, uploadIssueAttachment } from "../../services/issues";
 import { cx } from "../../utils/cx";
@@ -237,7 +238,7 @@ const ReportForm = () => {
 
                         <code className="font-semibold text-foreground">{createdIssue.ticket_number}</code>
 
-                        <button
+                        <GlassButton
                             type="button"
                             onClick={copyTicketNumber}
                             className={cx(
@@ -259,7 +260,7 @@ const ReportForm = () => {
                                     คัดลอกหมายเลข
                                 </div>
                             )}
-                        </button>
+                        </GlassButton>
                     </div>
 
                     <div className="mt-3 space-y-1 text-sm text-muted-foreground">
@@ -464,7 +465,7 @@ const ReportForm = () => {
             </section>
 
             <div className="flex flex-col-reverse justify-between gap-3 border-t border-white/60 pt-6 md:flex-row dark:border-white/10">
-                <button
+                <GlassButton
                     className={cx(
                         "glass-surface mt-2 flex cursor-pointer items-center justify-center gap-3 rounded-xl border-white/70 bg-white/55 px-5 py-2.5 text-sm font-medium text-slate-700 transition-all hover:bg-white/80 md:mt-0 dark:border-white/10 dark:bg-white/5 dark:text-slate-200 dark:hover:bg-white/10",
                         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
@@ -474,9 +475,9 @@ const ReportForm = () => {
                 >
                     <ArrowLeft size={16} className="animate-bounceLeft transition-all" />
                     Back
-                </button>
+                </GlassButton>
                 <div className="flex items-center md:flex-row justify-center gap-5 px-3 w-auto flex-col-reverse">
-                    <button
+                    <GlassButton
                         type="reset"
                         disabled={isSubmitting}
                         title={isSubmitting ? "กําลังล้าง..." : "ล้างฟอร์ม"}
@@ -487,9 +488,9 @@ const ReportForm = () => {
                         )}
                     >
                         Clear
-                    </button>
+                    </GlassButton>
 
-                    <button
+                    <GlassButton
                         type="submit"
                         disabled={isSubmitting}
                         title={isSubmitting ? "กําลังบันทึก..." : "Submit Issue ถัดไป"}
@@ -500,7 +501,7 @@ const ReportForm = () => {
                         )}
                     >
                         {isSubmitting ? "Submitting..." : "Submit"}
-                    </button>
+                    </GlassButton>
                 </div>
             </div>
         </form>

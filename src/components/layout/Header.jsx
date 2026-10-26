@@ -1,3 +1,4 @@
+import GlassButton from "../GlassButton";
 import { useLocation, useNavigate, useMatch } from "react-router-dom";
 import ThemeToggle from "../../theme/ThemeToggle";
 import { cx } from "../../utils/cx";
@@ -81,7 +82,7 @@ const Header = ({ isHeaderVisible = true, onOpenMobileSidebar }) => {
                 {/* Mobile menu */}
                 {user && (
                     <>
-                        <button
+                        <GlassButton
                             type="button"
                             onClick={onOpenMobileSidebar}
                             aria-label="Open navigation menu"
@@ -94,13 +95,13 @@ const Header = ({ isHeaderVisible = true, onOpenMobileSidebar }) => {
                             )}
                         >
                             <MenuIcon />
-                        </button>
+                        </GlassButton>
 
                     </>
                 )}
 
                 <div className="min-w-0 flex items-center gap-2">
-                    <button
+                    <GlassButton
                         type="button"
                         onClick={() => navigate("/")}
                         aria-label="Go to home"
@@ -113,7 +114,7 @@ const Header = ({ isHeaderVisible = true, onOpenMobileSidebar }) => {
                     >
                         {/* <Headset size={24} aria-hidden="true" /> */}
                         <img src={logo} alt="IssueDesk" className="h-8 w-8" />
-                    </button>
+                    </GlassButton>
                     <div className="truncate text-sm font-medium">
                         <p className="truncate text-sm font-medium"> {currentPage.title}</p>
 
@@ -126,7 +127,7 @@ const Header = ({ isHeaderVisible = true, onOpenMobileSidebar }) => {
 
             <div className="flex shrink-0 items-center gap-2">
                 {user ? (
-                    <button
+                    <GlassButton
                         type="button"
                         onClick={handleLogout}
                         className={cx(
@@ -139,9 +140,9 @@ const Header = ({ isHeaderVisible = true, onOpenMobileSidebar }) => {
                     >
                         <LogOut size={16} aria-hidden="true" />
                         <span className="hidden md:inline">Sign out</span>
-                    </button>
+                    </GlassButton>
                 ) : (
-                    <button
+                    <GlassButton
                         type="button"
                         onClick={() => navigate("/login")}
                         className={cx(
@@ -154,7 +155,7 @@ const Header = ({ isHeaderVisible = true, onOpenMobileSidebar }) => {
                     >
                         <LogIn size={16} aria-hidden="true" />
                         <span className="hidden md:inline">Sign in</span>
-                    </button>
+                    </GlassButton>
                 )}
                 <ThemeToggle />
             </div>

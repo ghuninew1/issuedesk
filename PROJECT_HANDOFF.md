@@ -193,3 +193,25 @@ pnpm dev
 | D1 setup/Admin bootstrap | `migrations/`, `wrangler.jsonc`, `scripts/bootstrap-admin.py` |
 
 ดู [README.md](README.md) สำหรับเอกสารติดตั้งและรายละเอียดผู้ใช้ และดู `STORAGE_DOCS_*.md` สำหรับเอกสารระบบ Storage API
+
+## QR Code Studio V1 (2026-10-26)
+
+- เพิ่ม protected routes `/qr-studio`, `/qr-studio/links`, `/qr-studio/saved` ภายใต้ AppShell เดิม และ QR Studio ใน Sidebar
+- Orchestrator: `src/pages/qr/QRCodeStudio.jsx`; components ใน `src/components/qr/`; renderer instance ใช้ ref/update ใน `src/hooks/qr/useQRCode.js` และ encode UTF-8 สำหรับข้อความภาษาไทย
+- Validation ร่วม: `shared/qr.js`; session/origin/QR validation/error envelope: `functions/api/qr-codes/_utils.js`; browser ใช้ `src/services/qr.js` ผ่าน `api()` เดิม ซึ่งรองรับ error envelope ใหม่ด้วย
+- CRUD: `functions/api/qr-codes/`, `functions/api/short-links/`; resource อ่าน/แก้ไข/ลบ scope ด้วย ID + session user; slug immutable และมี atomic DELETE guard ป้องกันลบลิงก์ที่ QR อ้างอิง
+- Public redirect: `functions/q/[slug].js` ตรวจ active แล้วส่ง 302/no-store ไม่มี session; Vite อย่างเดียวไม่รัน Function นี้
+- ใช้ migration `0010_create_qr_studio_tables.sql` ที่มีใน working tree โดยไม่แก้ทับ เพิ่ม `0011_create_qr_logo_ownership.sql` สำหรับเจ้าของและ MIME ของโลโก้
+- โลโก้ local preview มี object URL cleanup; upload เฉพาะ Save ผ่าน `functions/api/qr-logos/` ใช้ config/headers/project และ `/v2/projects/:projectId/files` ของ Garage เดิม จำกัด session owner, PNG/JPEG/WebP, signature และ 2 MB โดยไม่เปลี่ยนสิทธิ์ Storage management เดิม
+- `qr_codes.logo_url` เป็น same-origin `/api/qr-logos/:id` ไม่รับ remote URL หรือ Base64 โลโก้; rendered PNG/SVG สร้างใน browser ไม่เก็บ D1
+- การบันทึก Storage/Short Link/QR ไม่ใช่ transaction ข้าม service: retry ในหน้าเดิม reuse uploaded logo และลิงก์ที่สร้างสำเร็จแล้ว ไม่มี automatic orphan-logo cleanup ใน V1; ห้ามสรุปว่า remote Storage พร้อมจากโค้ดเท่านั้น
+- Regression suite: `node --test scripts/qr-studio-checks.mjs` ใช้ `scripts/qr-fixture.mjs` เป็น in-memory SQLite D1 adapter; Storage ถูก mock ไม่อ่าน secrets หรือ DB จริง
+- ยังไม่ได้ apply migrations, deploy หรือยืนยัน production D1/Storage; ต้องตรวจใน Pages runtime และอุปกรณ์สแกน QR ก่อนนำไปพิมพ์ใช้งานจริง
+- ผลตรวจ local: `pnpm lint`, `pnpm build`, regression suite 5 กลุ่ม และ `wrangler pages functions build` ผ่าน (build มีคำเตือน chunk ของ `heic2any` เดิม) Playwright บน Chrome ที่ `127.0.0.1:5173` ตรวจ desktop 1440px/mobile 390px, light/dark, preview/export/save/edit/search, slug availability, link toggle/in-use deletion และ object URL cleanup ผ่าน โดยใช้ Pages handlers + in-memory SQLite และ mock Storage มี HTTP 409 ที่ตั้งใจทดสอบหนึ่งครั้ง ไม่มี app runtime error อื่น
+- PNG ที่ export ถูก decode กลับด้วย macOS Vision ตรงทั้ง URL และข้อความ `สวัสดี IssueDesk`; ไม่ใช่การรับรองการสแกนทุกสี/ขนาดโลโก้หรืออุปกรณ์จริง
+
+### Local QR sandbox
+
+`pnpm dev:qr` รัน `scripts/qr-studio-dev.mjs` ที่ `127.0.0.1:5174/qr-studio` โดยคง ProtectedRoute และ production auth เดิม ใช้ fixture session ของสมาชิกธรรมดา, Pages handlers เดิม, SQLite และไฟล์โลโก้ในหน่วยความจำ ปิดการอ่าน Vite env files (`envDir: false`) และไม่ใช้ remote D1/Garage ข้อมูลหายเมื่อหยุด script หลัง Sign out ต้อง restart เพื่อเริ่ม session จำลองใหม่ API นอก QR Studio ไม่รองรับใน sandbox
+
+`pnpm test:qr` รัน regression suite เดิม ทดสอบ script sandbox ผ่าน Chrome/Playwright แล้ว: auto session, Save QR/โลโก้, saved list, redirect 302, same-origin rejection และ Sign out → ProtectedRoute redirect ไป login/API 401 ผ่าน; ตรวจ syntax, lint และ diff whitespace ผ่าน ไม่ได้เปลี่ยน client bundle จึงไม่รัน build ซ้ำในงาน script นี้

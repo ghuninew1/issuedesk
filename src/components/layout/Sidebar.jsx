@@ -1,3 +1,4 @@
+import GlassButton from "../GlassButton";
 import { NavLink } from "react-router-dom";
 import { cx } from "../../utils/cx";
 import { glassHover } from "../../utils/utils";
@@ -9,6 +10,7 @@ import {
     FileSpreadsheet,
     Clock3,
     Network,
+    QrCode,
     PanelLeftClose,
     PanelLeftOpen,
 } from "lucide-react";
@@ -16,6 +18,7 @@ import logoFull from "../../assets/GhuniNew_full_color.avif";
 import logo from "../../assets/logo.avif";
 
 const navLinks = [
+    { icon: QrCode, label: "QR Studio", to: "/qr-studio" },
     { icon: LayoutDashboard, label: "Dashboard", to: "/dashboard" },
     { icon: ClipboardList, label: "Issues", to: "/issues" },
     { icon: ClipboardPlus, label: "Report", to: "/report" },
@@ -42,18 +45,18 @@ const SidebarContent = ({ isCollapsed, onNavigate, onToggleSidebar, mobile = fal
                     end
                     className={({ isActive }) =>
                         cx(
-                            "transition-colors flex items-center justify-center rounded-xl",
+                            "flex items-center justify-center rounded-xl",
                             mobile || !isCollapsed ? "h-10 w-full gap-2 px-2" : "size-10",
                             "focus-visible:outline-none focus-visible:ring-2",
                             "focus-visible:ring-inset focus-visible:ring-ring/50",
-                            "hover:bg-sidebar-border hover:text-sidebar-accent-foreground",
                             mobile || !isCollapsed ? "" : "glass-nav-active",
                             isActive
                                 ? "font-medium text-sidebar-accent-foreground"
-                                : "text-muted-foreground hover:text-sidebar-accent-foreground glass-nav-link",
+                                : "text-muted-foreground hover:text-sidebar-accent-foreground",
                             glassHover,
                         )
                     }
+                    onPointerMove={handleGlowMove}
                 >
                     {mobile || !isCollapsed ? (
                         <img
@@ -99,12 +102,13 @@ const SidebarContent = ({ isCollapsed, onNavigate, onToggleSidebar, mobile = fal
                             cx(
                                 "flex min-h-11 items-center rounded-xl px-3 py-2.5",
                                 mobile || !isCollapsed ? "w-full gap-3" : "mx-auto size-11 justify-center px-0",
-                                "transition-all animate-fadeInLeft duration-200 ease-in-out",
+                                "animate-fadeInLeft",
                                 "focus-visible:outline-none focus-visible:ring-2",
                                 "focus-visible:ring-inset focus-visible:ring-ring/50",
                                 isActive
                                     ? "glass-nav-active font-medium text-sidebar-accent-foreground"
-                                    : cx("text-muted-foreground hover:text-sidebar-accent-foreground", glassHover),
+                                    : "text-muted-foreground hover:text-sidebar-accent-foreground",
+                                glassHover,
                             )
                         }
                     >
@@ -125,7 +129,7 @@ const SidebarContent = ({ isCollapsed, onNavigate, onToggleSidebar, mobile = fal
                         "animate-fadeInLeft",
                     )}
                 >
-                    <button
+                    <GlassButton
                         type="button"
                         onClick={onToggleSidebar}
                         aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
@@ -134,7 +138,7 @@ const SidebarContent = ({ isCollapsed, onNavigate, onToggleSidebar, mobile = fal
                         onPointerMove={handleGlowMove}
                         className={cx(
                             glassHover,
-                            "flex justify-center items-center  mx-auto p-2 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring size-auto text-muted-foreground transition-colors hover:text-accent-foreground cursor-pointer",
+                            "flex justify-center items-center mx-auto p-2 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring size-auto text-muted-foreground hover:text-accent-foreground cursor-pointer",
                         )}
                     >
                         {isCollapsed ? (
@@ -145,7 +149,7 @@ const SidebarContent = ({ isCollapsed, onNavigate, onToggleSidebar, mobile = fal
                                 Collapse
                             </div>
                         )}
-                    </button>
+                    </GlassButton>
                 </div>
             )}
         </>
@@ -161,7 +165,6 @@ const Sidebar = ({ isCollapsed, isMobileOpen, onMobileClose, onToggleSidebar }) 
                 aria-label="Close navigation menu"
                 tabIndex={isMobileOpen ? 0 : -1}
                 onClick={onMobileClose}
-                onPointerMove={handleGlowMove}
                 className={cx(
                     "fixed inset-0 z-40 bg-black/40 transition-opacity duration-200",
                     "md:hidden",

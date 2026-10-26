@@ -3,6 +3,10 @@ import { lazy, Suspense } from "react";
 import { Loader } from "lucide-react";
 import { useAuth } from "./auth/useAuth";
 
+const QRCodeStudio = lazy(() => import("./pages/qr/QRCodeStudio"));
+const QRLinks = lazy(() => import("./pages/qr/QRLinks"));
+const SavedQRCodes = lazy(() => import("./pages/qr/SavedQRCodes"));
+
 const AppShell = lazy(() => import("./components/layout/AppShell"));
 const DashboardStats = lazy(() => import("./components/dashboard/DashboardStats"));
 const RecentIssues = lazy(() => import("./components/dashboard/RecentIssues"));
@@ -23,7 +27,7 @@ function LoginRoute() {
 
     if (isLoading) {
         return (
-            <div className="min-h-screen bg-background p-8 text-sm text-muted-foreground" role="status">
+            <div className="bg-background p-8 min-h-screen text-muted-foreground text-sm" role="status">
                 <Loader className="animate-spin" />
                 Checking your session…
             </div>
@@ -41,9 +45,9 @@ function DashboardPage() {
     return (
         <div className="mx-auto max-w-7xl">
             <div className="mb-6">
-                <h2 className="text-2xl font-semibold tracking-tight">Dashboard</h2>
+                <h2 className="font-semibold text-2xl tracking-tight">Dashboard</h2>
 
-                <p className="mt-2 text-sm text-muted-foreground">
+                <p className="mt-2 text-muted-foreground text-sm">
                     Welcome to IssueDesk. Manage and track office IT issues in one place.
                 </p>
             </div>
@@ -59,8 +63,8 @@ function NotFoundPage() {
     return (
         <div className="mx-auto max-w-7xl">
             <Loader className="animate-spin" />
-            <h2 className="text-2xl font-semibold tracking-tight">Page not found</h2>
-            <p className="mt-2 text-sm text-muted-foreground">The page you are looking for does not exist.</p>
+            <h2 className="font-semibold text-2xl tracking-tight">Page not found</h2>
+            <p className="mt-2 text-muted-foreground text-sm">The page you are looking for does not exist.</p>
         </div>
     );
 }
@@ -80,6 +84,30 @@ function App() {
                 <Route path="/login" element={<LoginRoute />} />
                 <Route element={<AppLayout />}>
                     <Route path="/" element={<PortalHome />} />
+                    <Route
+                        path="/qr-studio"
+                        element={
+                            <ProtectedRoute>
+                                <QRCodeStudio />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/qr-studio/links"
+                        element={
+                            <ProtectedRoute>
+                                <QRLinks />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/qr-studio/saved"
+                        element={
+                            <ProtectedRoute>
+                                <SavedQRCodes />
+                            </ProtectedRoute>
+                        }
+                    />
                     <Route
                         path="/attendance"
                         element={

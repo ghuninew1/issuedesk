@@ -1,3 +1,4 @@
+import GlassButton from "../GlassButton";
 import { useEffect, useRef, useState } from "react";
 import { cx } from "../../utils/cx";
 import heic2any from "heic2any";
@@ -164,7 +165,7 @@ const ImageUploader = ({ files, onChange, disabled = false }) => {
                 }}
             />
 
-            <button
+            <GlassButton
                 type="button"
                 disabled={disabled || files.length >= MAX_FILES}
                 onClick={() => inputRef.current?.click()}
@@ -198,7 +199,7 @@ const ImageUploader = ({ files, onChange, disabled = false }) => {
                 <span className="mt-2 text-xs text-muted-foreground">
                     JPG, PNG, WebP, HEIC หรือ HEIF · สูงสุด 5 ภาพ · ภาพละไม่เกิน 5 MB
                 </span>
-            </button>
+            </GlassButton>
 
             {error && (
                 <p role="alert" className="whitespace-pre-line text-sm text-destructive">
@@ -216,7 +217,7 @@ const ImageUploader = ({ files, onChange, disabled = false }) => {
                             <div className="relative aspect-square bg-muted">
                                 <ImagePreview file={file} />
 
-                                <button
+                                <GlassButton
                                     type="button"
                                     aria-label={`ลบภาพ ${file.name}`}
                                     title="ลบภาพ"
@@ -240,7 +241,7 @@ const ImageUploader = ({ files, onChange, disabled = false }) => {
                                     >
                                         <path strokeLinecap="round" d="m6 6 12 12M18 6 6 18" />
                                     </svg>
-                                </button>
+                                </GlassButton>
                             </div>
 
                             <div className="space-y-1 p-3">

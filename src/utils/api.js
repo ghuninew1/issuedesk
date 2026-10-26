@@ -25,7 +25,10 @@ export async function api(url, options = {}) {
     }
 
     if (!response.ok) {
-        throw new Error(data?.message || `Request failed with status ${response.status}`);
+        const error = new Error(data?.error?.message || data?.message || `Request failed with status ${response.status}`);
+        error.code = data?.error?.code;
+        error.status = response.status;
+        throw error;
     }
 
     if (!isJson) {

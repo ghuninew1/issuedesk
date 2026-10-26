@@ -472,3 +472,31 @@ python3 scripts/bootstrap-admin.py
 - Rate limiting ของ Login/Register นับตามอีเมล ไม่ได้จำกัดตาม IP
 - หากอีเมลไม่ถึงผู้รับ ให้ตรวจ Resend dashboard, โดเมนผู้ส่ง และค่า `RESEND_FROM_EMAIL`
 - หากอัปโหลดไฟล์ล้มเหลวหลังสร้าง Ticket สำเร็จ ผู้แจ้งยังมีหมายเลข Ticket แต่ต้องแนบไฟล์ใหม่หรือให้ Admin จัดการภายหลัง
+
+## QR Code Studio V1
+
+สมาชิกที่เข้าสู่ระบบเข้า `/qr-studio` (Create QR), `/qr-studio/links` (Short Links) และ `/qr-studio/saved` (My QR Codes) ผ่าน AppShell เดิมได้ ข้อมูลแต่ละรายการแยกตามเจ้าของ session รวมถึง admin ซึ่งไม่สามารถอ่าน QR ส่วนตัวของสมาชิกอื่นผ่าน API นี้
+
+- สร้าง QR จาก HTTP(S) URL, ข้อความไม่เกิน 2,000 ตัวอักษร หรือ Short Link ปรับสี HEX, error correction M/Q/H และโลโก้ แล้วดาวน์โหลด PNG 1024px หรือ SVG ได้โดยไม่เก็บภาพ QR ใน D1
+- โลโก้ PNG/JPEG/WebP สูงสุด 2 MB แสดง local preview ก่อน และอัปโหลดเมื่อ Save ผ่าน `/api/qr-logos` ไปยัง Storage API/Garage project เดิม การเพิ่มโลโก้ครั้งแรกแนะนำ H; การเปลี่ยนค่าภายหลังยังคงอยู่
+- Short Link ใช้ slug ที่กำหนดเองหรือ server สุ่มให้ ตรวจ availability แบบ debounce 450ms และยกเลิกคำขอเก่า Slug เปลี่ยนไม่ได้ใน V1; แก้ destination และเปิด/ปิดลิงก์ได้
+- `/q/:slug` เป็น Pages Function สาธารณะ redirect 302 พร้อม `Cache-Control: no-store`; ลิงก์หายหรือปิดอยู่คืน 404 ไม่ต้อง login
+- QR และ Short Link มี CRUD ที่ `/api/qr-codes[/:id]` และ `/api/short-links[/:id]`; availability อยู่ที่ `GET /api/short-links/check?slug=...` รายการรองรับ `search`, `limit` (1–100), `offset`; QR เพิ่ม `type`
+- Mutation ตรวจ same-origin และ session; resource ของผู้อื่นคืน 404 ข้อผิดพลาดใหม่ใช้ `{ success: false, error: { code, message } }`
+- ลบ QR ไม่ลบ Short Link; ลบ Short Link ที่ถูก QR อ้างอิงคืน `409 SHORT_LINK_IN_USE` ให้ปิดลิงก์แทน
+
+ใช้ migration `0010_create_qr_studio_tables.sql` ที่มีอยู่ และ `0011_create_qr_logo_ownership.sql` สำหรับ metadata เจ้าของโลโก้ ต้องตรวจและ apply migrations บนระบบเป้าหมายโดยผู้ดูแลก่อนใช้งานจริง งานนี้ยังไม่ได้ apply remote migrations หรือ deploy และไม่ได้ยืนยัน Storage credentials/บริการ remote
+
+การอัปโหลดโลโก้กับการบันทึก QR เป็นคนละ operation หากบันทึก QR ล้มเหลว หน้าเดิมจะ reuse โลโก้ที่อัปโหลดแล้วเมื่อ retry; Short Link ที่สร้างแล้วจะยังอยู่ในหน้าจัดการ ระบบ V1 ยังไม่มี automatic cleanup สำหรับโลโก้ที่เลิกใช้หรือ draft ที่ถูกทิ้ง และการแก้ destination จะมีผลต่อทุก QR ที่ใช้ลิงก์เดียวกัน
+
+ตรวจ regression ของ QR APIs/validation/schema ด้วย `node --test scripts/qr-studio-checks.mjs` (Node ที่รองรับ `node:sqlite`; ใช้ SQLite ในหน่วยความจำและ mock Storage ไม่แตะข้อมูลจริง) `pnpm dev` ใช้ตรวจ frontend; ทดสอบ redirect/session/D1 บน Cloudflare runtime ต้องใช้ Pages/Wrangler workflow ของโครงการ
+
+### ทดสอบ QR Studio โดยไม่ถอด ProtectedRoute
+
+รัน `pnpm dev:qr` แล้วเปิด <http://127.0.0.1:5174/qr-studio> ระบบจำลอง session ของสมาชิก `alice@example.com` และเรียก QR/Short Link Pages handlers เดิมกับ SQLite และ Storage ในหน่วยความจำ รองรับ Create/Save/Edit/Delete, upload โลโก้, export และ public redirect ใน localhost โดยไม่ต้องตั้ง Cloudflare/Garage หรือแก้ `App.jsx`
+
+- ต้องใช้ Node.js ที่รองรับ `node:sqlite` (Node 22.13+)
+- ข้อมูลทดสอบและโลโก้จะหายเมื่อหยุด/restart script; ไม่อ่าน `.env` และไม่เชื่อม D1/Garage จริง
+- โหมดนี้รองรับเฉพาะ QR Studio APIs และจำลองผู้ใช้ธรรมดา หน้า admin/ฟีเจอร์อื่นไม่ได้ mock; ถ้า Sign out ให้ restart script เพื่อเริ่ม session ทดสอบใหม่
+- `ProtectedRoute`, auth ของ production และ `pnpm dev` เดิมไม่เปลี่ยน โหมดจำลองมีเฉพาะ process ของ `dev:qr` ที่ bind `127.0.0.1`
+- รัน regression tests ด้วย `pnpm test:qr`; การทดสอบ Cloudflare runtime/Storage จริงยังต้องใช้ Pages/Wrangler และ session จริง
