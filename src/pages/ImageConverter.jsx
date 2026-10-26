@@ -304,7 +304,7 @@ function ImageConverter() {
     };
 
     return (
-        <section className={cx("mx-auto max-w-7xl animate-fadeInUp")}>
+        <section className={cx("mx-auto max-w-6xl animate-fadeInUp")}>
             <header className={cx("mb-6 flex flex-col gap-4 rounded-2xl p-5 glass-surface sm:flex-row sm:items-center sm:justify-between md:p-6")}>
                 <div className={cx("flex items-start gap-4")}>
                     <span className={cx("flex size-12 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary")}>

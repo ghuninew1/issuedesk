@@ -5,7 +5,7 @@ import { cx } from "../../utils/cx";
 export default function QRWorkspace({ children }) {
     useDocumentTitle("QR Code Studio");
     return (
-        <div className={cx("mx-auto max-w-6xl md:pl-16")}>
+        <div className={cx("mx-auto max-w-7xl md:pl-16")}>
             <header className={cx("mb-6")}>
                 <div
                     className={cx(
