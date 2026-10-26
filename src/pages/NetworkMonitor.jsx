@@ -164,6 +164,8 @@ function NetworkMonitor() {
     const [pingCheck, setPingCheck] = useState(null);
     const [knownPingTargets, setKnownPingTargets] = useState([]);
     const [pingLoading, setPingLoading] = useState(false);
+    const [recheckingAll, setRecheckingAll] = useState(false);
+    const [recheckAllProgress, setRecheckAllProgress] = useState("");
     const [deletingPingIp, setDeletingPingIp] = useState("");
     const [pingError, setPingError] = useState("");
     const [status, setStatus] = useState(null);
@@ -299,10 +301,51 @@ function NetworkMonitor() {
                 }
                 return [...byIp.values()].sort((left, right) => left.ipAddress.localeCompare(right.ipAddress));
             });
+            return result.checkId;
         } catch (cause) {
             setPingError(cause.message || "ส่งคำขอ Ping ไม่สำเร็จ");
+            return null;
         } finally {
             setPingLoading(false);
+        }
+    };
+
+    const recheckAllPingTargets = async () => {
+        if (!knownPingTargets.length || recheckingAll) return;
+        const batches = [];
+        for (let index = 0; index < knownPingTargets.length; index += 20) {
+            batches.push(knownPingTargets.slice(index, index + 20).map((target) => target.ipAddress));
+        }
+        setRecheckingAll(true);
+        setPingError("");
+        try {
+            for (const [index, targets] of batches.entries()) {
+                setRecheckAllProgress(`กำลังเช็คชุดที่ ${index + 1}/${batches.length}`);
+                const checkId = await queuePingCheck(targets, true);
+                if (!checkId) return;
+
+                let completed = false;
+                for (let attempt = 0; attempt < 90; attempt += 1) {
+                    await new Promise((resolve) => window.setTimeout(resolve, 2_000));
+                    const result = await api(`/api/network/ping/check?id=${encodeURIComponent(checkId)}`);
+                    setPingCheck(result.check);
+                    setKnownPingTargets(result.knownTargets || []);
+                    if (result.check?.status === "completed") {
+                        completed = true;
+                        break;
+                    }
+                }
+                if (!completed) {
+                    setPingError("การเช็คใช้เวลานานเกินไป หยุดการเช็คชุดถัดไปแล้ว กรุณาตรวจสถานะ Agent");
+                    return;
+                }
+            }
+            setPingError("");
+        } catch (cause) {
+            setPingError(cause.message || "เช็ค Ping ทั้งหมดไม่สำเร็จ");
+        } finally {
+            setRecheckingAll(false);
+            setRecheckAllProgress("");
         }
     };
 
@@ -428,7 +471,7 @@ function NetworkMonitor() {
                     <div className="flex flex-wrap items-center gap-2">
                         <GlassButton
                             type="button"
-                            disabled={pingTargets.length >= 20}
+                            disabled={pingTargets.length >= 20 || recheckingAll}
                             onClick={addPingTargetField}
                             className={cx("inline-flex items-center gap-2 bg-background/30 hover:bg-[var(--glass-surface-hover)] disabled:opacity-50 px-3 border border-border/70 rounded-xl h-10 text-sm transition")}
                         >
@@ -436,7 +479,7 @@ function NetworkMonitor() {
                         </GlassButton>
                         <GlassButton
                             type="submit"
-                            disabled={pingLoading || pingCheck?.status === "pending" || pingCheck?.status === "running"}
+                            disabled={pingLoading || recheckingAll || pingCheck?.status === "pending" || pingCheck?.status === "running"}
                             className={cx("inline-flex items-center gap-2 bg-primary hover:opacity-90 disabled:opacity-50 shadow-sm px-4 rounded-xl h-10 font-medium text-primary-foreground text-sm transition disabled:cursor-not-allowed")}
                         >
                             {pingLoading ? <LoaderCircle className="size-4 animate-spin" aria-hidden="true" /> : <Wifi className="size-4" aria-hidden="true" />}
@@ -447,7 +490,18 @@ function NetworkMonitor() {
                 </form>
                 {pingError && <p role="alert" className="text-amber-700 dark:text-amber-300 text-sm">{pingError}</p>}
                 <div className="space-y-2">
-                    <h3 className="font-medium text-sm">IP ที่เคยเช็ค ({knownPingTargets.length})</h3>
+                    <div className="flex flex-wrap justify-between items-center gap-2">
+                        <h3 className="font-medium text-sm">IP ที่เคยเช็ค ({knownPingTargets.length})</h3>
+                        <GlassButton
+                            type="button"
+                            disabled={!knownPingTargets.length || recheckingAll || pingLoading || pingCheck?.status === "pending" || pingCheck?.status === "running"}
+                            onClick={() => { void recheckAllPingTargets(); }}
+                            className={cx("inline-flex items-center gap-2 bg-background/30 hover:bg-[var(--glass-surface-hover)] disabled:opacity-50 px-3 border border-border/70 rounded-lg h-9 font-medium text-xs transition disabled:cursor-not-allowed")}
+                        >
+                            {recheckingAll ? <LoaderCircle className="size-3.5 animate-spin" aria-hidden="true" /> : <RefreshCw className="size-3.5" aria-hidden="true" />}
+                            {recheckingAll ? recheckAllProgress || "กำลังเช็คทั้งหมด" : "เช็คซ้ำทั้งหมด"}
+                        </GlassButton>
+                    </div>
                     {knownPingTargets.length ? (
                         <div className="border border-border/60 rounded-xl overflow-hidden">
                             {knownPingTargets.map((result) => (
@@ -476,13 +530,13 @@ function NetworkMonitor() {
                                     <div className="flex sm:justify-end items-center gap-2">
                                         <GlassButton
                                             type="button"
-                                            disabled={pingLoading || pingCheck?.status === "pending" || pingCheck?.status === "running"}
+                                            disabled={pingLoading || recheckingAll || pingCheck?.status === "pending" || pingCheck?.status === "running"}
                                             onClick={() => { void queuePingCheck([result.ipAddress], true); }}
                                             className={cx("bg-background/30 hover:bg-[var(--glass-surface-hover)] disabled:opacity-50 px-3 border border-border/70 rounded-lg h-9 font-medium text-xs transition disabled:cursor-not-allowed")}
                                         >เช็คซ้ำ</GlassButton>
                                         <GlassButton
                                             type="button"
-                                            disabled={deletingPingIp === result.ipAddress || pingCheck?.status === "pending" || pingCheck?.status === "running"}
+                                            disabled={deletingPingIp === result.ipAddress || recheckingAll || pingCheck?.status === "pending" || pingCheck?.status === "running"}
                                             onClick={() => { void deletePingTarget(result.ipAddress); }}
                                             className={cx("bg-rose-500/5 hover:bg-rose-500/10 disabled:opacity-50 px-3 border border-rose-500/20 rounded-lg h-9 font-medium text-rose-600 dark:text-rose-300 text-xs transition disabled:cursor-not-allowed")}
                                         >{deletingPingIp === result.ipAddress ? "กำลังลบ" : "ลบข้อมูล"}</GlassButton>
