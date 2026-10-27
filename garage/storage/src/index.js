@@ -41,7 +41,7 @@ if (!Number.isSafeInteger(maxFileSize) || maxFileSize <= 0) {
   throw new Error('MAX_FILE_SIZE_MB must be a positive number')
 }
 
-const s3 = new S3Client({
+const s3Config = {
   endpoint: process.env.S3_ENDPOINT,
   region: process.env.S3_REGION,
   forcePathStyle: true,
@@ -50,11 +50,13 @@ const s3 = new S3Client({
     accessKeyId: process.env.AWS_ACCESS_KEY_ID,
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
   },
-})
+}
+const s3 = new S3Client(s3Config)
+const s3Copy = new S3Client({ ...s3Config, requestChecksumCalculation: 'WHEN_REQUIRED' })
 
 
 const timeoutMs = Number(process.env.STORAGE_PROVIDER_TIMEOUT_MS || 60000)
-const storage = createStorageManager(createProviderRegistry(createGarageProvider({ s3, timeoutMs })))
+const storage = createStorageManager(createProviderRegistry(createGarageProvider({ s3, s3Copy, timeoutMs })))
 const app = createApp({ db, storage, bucket, apiToken, enableLegacyApi, maxFileSize })
 serve({ fetch: app.fetch, port, hostname: '0.0.0.0' })
 console.log(`Storage API listening on port ${port}`)

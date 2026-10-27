@@ -12,10 +12,15 @@ function normalizeError(error) {
   throw error
 }
 
-const SAFE_ERROR_TYPES = new Set(['StorageError', 'Error', 'TypeError', 'AbortError', 'TimeoutError', 'NoSuchKey', 'NotFound'])
+const SAFE_ERROR_TYPES = new Set(['StorageError', 'Error', 'TypeError', 'AbortError', 'TimeoutError', 'NoSuchKey', 'NotFound', 'S3ServiceException', 'InternalError', 'InvalidRequest', 'InvalidArgument', 'AccessDenied', 'SignatureDoesNotMatch', 'EntityTooLarge', 'IncompleteBody', 'NotImplemented', 'SlowDown', 'RequestTimeout'])
+const SAFE_PROVIDER_ERROR_CODES = new Set(['ERR_INVALID_ARG_TYPE', 'ERR_STREAM_PREMATURE_CLOSE', 'ECONNRESET', 'ETIMEDOUT', 'EPIPE', 'ENOTFOUND', 'EAI_AGAIN', 'NoSuchKey', 'NotFound', 'InternalError', 'InvalidRequest', 'InvalidArgument', 'AccessDenied', 'SignatureDoesNotMatch', 'EntityTooLarge', 'IncompleteBody', 'NotImplemented', 'SlowDown', 'RequestTimeout'])
 
 function safeErrorType(error) {
   return SAFE_ERROR_TYPES.has(error?.name) ? error.name : 'Other'
+}
+
+function safeProviderErrorCode(error) {
+  return SAFE_PROVIDER_ERROR_CODES.has(error?.code) ? error.code : 'none'
 }
 
 function copyDiagnostic(logger, fields) {
@@ -249,6 +254,8 @@ export function createFileManager({ db, storage, maxSynchronousObjects = MAX_SYN
       copyDiagnostic(logger, {
         operation: 'copy', result: 'error', stage: diagnosticStage,
         errorType: safeErrorType(error), providerOperation,
+        errorCode: safeProviderErrorCode(error),
+        retryable: Boolean(error?.$retryable || error?.retryable),
         ...(Number.isInteger(status) && status >= 100 && status <= 599 ? { status } : {}),
       })
     }

@@ -5,10 +5,10 @@ import { GARAGE_CAPABILITIES } from '../capabilities.js'
 import { normalizeError, StorageError } from '../errors.js'
 import { validateReference } from '../validation.js'
 
-export function createGarageProvider({ s3, timeoutMs = 60000 }) {
+export function createGarageProvider({ s3, s3Copy = s3, timeoutMs = 60000 }) {
   if (!Number.isSafeInteger(timeoutMs) || timeoutMs <= 0) throw new StorageError('INVALID_INPUT')
 
-  async function request(Command, input, params, streaming = false) {
+  async function request(Command, input, params, streaming = false, client = s3) {
     validateReference(input)
     if (Command !== ListObjectsV2Command && !input.providerRef) throw new StorageError('INVALID_INPUT')
     const controller = new AbortController()
@@ -21,7 +21,7 @@ export function createGarageProvider({ s3, timeoutMs = 60000 }) {
     input.signal?.addEventListener('abort', abort, { once: true })
     if (input.signal?.aborted) abort()
     try {
-      const result = await s3.send(new Command(params), { abortSignal: controller.signal })
+      const result = await client.send(new Command(params), { abortSignal: controller.signal })
       if (!streaming || !result.Body) {
         cleanup()
         return streaming ? { body: null } : result
@@ -106,9 +106,9 @@ export function createGarageProvider({ s3, timeoutMs = 60000 }) {
     try {
       input.onCopyStage?.('provider-write', 'PutObject')
       await request(PutObjectCommand, input, {
-        Bucket: input.mount.bucket, Key: input.targetRef, Body: hashWhileReading(download.body),
+        Bucket: input.mount.bucket, Key: input.targetRef, Body: Readable.from(hashWhileReading(download.body), { objectMode: false }),
         ContentLength: input.size, ContentType: input.mimeType || download.mimeType || 'application/octet-stream',
-      })
+      }, false, s3Copy)
       input.onCopyStage?.('verify-size', 'HeadObject')
       const verified = await request(HeadObjectCommand, input, { Bucket: input.mount.bucket, Key: input.targetRef })
       if (!Number.isSafeInteger(input.size) || verified.ContentLength !== input.size) throw new StorageError('TRANSFER_INCOMPLETE')

@@ -32,11 +32,18 @@ const deletedKeys = new Set()
 const failDelete = new Set()
 let failGet = new Set()
 let failAnyDelete = false
+let failPut = false
+let lastDeletedKey = null
 const s3 = { async send(command) {
   const { Bucket, Key, Body, ContentType } = command.input
   if (Bucket === 'foreign-bucket') throw new Error('scope leak')
   switch (command.constructor.name) {
     case 'PutObjectCommand': {
+      if (failPut) {
+        const { value } = await Body[Symbol.asyncIterator]().next()
+        objects.set(Key, { bytes: Buffer.from(value).subarray(0, 1), type: ContentType })
+        throw new Error('private destination write failure')
+      }
       let bytes
       if (Buffer.isBuffer(Body) || Body instanceof Uint8Array) bytes = Buffer.from(Body)
       else { const chunks = []; for await (const chunk of Body) chunks.push(Buffer.from(chunk)); bytes = Buffer.concat(chunks) }
@@ -56,7 +63,7 @@ const s3 = { async send(command) {
     }
     case 'DeleteObjectCommand':
       if (failAnyDelete || failDelete.has(Key)) throw new Error('secret delete failure')
-      objects.delete(Key); deletedKeys.add(Key); return {}
+      objects.delete(Key); deletedKeys.add(Key); lastDeletedKey = Key; return {}
     default: throw new Error(`unexpected command ${command.constructor.name}`)
   }
 } }
@@ -267,10 +274,25 @@ test('provider failure and SQLite finalize failure leave clean, inspectable oper
   copyLogs.length = 0
   const failedCopy = await json(`${filesUrl}/objects/${source.objectId}/copy`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ parentId: copyTarget.objectId }) })
   assert.equal(failedCopy.response.status, 502)
-  assert.ok(copyLogs.some((line) => line === '[storage-copy] operation=copy result=error stage=provider-read errorType=Error providerOperation=GetObject'))
+  assert.ok(copyLogs.some((line) => line === '[storage-copy] operation=copy result=error stage=provider-read errorType=Error providerOperation=GetObject errorCode=none retryable=false'))
   assert.ok(copyLogs.every((line) => !line.includes('secret source network failure') && !line.includes(sourceRef) && !line.includes(projectId)))
   assert.equal((await operation(failedCopy.data.error.operationId)).data.operation.status, 'failed')
   failGet.clear()
+
+  failPut = true
+  copyLogs.length = 0
+  const failedPut = await json(`${filesUrl}/objects/${source.objectId}/copy`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ parentId: copyTarget.objectId }) })
+  failPut = false
+  assert.equal(failedPut.response.status, 502)
+  assert.equal(failedPut.data.error.code, 'PROVIDER_UNAVAILABLE')
+  assert.ok(copyLogs.some((line) => line === '[storage-copy] operation=copy result=error stage=provider-write errorType=Error providerOperation=PutObject errorCode=none retryable=false'))
+  assert.ok(lastDeletedKey)
+  assert.equal(objects.has(lastDeletedKey), false)
+  assert.ok(deletedKeys.has(lastDeletedKey))
+  assert.equal(db.prepare('SELECT count(*) AS count FROM storage_name_reservations').get().count, 0)
+  assert.equal(db.prepare('SELECT count(*) AS count FROM storage_objects WHERE project_id = ? AND parent_id = ? AND name = ? AND object_id != ?').get(projectId, copyTarget.objectId, source.name, source.objectId).count, 0)
+  assert.equal((await operation(failedPut.data.error.operationId)).data.operation.status, 'failed')
+
   const filesBeforeCopy = db.prepare('SELECT count(*) AS count FROM files WHERE project_id=?').get(projectId).count
   db.exec("CREATE TRIGGER reject_manager_copy BEFORE INSERT ON storage_objects WHEN NEW.name = 'source-failure.txt' BEGIN SELECT RAISE(ABORT, 'private SQL failure'); END")
   try {
