@@ -107,7 +107,7 @@ const PortalHome = () => {
                             className={cx(
                                 "mt-8 inline-flex min-h-11 w-full items-center",
                                 "justify-center gap-2 rounded-lg px-4 py-3",
-                                "bg-slate-900 text-sm font-medium text-white shadow-lg shadow-cyan-900/10 dark:bg-cyan-500 dark:text-slate-950",
+                                "portal-home-blue-action bg-slate-900 text-sm font-medium text-white shadow-lg shadow-cyan-900/10 dark:bg-cyan-500 dark:text-slate-950",
                                 "transition-all hover:-translate-y-0.5 hover:bg-cyan-800 hover:text-white dark:hover:bg-cyan-400 dark:hover:text-slate-950",
                                 "focus-visible:outline-none focus-visible:ring-2",
                                 "focus-visible:ring-ring focus-visible:ring-offset-2",

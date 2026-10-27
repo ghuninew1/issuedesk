@@ -666,3 +666,51 @@ body {
         transition: none !important;
     }
 }
+
+/* Contrast-aware glass reflection for the blue Home call-to-action only. */
+.portal-home-blue-action {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+}
+
+.portal-home-blue-action::before,
+.portal-home-blue-action::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 300ms;
+}
+
+.portal-home-blue-action::before {
+    background: linear-gradient(
+        135deg,
+        color-mix(in oklch, currentColor 32%, transparent) 0%,
+        transparent 40%,
+        color-mix(in oklch, currentColor 14%, transparent) 100%
+    );
+}
+
+.portal-home-blue-action::after {
+    background: radial-gradient(
+        circle at 50% 50%,
+        color-mix(in oklch, currentColor 36%, transparent),
+        color-mix(in oklch, currentColor 12%, transparent) 48%,
+        transparent 76%
+    );
+}
+
+.portal-home-blue-action:where(:hover, :focus-visible)::before,
+.portal-home-blue-action:where(:hover, :focus-visible)::after {
+    opacity: 1;
+}
+
+.portal-home-blue-action:where(:hover, :focus-visible) {
+    box-shadow: inset 0 1px 0 color-mix(in oklch, currentColor 34%, transparent),
+        inset 0 0 0 1px color-mix(in oklch, currentColor 24%, transparent),
+        0 6px 20px -6px rgb(0 0 0 / 25%);
+}
