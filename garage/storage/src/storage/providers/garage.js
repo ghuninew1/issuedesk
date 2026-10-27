@@ -78,11 +78,19 @@ export function createGarageProvider({ s3, timeoutMs = 60000 }) {
     } catch (error) {
       cleanup()
       controller.abort()
+      if (typeof input.onCopyFailure === 'function') {
+        const operation = Command === GetObjectCommand ? 'GetObject'
+          : Command === PutObjectCommand ? 'PutObject'
+            : Command === HeadObjectCommand ? 'HeadObject'
+              : Command === DeleteObjectCommand ? 'DeleteObject' : 'Other'
+        input.onCopyFailure(error, operation)
+      }
       throw normalizeError(error)
     }
   }
 
   async function copy(input) {
+    input.onCopyStage?.('provider-read', 'GetObject')
     const download = await request(GetObjectCommand, input, {
       Bucket: input.mount.bucket, Key: input.providerRef,
     }, true)
@@ -96,12 +104,15 @@ export function createGarageProvider({ s3, timeoutMs = 60000 }) {
       }
     }
     try {
+      input.onCopyStage?.('provider-write', 'PutObject')
       await request(PutObjectCommand, input, {
         Bucket: input.mount.bucket, Key: input.targetRef, Body: hashWhileReading(download.body),
         ContentLength: input.size, ContentType: input.mimeType || download.mimeType || 'application/octet-stream',
       })
+      input.onCopyStage?.('verify-size', 'HeadObject')
       const verified = await request(HeadObjectCommand, input, { Bucket: input.mount.bucket, Key: input.targetRef })
       if (!Number.isSafeInteger(input.size) || verified.ContentLength !== input.size) throw new StorageError('TRANSFER_INCOMPLETE')
+      input.onCopyStage?.('verify-checksum', 'GetObject')
       const copied = await request(GetObjectCommand, { ...input, providerRef: input.targetRef }, {
         Bucket: input.mount.bucket, Key: input.targetRef,
       }, true)
@@ -111,7 +122,11 @@ export function createGarageProvider({ s3, timeoutMs = 60000 }) {
       if (sourceHash.digest('hex') !== targetHash.digest('hex')) throw new StorageError('TRANSFER_INCOMPLETE')
       return { providerRef: input.targetRef, size: verified.ContentLength, mimeType: verified.ContentType || input.mimeType }
     } catch (error) {
-      try { await request(DeleteObjectCommand, input, { Bucket: input.mount.bucket, Key: input.targetRef }) }
+      try {
+        await request(DeleteObjectCommand, { ...input, onCopyStage: undefined, onCopyFailure: undefined }, {
+          Bucket: input.mount.bucket, Key: input.targetRef,
+        })
+      }
       catch { error.cleanupFailed = true }
       throw error
     }

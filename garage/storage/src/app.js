@@ -7,7 +7,7 @@ import { safeContentType, attachmentName } from './storage/validation.js'
 import { legacyNameKey } from './storage/names.js'
 import { registerFileManagerRoutes } from './storage/file-manager-routes.js'
 
-export function createApp({ db, storage, bucket, apiToken, enableLegacyApi = false, maxFileSize }) {
+export function createApp({ db, storage, bucket, apiToken, enableLegacyApi = false, maxFileSize, logger = console }) {
   const app = new Hono()
 
   const maxRequestSize = maxFileSize + 1024 * 1024
@@ -655,7 +655,7 @@ export function createApp({ db, storage, bucket, apiToken, enableLegacyApi = fal
     },
   )
 
-  registerFileManagerRoutes(app, { db, storage, maxFileSize })
+  registerFileManagerRoutes(app, { db, storage, maxFileSize, logger })
 
   app.onError((error, c) => {
     console.error('Unhandled API error:', error)

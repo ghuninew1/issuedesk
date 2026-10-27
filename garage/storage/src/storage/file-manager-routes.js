@@ -45,8 +45,8 @@ async function bodyJson(c) {
   }
 }
 
-export function registerFileManagerRoutes(app, { db, storage, maxFileSize }) {
-  const manager = createFileManager({ db, storage })
+export function registerFileManagerRoutes(app, { db, storage, maxFileSize, logger = console }) {
+  const manager = createFileManager({ db, storage, logger })
   app.use('/v3/*', async (c, next) => { c.set('db', db); c.header('Cache-Control', 'no-store'); await next() })
 
   const run = async (c, action, status = 200) => {

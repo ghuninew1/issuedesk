@@ -12,6 +12,21 @@ function normalizeError(error) {
   throw error
 }
 
+const SAFE_ERROR_TYPES = new Set(['StorageError', 'Error', 'TypeError', 'AbortError', 'TimeoutError', 'NoSuchKey', 'NotFound'])
+
+function safeErrorType(error) {
+  return SAFE_ERROR_TYPES.has(error?.name) ? error.name : 'Other'
+}
+
+function copyDiagnostic(logger, fields) {
+  try {
+    const message = ['[storage-copy]', ...Object.entries(fields).map(([key, value]) => `${key}=${value}`)].join(' ')
+    logger?.warn?.(message)
+  } catch {
+    // Diagnostics must not affect Copy behavior.
+  }
+}
+
 function serialize(row) {
   return {
     objectId: row.object_id,
@@ -27,7 +42,7 @@ function serialize(row) {
   }
 }
 
-export function createFileManager({ db, storage, maxSynchronousObjects = MAX_SYNCHRONOUS_OBJECTS }) {
+export function createFileManager({ db, storage, maxSynchronousObjects = MAX_SYNCHRONOUS_OBJECTS, logger = console }) {
   if (!Number.isSafeInteger(maxSynchronousObjects) || maxSynchronousObjects < 1) throw new TypeError('Invalid synchronous operation limit')
 
   const activeProject = (projectId, appId) => db.prepare(`
@@ -219,29 +234,66 @@ export function createFileManager({ db, storage, maxSynchronousObjects = MAX_SYN
   }
 
   const copy = async ({ projectId, appId, objectId, parentId = null, signal }) => {
-    const project = activeProject(projectId, appId)
-    if (!project) notFound()
-    const source = object(projectId, objectId)
-    if (!source) notFound()
-    parentFolder(projectId, parentId)
-    const items = tree(projectId, objectId)
-    if (!items.length) notFound()
-    if (items.length > maxSynchronousObjects) {
-      const opId = beginOperation(projectId, 'copy', objectId, parentId, items.length)
-      failOperation(opId, 'OPERATION_TOO_LARGE', 0, { maxSynchronousObjects })
+    let diagnosticStage = 'request'
+    let providerOperation = 'none'
+    let failureLogged = false
+    const stage = (name, operation = 'none') => {
+      diagnosticStage = name
+      providerOperation = operation
+      copyDiagnostic(logger, { operation: 'copy', stage: name })
     }
-    assertNameAvailable(projectId, parentId, source.name)
+    const logFailure = (error) => {
+      if (failureLogged) return
+      failureLogged = true
+      const status = error?.$metadata?.httpStatusCode ?? error?.statusCode
+      copyDiagnostic(logger, {
+        operation: 'copy', result: 'error', stage: diagnosticStage,
+        errorType: safeErrorType(error), providerOperation,
+        ...(Number.isInteger(status) && status >= 100 && status <= 599 ? { status } : {}),
+      })
+    }
+
+    stage('request')
+    stage('source-metadata')
+    let project
+    let source
+    let items
+    try {
+      project = activeProject(projectId, appId)
+      if (!project) notFound()
+      source = object(projectId, objectId)
+      if (!source) notFound()
+      parentFolder(projectId, parentId)
+      items = tree(projectId, objectId)
+      if (!items.length) notFound()
+      if (items.length > maxSynchronousObjects) {
+        const opId = beginOperation(projectId, 'copy', objectId, parentId, items.length)
+        failOperation(opId, 'OPERATION_TOO_LARGE', 0, { maxSynchronousObjects })
+      }
+    } catch (error) { logFailure(error); throw error }
+    stage('destination-reservation')
+    try { assertNameAvailable(projectId, parentId, source.name) }
+    catch (error) { logFailure(error); throw error }
     const siblingKeys = new Set()
     for (const item of items) {
       const parentKey = item.object_id === source.object_id ? (parentId || 'project-root') : item.parent_id
       const nameKey = normalizeObjectName(item.name).normalizedName
       const key = `${parentKey}:${nameKey}`
-      if (siblingKeys.has(key)) throw new StorageError('NAME_CONFLICT')
+      if (siblingKeys.has(key)) { const error = new StorageError('NAME_CONFLICT'); logFailure(error); throw error }
       siblingKeys.add(key)
     }
-    const operationId = beginOperation(projectId, 'copy', objectId, parentId, items.length)
-    const reservation = db.transaction(() => db.prepare(`INSERT INTO storage_name_reservations (reservation_id, project_id, parent_id, normalized_name, expires_at) VALUES (?, ?, ?, ?, datetime('now', '+15 minutes'))`).run(operationId, projectId, parentId, normalizeObjectName(source.name).normalizedName))
-    try { reservation.immediate() } catch (error) { finishOperation(operationId, 'failed', 'NAME_CONFLICT'); return normalizeError(error) }
+    let operationId
+    let reservation
+    try {
+      operationId = beginOperation(projectId, 'copy', objectId, parentId, items.length)
+      reservation = db.transaction(() => db.prepare(`INSERT INTO storage_name_reservations (reservation_id, project_id, parent_id, normalized_name, expires_at) VALUES (?, ?, ?, ?, datetime('now', '+15 minutes'))`).run(operationId, projectId, parentId, normalizeObjectName(source.name).normalizedName))
+    } catch (error) { logFailure(error); throw error }
+    try { reservation.immediate() } catch (error) {
+      finishOperation(operationId, 'failed', 'NAME_CONFLICT')
+      const normalized = normalizeError(error)
+      logFailure(normalized)
+      throw normalized
+    }
     const ids = new Map()
     const copies = []
     try {
@@ -253,6 +305,7 @@ export function createFileManager({ db, storage, maxSynchronousObjects = MAX_SYN
         } else {
           const providerReference = randomUUID()
           setOperationDetails(operationId, { plannedProviderReferences: [...copies.filter((entry) => entry.type === 'file').map((entry) => entry.provider_reference), providerReference] })
+          stage('provider-copy')
           try { await storage.copy({
             mount: { provider: 'garage', bucket: project.bucket },
             providerRef: item.provider_reference,
@@ -260,7 +313,13 @@ export function createFileManager({ db, storage, maxSynchronousObjects = MAX_SYN
             size: item.size_bytes,
             mimeType: item.content_type,
             signal,
+            onCopyStage: (name, operation) => stage(name, operation),
+            onCopyFailure: (error, operation) => {
+              providerOperation = operation
+              logFailure(error)
+            },
           }) } catch (error) {
+            logFailure(error)
             if (error.cleanupFailed) copies.push({ ...item, provider_reference: providerReference })
             throw error
           }
@@ -268,6 +327,7 @@ export function createFileManager({ db, storage, maxSynchronousObjects = MAX_SYN
         }
         ids.set(item.object_id, newId)
       }
+      stage('metadata-commit')
       const commit = db.transaction(() => {
         const currentTree = tree(projectId, objectId)
         if (currentTree.length !== items.length || currentTree.some((entry, index) => entry.object_id !== items[index].object_id || entry.provider_reference !== items[index].provider_reference || entry.parent_id !== items[index].parent_id)) throw new StorageError('TRANSFER_INCOMPLETE')
@@ -284,8 +344,10 @@ export function createFileManager({ db, storage, maxSynchronousObjects = MAX_SYN
         finishOperation(operationId, 'completed', null, copies.length)
       })
       commit.immediate()
+      copyDiagnostic(logger, { operation: 'copy', result: 'success' })
       return { object: serialize(object(projectId, ids.get(objectId))), operationId }
     } catch (error) {
+      logFailure(error)
       const orphans = []
       for (const item of copies) {
         if (item.type !== 'file') continue

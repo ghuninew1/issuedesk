@@ -62,7 +62,8 @@ const s3 = { async send(command) {
 } }
 const provider = createGarageProvider({ s3, timeoutMs: 1000 })
 const storage = createStorageManager(createProviderRegistry(provider))
-const app = createApp({ db, storage, bucket: 's2-bucket', apiToken: 'legacy-token', maxFileSize: 100 })
+const copyLogs = []
+const app = createApp({ db, storage, bucket: 's2-bucket', apiToken: 'legacy-token', maxFileSize: 100, logger: { warn: (message) => copyLogs.push(message) } })
 const filesUrl = `/v3/projects/${projectId}`
 async function api(path, init = {}) {
   return app.request(path, { ...init, headers: { Authorization: `Bearer ${secret}`, ...init.headers } })
@@ -172,6 +173,7 @@ test('copies files and folder trees to new logical IDs and verifies Garage bytes
   const first = await upload('one.txt', source.objectId, 'one')
   const second = await upload('two.txt', nested.objectId, 'two')
   const destination = await createFolder('Copy destination')
+  copyLogs.length = 0
   const result = await json(`${filesUrl}/objects/${source.objectId}/copy`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ parentId: destination.objectId }) })
   assert.equal(result.response.status, 201, JSON.stringify(result.data))
   const copiedRoot = result.data.object
@@ -188,6 +190,14 @@ test('copies files and folder trees to new logical IDs and verifies Garage bytes
   assert.equal(await copiedBytes.text(), 'one')
   const op = await operation(result.data.operationId)
   assert.equal(op.data.operation.status, 'completed')
+  const stages = copyLogs.map((line) => line.match(/ stage=([a-z-]+)/)?.[1]).filter(Boolean)
+  let previous = -1
+  for (const expected of ['request', 'source-metadata', 'destination-reservation', 'provider-copy', 'provider-read', 'provider-write', 'verify-size', 'verify-checksum', 'metadata-commit']) {
+    const next = stages.indexOf(expected, previous + 1)
+    assert.ok(next > previous, `missing or out-of-order diagnostic stage ${expected}: ${stages.join(', ')}`)
+    previous = next
+  }
+  assert.ok(copyLogs.some((line) => line === '[storage-copy] operation=copy result=success'))
 })
 
 test('Trash hides an entire subtree from list, stat, download and v2; restore reports conflict and supports fallback', async () => {
@@ -254,8 +264,11 @@ test('provider failure and SQLite finalize failure leave clean, inspectable oper
   const sourceRef = db.prepare('SELECT provider_reference FROM storage_objects WHERE object_id=?').get(source.objectId).provider_reference
   failGet.add(sourceRef)
   const copyTarget = await createFolder('Failure copy target')
+  copyLogs.length = 0
   const failedCopy = await json(`${filesUrl}/objects/${source.objectId}/copy`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ parentId: copyTarget.objectId }) })
   assert.equal(failedCopy.response.status, 502)
+  assert.ok(copyLogs.some((line) => line === '[storage-copy] operation=copy result=error stage=provider-read errorType=Error providerOperation=GetObject'))
+  assert.ok(copyLogs.every((line) => !line.includes('secret source network failure') && !line.includes(sourceRef) && !line.includes(projectId)))
   assert.equal((await operation(failedCopy.data.error.operationId)).data.operation.status, 'failed')
   failGet.clear()
   const filesBeforeCopy = db.prepare('SELECT count(*) AS count FROM files WHERE project_id=?').get(projectId).count
