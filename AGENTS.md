@@ -1,4 +1,12 @@
 
+
+## Shared Storage phases S1/S2 boundary
+
+- `garage/storage/src/index.js` wires production dependencies; `src/app.js` exposes the testable app factory. Object I/O goes through `src/storage/manager.js` and the Garage-only registry/provider; v2 metadata/ownership remains SQLite-backed in routes.
+- Keep `/v2` responses and app/project/file scope compatible. Download streams with a bounded provider deadline (`STORAGE_PROVIDER_TIMEOUT_MS`, default 60000); upload still buffers multipart data. Never claim upload streaming.
+- `pnpm --dir garage/storage test` runs in-memory SQLite/fake-S3 tests and a loopback Node adapter disconnect test; it does not contact Garage or open the runtime database. Install service dependencies first. S1 validation passed 12 tests in an isolated temporary workspace; production Node 22/Garage/Access are unverified.
+- `garage/storage/PHASE_S2.md` describes the internal `/v3` File Manager API and the required additive `pnpm migrate` step. S2 is local only; `pnpm --dir garage/storage test` passed 27/27. No migration/deployment/production data change was part of validation.
+
 # AGENTS.md — IssueDesk
 
 ## Scope and Sources of Truth

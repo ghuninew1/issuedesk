@@ -1,5 +1,10 @@
 # IssueDesk
 
+## Shared Storage Phase S1/S2 (2026-10-27)
+
+S1 introduced the Storage Manager and Garage adapter and streams downloads. S2 adds additive folder/file metadata, internal `/v3` File Manager routes, pagination, duplicate-name enforcement, copy with size/SHA-256 verification, Trash/restore/permanent-delete flows and operation records. The existing app credential/project scope and `/v2` response formats remain; trashed entries are hidden from normal v2 list/download. `pnpm test` passes **27/27**, `pnpm lint` and `git diff --check` pass using fake S3 and in-memory SQLite. No migration was applied to the service database and nothing was deployed. Before running this version, apply the additive migration after a backup. See [Phase S2 report](garage/storage/PHASE_S2.md). Nexora backend and Phase 8 remain unimplemented.
+
+
 > ดูสรุปโครงสร้างระบบ, API, migrations และจุดเริ่มต้นสำหรับงานต่อใน [PROJECT_HANDOFF.md](PROJECT_HANDOFF.md)
 
 IssueDesk เป็นเว็บแอป IT Help Desk สำหรับแจ้งปัญหาภายในองค์กร ติดตามสถานะ Ticket และให้ผู้ดูแลระบบจัดการงานได้ในที่เดียว

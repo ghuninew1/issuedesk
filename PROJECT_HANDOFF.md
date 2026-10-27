@@ -1,5 +1,10 @@
 # IssueDesk — Project Handoff
 
+## Shared Storage Phase S1/S2 — local implementation
+
+2026-10-27: S1 added the manager/Garage boundary and streaming download; S2 added an additive local folder/file schema, internal `/v3` File Manager routes, paging, duplicate-name enforcement, copy verification, Trash/restore/permanent-delete operations and reconciliation state. Existing v2 auth/scope and response formats remain; v2 permanent DELETE is preserved. `pnpm test` 27/27, IssueDesk `pnpm lint` and `git diff --check` passed. Tests use memory SQLite/fake S3; Garage/Cloudflare Access were not checked. The migration was not applied: back up then run `pnpm --dir garage/storage migrate` before starting this service version. See [PHASE_S2.md](garage/storage/PHASE_S2.md) for API, migration and rollback details. S2 is complete locally. No deployment, Nexora backend or Phase 8 work.
+
+
 สรุปสถานะจาก source code ใน repository ณ วันที่ 27 ตุลาคม 2026 เพื่อให้กลับมาพัฒนาต่อได้โดยไม่ต้องไล่อ่านทั้งโปรเจกต์ เอกสารนี้อธิบายสิ่งที่โค้ดทำและค่าที่ต้องตั้งก่อนเปิดใช้ ส่วนการตั้งค่า production และสถานะ migration บน Cloudflare ต้องตรวจจาก Cloudflare ก่อนเปลี่ยนแปลงเสมอ
 
 ## ภาพรวม

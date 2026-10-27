@@ -12,6 +12,8 @@ RUN npm install --omit=dev \
     && npm cache clean --force
 
 COPY --chown=node:node src ./src
+COPY --chown=node:node migrations ./migrations
+COPY --chown=node:node scripts ./scripts
 
 RUN mkdir -p /app/data \
     && chown node:node /app/data

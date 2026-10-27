@@ -39,3 +39,7 @@ test.py
 test*
 !garage/network-monitor/tests/
 !garage/network-monitor/tests/*.py
+
+# Keep Shared Storage regression tests
+!garage/storage/tests/
+!garage/storage/tests/*.js
