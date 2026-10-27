@@ -38,4 +38,6 @@ Use `pnpm` for package commands. Available scripts include `pnpm dev`, `pnpm lin
 
 Trace the existing flow across page/component, service/helper, Pages Function, and migration as applicable. Follow established patterns and keep validation and error responses consistent with neighboring endpoints. When changing permissions or data returned by an endpoint, review both the API and its UI consumers. Consult the relevant storage documentation for Storage API changes.
 
+For visible UI actions, use the existing `src/components/GlassButton.jsx` instead of a raw `<button>`. Keep native buttons for non-visual click targets such as full-screen backdrops.
+
 Run lint, build, or other checks when the user requests verification or when needed to substantiate a reported result. Do not claim remote behavior, migration state, or deployment success based only on local source or a successful frontend build.
