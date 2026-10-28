@@ -2,10 +2,24 @@
 
 ## Shared Storage Phase S1/S2 — local implementation
 
-2026-10-27: S1 added the manager/Garage boundary and streaming download; S2 added an additive local folder/file schema, internal `/v3` File Manager routes, paging, duplicate-name enforcement, copy verification, Trash/restore/permanent-delete operations and reconciliation state. Existing v2 auth/scope and response formats remain; v2 permanent DELETE is preserved. `pnpm test` 27/27, IssueDesk `pnpm lint` and `git diff --check` passed. Tests use memory SQLite/fake S3; Garage/Cloudflare Access were not checked. The migration was not applied: back up then run `pnpm --dir garage/storage migrate` before starting this service version. See [PHASE_S2.md](garage/storage/PHASE_S2.md) for API, migration and rollback details. S2 is complete locally. No deployment, Nexora backend or Phase 8 work.
+2026-10-27: S1 added the manager/Garage boundary and streaming download; S2 added an additive local folder/file schema, internal `/v3` File Manager routes, paging, duplicate-name enforcement, copy verification, Trash/restore/permanent-delete operations and reconciliation state. Existing v2 auth/scope and response formats remain; v2 permanent DELETE is preserved. Historical checks: `pnpm --dir garage/storage test` 27/27, IssueDesk `pnpm lint` and `git diff --check` passed; not rerun in this documentation audit. Tests use memory SQLite/fake S3; Garage/Cloudflare Access were not checked. The original S2 work did not apply the migration; current deployment/database state was not inspected. Inspect migration state and back up before an authorized run of `pnpm --dir garage/storage migrate` before starting this service version. See [PHASE_S2.md](garage/storage/PHASE_S2.md) for API, migration and rollback details. S2 is complete locally. No deployment was performed in this audit. This checkout does not establish the current status of Nexora.
 
 
-สรุปสถานะจาก source code ใน repository ณ วันที่ 27 ตุลาคม 2026 เพื่อให้กลับมาพัฒนาต่อได้โดยไม่ต้องไล่อ่านทั้งโปรเจกต์ เอกสารนี้อธิบายสิ่งที่โค้ดทำและค่าที่ต้องตั้งก่อนเปิดใช้ ส่วนการตั้งค่า production และสถานะ migration บน Cloudflare ต้องตรวจจาก Cloudflare ก่อนเปลี่ยนแปลงเสมอ
+สรุปสถานะจาก source code ใน repository ณ วันที่ 28 ตุลาคม 2026 เพื่อให้กลับมาพัฒนาต่อได้โดยไม่ต้องไล่อ่านทั้งโปรเจกต์ เอกสารนี้อธิบายสิ่งที่โค้ดทำและค่าที่ต้องตั้งก่อนเปิดใช้ ส่วนการตั้งค่า production และสถานะ migration บน Cloudflare ต้องตรวจจาก Cloudflare ก่อนเปลี่ยนแปลงเสมอ
+
+## กฎส่งต่องานและผลตรวจรอบนี้ — 28 ตุลาคม 2026
+
+- Checkout: `/Users/ghuninew/GitHub/issuedesk`; branch `main`, HEAD `2b4f2f1` (`feat: update SKILL.md to recommend using GlassButton for UI actions`); working tree สะอาดก่อนเริ่ม
+- ตรวจ `package.json`, `src/App.jsx`, API exports, D1 migrations และ Storage service source เทียบเอกสาร: version 1.3.4, Sheet ใช้ session, Network Monitor เป็น Admin, Image Converter/QR ใช้ session และมี D1 migrations `0001`–`0011`
+- API inventory: 38 endpoint files / 55 method-route pairs ใต้ `functions/api/` รวม POST/OPTIONS ของ Resend; helper 7 ไฟล์; public `/q/:slug` แยกออก ดูตารางครบใน README
+- เปลี่ยนเฉพาะ `AGENTS.md`, `README.md`, `PROJECT_HANDOFF.md`; ไม่มีการเปลี่ยน application behavior หรือ runtime data
+- พยายาม `pnpm lint` แต่ขั้นเตรียม dependencies ติด DNS ไป registry.npmjs.org จึงหยุดก่อนรัน ESLint; ยังยืนยัน lint ไม่ได้ ไม่รัน build/tests/browser QA สำหรับงานเอกสาร ผล local และคำยืนยัน production ในบันทึกก่อนหน้าเป็นประวัติเดิม ไม่ใช่ผลรอบนี้
+- ตรวจเนื้อหาและ `git diff --check` สำหรับเอกสารรอบนี้ผ่าน
+- ไม่ได้ deploy, apply migrations, ตรวจ secrets หรือเรียกบริการ production รอบนี้; ผลตรวจ source ไม่ยืนยันสถานะภายนอก
+
+หลังจบ feature, fix, migration, API, infrastructure หรือการเปลี่ยนแปลงสำคัญ ต้อง review/sync **AGENTS.md + README.md + PROJECT_HANDOFF.md** ในงานเดียวกันทุกครั้ง หากเนื้อหาบางไฟล์ยังตรงให้ระบุว่าตรวจแล้ว ดูกฎถาวรใน AGENTS.md รักษา React/Tailwind v4/Vite/pnpm, `cx()` และ mobile-first; ใช้ `pnpm lint` เป็น primary code check ไม่ build ซ้ำหลังแก้เล็กน้อย
+
+จุดเริ่มงานถัดไป: ตรวจ Git status และกฎ AGENTS.md ใหม่ก่อนแก้โค้ด; หากต้องตรวจ lint ให้เตรียม dependencies เมื่อ network พร้อม แล้วเลือก validation ตามส่วนที่เปลี่ยน โดยไม่ถือว่าประวัติ tests เดิมเป็นผลปัจจุบัน
 
 ## ภาพรวม
 
@@ -21,7 +35,7 @@ IssueDesk เป็นระบบ IT Help Desk ภายในองค์ก�
 | Asset inventory | Google Sheets API โดยตรงจาก browser |
 | Package manager | pnpm |
 
-Version ใน `package.json` ปัจจุบันคือ `1.3.3`.
+Version ใน `package.json` ปัจจุบันคือ `1.3.4`.
 
 ## เส้นทางหน้าเว็บ
 
@@ -35,7 +49,7 @@ Version ใน `package.json` ปัจจุบันคือ `1.3.3`.
 | `/issues` | Admin | `src/pages/Issues.jsx` |
 | `/issues/:ticketNumber` | Admin | `src/pages/IssueDetail.jsx` |
 | `/storage/images` | Admin | `src/pages/StorageImages.jsx` |
-| `/sheet` | Admin | `src/pages/Sheet.jsx` |
+| `/sheet` | Login required | `src/pages/Sheet.jsx` |
 | `/attendance` | Login required | `src/pages/Attendance.jsx`; User เห็นข้อมูลตนเอง ส่วน Admin เห็นภาพรวม/รายการทีมแบบอ่านอย่างเดียว |
 | `/network-monitor` | Admin | `src/pages/NetworkMonitor.jsx`; ดูข้อมูล RouterOS และเรียก ping ผ่าน queue/agent |
 | `/qr-studio`, `/qr-studio/links`, `/qr-studio/saved` | Login required | `src/pages/qr/QRCodeStudio.jsx` และหน้าภายใต้ QR Studio |
@@ -79,13 +93,13 @@ Schema รองรับหนึ่ง record ต่อ user ต่อวั�
 | --- | --- |
 | `POST /api/issues` | สาธารณะ; ตรวจข้อมูล, ออก Ticket `IT-YYYYMM-NNNN` ตามเวลา Bangkok, บันทึก D1 และพยายามส่งอีเมล Resend |
 | `POST /api/resend` | contact form จาก Origin ที่อนุญาต; ส่งอีเมลถึงผู้รับที่กำหนดใน server environment เท่านั้น ดู `RESEND_API.md` |
-| `GET /api/issues` | Admin; รายการและตัวกรอง/limit |
+| `GET /api/issues` | Admin; รายการล่าสุด, `limit` default 20/max 100; ไม่มี server-side search/status filter |
 | `GET /api/issues/stats` | Admin; สถิติ Dashboard |
 | `GET /api/issues/:ticketNumber` | Admin; รายละเอียด Ticket |
 | `PATCH /api/issues/:ticketNumber` | Admin; เปลี่ยน `Open`, `In Progress`, `Resolved` |
 | `DELETE /api/issues/:ticketNumber` | Admin; ลบไฟล์แนบจาก Storage ก่อน แล้วลบ metadata และ Ticket |
 | `GET /api/issues/:ticketNumber/attachments` | Admin; แสดง metadata ไฟล์แนบ |
-| `POST /api/issues/:ticketNumber/attachments` | อัปโหลดไฟล์ไป Storage และบันทึก metadata ใน D1 |
+| `POST /api/issues/:ticketNumber/attachments` | สาธารณะ; อัปโหลดไฟล์ไป Storage และบันทึก metadata ใน D1 |
 | `GET /api/issues/:ticketNumber/attachments/:attachmentId` | Admin; preview หรือดาวน์โหลดผ่าน proxy |
 | `DELETE /api/issues/:ticketNumber/attachments/:attachmentId` | Admin; ลบไฟล์และ metadata |
 | `GET /api/track/:ticketNumber` | สาธารณะ; คืนเฉพาะ Ticket number, status และ timestamps ที่ใช้ติดตาม |
@@ -101,7 +115,7 @@ Schema รองรับหนึ่ง record ต่อ user ต่อวั�
 | `GET /api/storage/files/:fileId` | ผู้ใช้ที่ล็อกอินดูรูปที่รองรับแบบ inline และดาวน์โหลดรูปได้; ดาวน์โหลดไฟล์ชนิดอื่นต้องเป็น Admin |
 | `DELETE /api/storage/files/:fileId` | Admin; ลบจาก Storage และล้างแถวที่อ้างใน `issue_attachments` |
 
-ลิงก์ที่คัดลอกจากหน้า Storage เป็น URL proxy ที่ต้องใช้ Admin session ไม่ใช่ public image URL บริการ Storage project ID ถูกกำหนดใน Pages Functions (`functions/api/storage/_utils.js` และ routes ไฟล์แนบ); หากเปลี่ยน project ให้ตรวจทุกจุดที่อ้างถึง
+ลิงก์ที่คัดลอกจากหน้า Storage เป็น URL proxy ที่ต้องใช้ session; ภาพ raster ที่รองรับอ่าน/ดาวน์โหลดได้โดยสมาชิก ส่วนไฟล์อื่นต้องเป็น Admin และดาวน์โหลด ไม่ใช่ public URL บริการ Storage project ID ถูกกำหนดใน Pages Functions (`functions/api/storage/_utils.js` และ routes ไฟล์แนบ); หากเปลี่ยน project ให้ตรวจทุกจุดที่อ้างถึง
 
 ## Google Sheets: ทะเบียนอุปกรณ์
 
@@ -136,7 +150,7 @@ Sheet ต้องอนุญาตให้อ่านผ่าน API key �
 | `0010_create_qr_studio_tables.sql` | QR codes และ short links |
 | `0011_create_qr_logo_ownership.sql` | เจ้าของและ MIME type ของโลโก้ QR |
 
-ตารางหลักยังรวมข้อมูล Network Monitor, QR Studio, short links และ QR logo ownership ตาม migrations `0007`–`0011`. มี migration file ใน repo ไม่ได้ยืนยันว่า migration ถูก apply แล้วใน remote D1; ใช้ `pnpm migrate` ตรวจสถานะก่อน และตรวจ target/environment ก่อน `pnpm migrate-apply`. การตรวจสถานะ remote ครั้งล่าสุด (24 ต.ค. 2026) ทำไม่สำเร็จเพราะ Wrangler auth token หมดอายุและเชื่อมต่อ Cloudflare auth server ไม่ได้; สถานะ migrations หลัง `0005` จึงยังไม่ยืนยันจากการตรวจครั้งนั้น `0007`–`0011`. ยืนยันแล้วว่า migrate-apply ทั้งหมดแล้ว
+D1 migrations ใน source มี `0001`–`0011`. เอกสารเดิมบันทึกทั้งการตรวจ remote ที่ล้มเหลวเมื่อ 24 ต.ค. 2026 และคำยืนยันภายหลังว่า apply ทั้งหมดแล้ว; เก็บคำยืนยันนี้เป็นข้อมูลที่ผู้ใช้รายงาน ไม่ใช่ผลตรวจสด รอบ 28 ต.ค. ไม่ได้เรียก Cloudflare หรือ apply migration ใด ๆ ก่อนเปลี่ยนฐานข้อมูลครั้งถัดไปให้ตรวจ target/environment และสถานะจริงด้วย `pnpm migrate` ส่วน `pnpm migrate-apply` ต้องได้รับอนุญาต แยกจาก SQLite migration ของ `garage/storage` เสมอ
 
 ## Environment และ secrets
 
@@ -145,6 +159,8 @@ Sheet ต้องอนุญาตให้อ่านผ่าน API key �
 | ชื่อ | ใช้กับ |
 | --- | --- |
 | `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `ISSUE_NOTIFICATION_EMAIL` | อีเมล Ticket ใหม่ |
+| `RESEND_ALLOWED_ORIGINS`, `RESEND_TO_EMAIL` | external contact form `/api/resend`; recipient fallback ไป `ISSUE_NOTIFICATION_EMAIL`; ดู `RESEND_API.md` |
+| `NETWORK_AGENT_TOKEN` | bearer token ของ Network Monitor agent; แยกจาก session/Access credentials |
 | `STORAGE_API_URL`, `STORAGE_APP_SECRET`, `CF_ACCESS_CLIENT_ID`, `CF_ACCESS_CLIENT_SECRET` | ไฟล์แนบและหน้า Storage |
 | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | Google OAuth |
 | `FACEBOOK_CLIENT_ID`, `FACEBOOK_CLIENT_SECRET` | Facebook OAuth |
@@ -180,7 +196,7 @@ pnpm dev
 
 ตามสถานะที่ผู้ใช้แจ้ง งานแก้ไขที่เคยระบุให้ทำต่อเสร็จแล้ว รายการต่อไปนี้เป็นการตรวจสอบภายนอกหรือข้อจำกัดที่ต้องสื่อสาร ไม่ใช่งานแก้โค้ดที่ค้างอยู่:
 
-- การตรวจ migrations `0001`–`0011` บน remote D1 และการ apply ต้องตรวจ target/environment ก่อน; การตรวจ remote ครั้งล่าสุดในเอกสารนี้เกิดวันที่ 24 ต.ค. 2026 และยังยืนยันสถานะไม่ได้
+- ผู้ใช้เคยรายงานว่า apply D1 migrations แล้ว แต่รอบนี้ไม่ได้ตรวจ remote ซ้ำ; ก่อน migration ครั้งถัดไปต้องตรวจ target/environment และสถานะจริง
 - ตรวจ Cloudflare Pages variables/secrets ของ production และ preview แยกกัน รวม OAuth redirect URLs, Resend verified sender และ Storage Access ก่อนถือว่า production พร้อม
 - Facebook ใช้ `FACEBOOK_GRAPH_API_VERSION` รูปแบบเลข version เช่น `v26.0`; ค่าและการทำงานจริงต้องยืนยันกับ environment ที่ใช้งาน
 - หน้า Sheet เรียก Google Sheets จาก browser ด้วย `VITE_*`; จำกัด API key ด้วย referrer/API restrictions และตรวจการเปิดเผยข้อมูลใน Sheet

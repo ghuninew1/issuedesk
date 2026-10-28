@@ -1,12 +1,3 @@
-
-
-## Shared Storage phases S1/S2 boundary
-
-- `garage/storage/src/index.js` wires production dependencies; `src/app.js` exposes the testable app factory. Object I/O goes through `src/storage/manager.js` and the Garage-only registry/provider; v2 metadata/ownership remains SQLite-backed in routes.
-- Keep `/v2` responses and app/project/file scope compatible. Download streams with a bounded provider deadline (`STORAGE_PROVIDER_TIMEOUT_MS`, default 60000); upload still buffers multipart data. Never claim upload streaming.
-- `pnpm --dir garage/storage test` runs in-memory SQLite/fake-S3 tests and a loopback Node adapter disconnect test; it does not contact Garage or open the runtime database. Install service dependencies first. S1 validation passed 12 tests in an isolated temporary workspace; production Node 22/Garage/Access are unverified.
-- `garage/storage/PHASE_S2.md` describes the internal `/v3` File Manager API and the required additive `pnpm migrate` step. S2 is local only; `pnpm --dir garage/storage test` passed 27/27. No migration/deployment/production data change was part of validation.
-
 # AGENTS.md — IssueDesk
 
 ## Scope and Sources of Truth
@@ -26,7 +17,7 @@
 ## Project Map
 - `src/App.jsx` defines routes and lazy-loaded pages; `src/auth/` owns browser session state and route guards.
 - `src/components/`, `src/pages/`, `src/hooks/`, and `src/theme/` contain the UI; shared styles and Tailwind theme tokens are in `src/index.css`.
-- `functions/api/` contains ticket, auth/OAuth, attendance, storage proxy, and network endpoints. These run in the Cloudflare runtime, not a Node.js server.
+- `functions/api/` contains ticket, auth/OAuth, attendance, storage proxy, network, QR/Short Link/logo, and external Resend contact-form endpoints. These run in the Cloudflare runtime, not a Node.js server.
 - `wrangler.jsonc` configures Pages output (`dist/`) and the D1 binding `DB` for `issuedesk-db`.
 - `garage/storage/` is a separate Node.js/Hono service using `better-sqlite3` for its own metadata and Garage's S3-compatible API for objects. Its SQLite database is separate from Cloudflare D1.
 - `garage/network-monitor/` is the Python agent for MikroTik RouterOS monitoring and requested LAN ping checks; its tests are in `garage/network-monitor/tests/`.
@@ -71,6 +62,7 @@
 - Preserve the server-managed session contract: `issuedesk_session` is an HttpOnly, Secure, SameSite=Lax cookie; D1 stores the token hash rather than the raw session token. Do not move session tokens into browser storage or expose them through JSON responses.
 - Keep same-origin checks on browser mutation endpoints and retain authentication rate limits. Agent endpoints use their separate bearer-token contract rather than browser sessions.
 - Registration creates ordinary `user` accounts. Do not accept a client-supplied admin role or bypass inactive-user checks.
+- `POST /api/resend` uses an exact Origin allowlist and server-configured recipient. CORS is not authentication or abuse prevention; preserve validation and keep Resend credentials server-side.
 - Google and Facebook OAuth require provider configuration. Preserve OAuth state-cookie validation and existing account-linking checks; do not imply that providers work merely because their routes exist.
 
 ## Network Monitoring
@@ -115,13 +107,14 @@
 - `pnpm deploy`: build and deploy Cloudflare Pages; requires explicit user authorization.
 - `pnpm cf-typegen`: generate Cloudflare types.
 - `pnpm migrate`: list remote D1 migration status; `pnpm migrate-apply`: apply migrations to remote D1 and requires explicit user authorization.
+- `pnpm test:qr` runs QR API regression tests with in-memory SQLite/mock Storage; `pnpm dev:qr` starts the local QR sandbox. Both require Node with `node:sqlite` support.
 - There is no root `test` script in `package.json`. Check for relevant service-specific tests before choosing validation commands.
 - For Network Monitor agent changes, the existing unit suite can run from the repository root with `python3 -m unittest discover -s garage/network-monitor/tests -v`. Use the container-based command in the agent README when validation requires its system dependencies.
 - Storage has its own `package.json`: `pnpm --dir garage/storage start` runs the Node service and `pnpm --dir garage/storage dev` runs it in watch mode. These start a service and may initialize its SQLite database; they are not read-only checks.
 - Do not claim a build, test, deployment, remote migration, or production behavior succeeded unless it was actually verified.
 
 ## Validation
-- Use `pnpm lint` during development when appropriate.
+- Use `pnpm lint` as the primary code check during development. If dependencies or the environment block it, report the blocker rather than claiming a pass.
 - Do not run `pnpm build` after every small change.
 - Run `pnpm build` for significant changes and before deployment or production verification.
 - Run relevant tests when available and appropriate.
@@ -136,10 +129,26 @@
 - Do not discard, overwrite, or revert user work without approval.
 - Do not commit, push, deploy, or change production infrastructure without explicit authorization.
 
+## Documentation Sync — required completion step
+- After every completed feature, fix, migration, API, infrastructure, or other significant change, review and sync **all three** files: `AGENTS.md`, `README.md`, and `PROJECT_HANDOFF.md` in the same task before reporting completion.
+- `AGENTS.md`: keep project rules, architecture boundaries, commands, security requirements, and validation policy current. `README.md`: keep setup, features, routes, APIs, environment names, and operator guidance current. `PROJECT_HANDOFF.md`: record the resulting state, affected areas, actual checks, limitations, and the next starting point.
+- If a file needs no factual change, explicitly record that it was reviewed and remains accurate; do not invent edits or duplicate task history in the rules file.
+- Verify documentation against the current source and configuration. Distinguish source implementation, historical local checks, user-reported production results, and checks executed in the current task. Never turn an old result into a fresh pass.
+- Keep D1 migrations separate from the Storage service's SQLite migrations and internal `/v3` API. Do not infer another project's status from this checkout.
+- Documentation updates do not authorize commits, deployment, migrations, infrastructure operations, or changes to application behavior.
+
 ## Task Workflow
 1. Inspect the relevant files and existing implementation.
 2. Explain the proposed approach for substantial or risky changes.
 3. Make the smallest change that satisfies the request.
 4. Review the diff for regressions and unintended changes.
 5. Run appropriate validation.
-6. Summarize changed files, validation results, and remaining concerns.
+6. Sync AGENTS.md, README.md, and PROJECT_HANDOFF.md using the documentation rule above.
+7. Summarize changed files, documentation review, actual validation results, and remaining concerns.
+
+## Shared Storage phases S1/S2 boundary
+
+- `garage/storage/src/index.js` wires production dependencies; `src/app.js` exposes the testable app factory. Object I/O goes through `src/storage/manager.js` and the Garage-only registry/provider; v2 metadata/ownership remains SQLite-backed in routes.
+- Keep `/v2` responses and app/project/file scope compatible. Download streams with a bounded provider deadline (`STORAGE_PROVIDER_TIMEOUT_MS`, default 60000); upload still buffers multipart data. Never claim upload streaming.
+- `pnpm --dir garage/storage test` runs in-memory SQLite/fake-S3 tests and a loopback Node adapter disconnect test; it does not contact Garage or open the runtime database. Install service dependencies first. Historical S1 validation passed 12 tests in an isolated temporary workspace; production Node 22/Garage/Access are unverified.
+- `garage/storage/PHASE_S2.md` describes the internal `/v3` File Manager API and the required additive `pnpm migrate` step. S2 implementation is recorded as locally validated; the historical `pnpm --dir garage/storage test` result was 27/27, not a check of the current deployment. No migration/deployment/production data change was part of validation.

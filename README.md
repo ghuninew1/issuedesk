@@ -1,10 +1,5 @@
 # IssueDesk
 
-## Shared Storage Phase S1/S2 (2026-10-27)
-
-S1 introduced the Storage Manager and Garage adapter and streams downloads. S2 adds additive folder/file metadata, internal `/v3` File Manager routes, pagination, duplicate-name enforcement, copy with size/SHA-256 verification, Trash/restore/permanent-delete flows and operation records. The existing app credential/project scope and `/v2` response formats remain; trashed entries are hidden from normal v2 list/download. `pnpm test` passes **27/27**, `pnpm lint` and `git diff --check` pass using fake S3 and in-memory SQLite. No migration was applied to the service database and nothing was deployed. Before running this version, apply the additive migration after a backup. See [Phase S2 report](garage/storage/PHASE_S2.md). Nexora backend and Phase 8 remain unimplemented.
-
-
 > ดูสรุปโครงสร้างระบบ, API, migrations และจุดเริ่มต้นสำหรับงานต่อใน [PROJECT_HANDOFF.md](PROJECT_HANDOFF.md)
 
 IssueDesk เป็นเว็บแอป IT Help Desk สำหรับแจ้งปัญหาภายในองค์กร ติดตามสถานะ Ticket และให้ผู้ดูแลระบบจัดการงานได้ในที่เดียว
@@ -13,7 +8,7 @@ IssueDesk เป็นเว็บแอป IT Help Desk สำหรับแ�
 
 ผู้ดูแลระบบเข้าสู่ระบบแล้วดู Dashboard เปลี่ยนสถานะ ดูไฟล์แนบ หรือลบ Ticket ได้จากหน้าจัดการ
 
-เวอร์ชันปัจจุบัน: `1.3.3` (อ้างอิงจาก `package.json`)
+เวอร์ชันปัจจุบัน: `1.3.4` (อ้างอิงจาก `package.json`)
 
 ## ความสามารถ
 
@@ -35,7 +30,8 @@ IssueDesk เป็นเว็บแอป IT Help Desk สำหรับแ�
 - รายการ Ticket ค้นหาและกรองตามสถานะหรือความสำคัญ
 - ดูรายละเอียด Ticket เปลี่ยนสถานะ ดูตัวอย่างไฟล์แนบ ดาวน์โหลด และลบ Ticket พร้อมไฟล์ใน Storage
 - เส้นทาง `/dashboard`, `/issues` และ `/issues/:ticketNumber` รวมถึง API จัดการ Ticket จำกัดเฉพาะ role `admin`
-- หน้า `/storage/images` จัดการภาพใน Storage และหน้า `/sheet` ดูทะเบียนอุปกรณ์จาก Google Sheets (Admin เท่านั้น)
+- หน้า `/storage/images` จัดการภาพใน Storage และ `/network-monitor` ดูสถานะ RouterOS/ประวัติ พร้อมสั่ง LAN ping (Admin เท่านั้น)
+- หน้า `/sheet` ดูทะเบียนอุปกรณ์จาก Google Sheets เปิดให้สมาชิกที่เข้าสู่ระบบ
 - หน้า `/attendance` แสดงภาพรวมการลงเวลาของทีม ค้นหาด้วยชื่อ/อีเมล และกรองวันที่ (Admin ดูข้อมูลอย่างเดียว)
 
 ### ระบบลงเวลาทำงาน
@@ -102,7 +98,7 @@ flowchart LR
 | ส่วน | เทคโนโลยี |
 | --- | --- |
 | Frontend | React 19, React Router 7, Vite 8 |
-| UI | Tailwind CSS v4, Base UI, Lucide, Geist |
+| UI | Tailwind CSS v4, Base UI, Lucide, Inter Variable |
 | Backend | Cloudflare Pages Functions |
 | Database | Cloudflare D1 (SQLite) |
 | File storage | Storage API ภายนอก; เอกสารระบบจัดเก็บระบุ Garage ผ่าน S3-compatible API |
@@ -160,13 +156,19 @@ issuedesk/
 | `/issues` | Admin | รายการ ค้นหา กรองสถานะ/ความสำคัญ |
 | `/issues/:ticketNumber` | Admin | รายละเอียด เปลี่ยนสถานะ ไฟล์แนบ ลบ Ticket |
 | `/storage/images` | Admin | จัดการภาพใน Storage: ดูตัวอย่าง อัปโหลด ดาวน์โหลด ลบ และคัดลอกลิงก์ |
-| `/sheet` | Admin | ทะเบียนอุปกรณ์จาก Google Sheets; ค้นหา กรองสถานะ และดูรูปอุปกรณ์ |
+| `/sheet` | ผู้ใช้ที่เข้าสู่ระบบ | ทะเบียนอุปกรณ์จาก Google Sheets; ค้นหา กรองสถานะ และดูรูปอุปกรณ์ |
+| `/network-monitor` | Admin | RouterOS snapshot/history/events, viewer lease และ LAN ping ผ่าน agent |
 | `/attendance` | ผู้ใช้ที่เข้าสู่ระบบ | พนักงานเช็คอิน/เช็คเอาต์และดูประวัติ; Admin ดูภาพรวมและรายการของทีม |
 | `/qr-studio` | ผู้ใช้ที่เข้าสู่ระบบ | Create QR: ปรับเนื้อหา/ดีไซน์ ดู preview บันทึก และ export |
 | `/qr-studio/links` | ผู้ใช้ที่เข้าสู่ระบบ | จัดการ Short Links ของตนเอง |
 | `/qr-studio/saved` | ผู้ใช้ที่เข้าสู่ระบบ | My QR Codes: ค้นหา เปิดแก้ไข ดาวน์โหลด และลบ QR ของตนเอง |
 | `/image-converter` | ผู้ใช้ที่เข้าสู่ระบบ | แปลงและปรับขนาดหลายภาพ แล้วดาวน์โหลดเป็น ZIP |
 | `/q/:slug` | สาธารณะ | redirect 302 ไปปลายทางของ Short Link ที่ active |
+
+## Shared Storage Phase S1/S2 (2026-10-27)
+
+S1 introduced the Storage Manager and Garage adapter and streams downloads. S2 adds additive folder/file metadata, internal `/v3` File Manager routes, pagination, duplicate-name enforcement, copy with size/SHA-256 verification, Trash/restore/permanent-delete flows and operation records. The existing app credential/project scope and `/v2` response formats remain; trashed entries are hidden from normal v2 list/download. ผลตรวจเดิมของ S2: `pnpm --dir garage/storage test` ผ่าน **27/27** โดยใช้ fake S3/in-memory SQLite และเคยผ่าน root lint/diff checks; ไม่ได้รันทดสอบเหล่านี้ซ้ำในรอบตรวจเอกสารนี้. ในการพัฒนา S2 รอบเดิมไม่ได้ apply migration หรือ deploy; รอบเอกสารนี้ไม่ได้ตรวจสถานะ runtime database หรือ deployment. ก่อนนำ service รุ่นนี้ไปใช้ ให้ตรวจสถานะ migration และสำรองฐานข้อมูลก่อน apply ด้วย `pnpm --dir garage/storage migrate` เมื่อได้รับอนุญาต. See [Phase S2 report](garage/storage/PHASE_S2.md). `/v3` เป็น API ภายในสำหรับ server-to-server ภายใต้ app/project scope ไม่ใช่ browser API ของ IssueDesk; source ใน checkout นี้ไม่ยืนยันสถานะโปรเจ็ค Nexora.
+
 
 ## Image Storage API
 
@@ -229,7 +231,7 @@ const result = await response.json();
 }
 ```
 
-หน้า `/storage/images` รองรับอัปโหลดหลายไฟล์ โดยส่งทีละไฟล์ไม่เกิน 10 MiB พร้อมกันสูงสุด 3 รายการ ชนิดไฟล์รวมถึงรูปภาพ PDF, Office/iWork, ZIP/RAR/7z/GZIP, TXT/CSV/Markdown/JSON/XML/HTML/CSS/JavaScript และเสียง/วิดีโอ รูป raster ที่อนุญาตเปิด preview ผ่าน URL `/api/storage/files/:fileId`; ไฟล์อื่นดาวน์โหลดด้วย query `download=1` ชื่อไฟล์ส่งผ่าน `name` ได้ โดย server กรองอักขระเส้นทางและขึ้นบรรทัดใหม่ก่อนใช้เป็นชื่อดาวน์โหลด ลิงก์จากหน้า Storage ต้องใช้ Admin session ไม่ใช่ public link
+หน้า `/storage/images` รองรับอัปโหลดหลายไฟล์ โดยส่งทีละไฟล์ไม่เกิน 10 MiB พร้อมกันสูงสุด 3 รายการ ชนิดไฟล์รวมถึงรูปภาพ PDF, Office/iWork, ZIP/RAR/7z/GZIP, TXT/CSV/Markdown/JSON/XML/HTML/CSS/JavaScript และเสียง/วิดีโอ รูป raster ที่อนุญาตเปิด preview ผ่าน URL `/api/storage/files/:fileId`; ไฟล์อื่นดาวน์โหลดด้วย query `download=1` ชื่อไฟล์ส่งผ่าน `name` ได้ โดย server กรองอักขระเส้นทางและขึ้นบรรทัดใหม่ก่อนใช้เป็นชื่อดาวน์โหลด ลิงก์จากหน้า Storage ต้องใช้ session; ภาพ raster ที่รองรับเปิดให้สมาชิก ส่วนไฟล์อื่นต้องเป็น Admin และดาวน์โหลด ไม่ใช่ public link
 
 ลบไฟล์:
 
@@ -383,12 +385,23 @@ https://<your-issuedesk-domain>/api/auth/oauth/callback/facebook
 
 Migration `0005_create_oauth_accounts.sql` ต้องถูกนำไปใช้กับ D1 ก่อนเปิด Social sign-in ใน environment นั้น
 
+## กฎการพัฒนาและการ sync เอกสาร
+
+ใช้ [AGENTS.md](AGENTS.md) เป็นกฎการทำงาน: รักษา React + Tailwind v4 + Vite + pnpm, ใช้ `cx()` จาก `src/utils/cx.js` สำหรับ JSX className ที่เพิ่มหรือแก้ไข (รวม conditional classes), mobile-first และ reuse GlassButton ตามแนวทางเดิม
+
+หลังจบ feature, fix, migration, API, infrastructure หรือการเปลี่ยนแปลงสำคัญ ต้องตรวจและ sync `AGENTS.md`, `README.md` และ `PROJECT_HANDOFF.md` ในงานเดียวกันเสมอ หากไฟล์ใดยังถูกต้องให้ระบุว่าตรวจแล้วโดยไม่สร้างข้อมูลใหม่ แยกผล local, ผลเดิมที่ผู้ใช้รายงาน และ production ที่ยังไม่ได้ตรวจให้ชัดเจน
+
+`pnpm lint` เป็น primary check สำหรับงานโค้ด; งานเอกสารล้วนให้ตรวจเนื้อหาและ `git diff --check` ไม่ต้อง build หลังแก้เล็กน้อย รัน build เมื่อการเปลี่ยนแปลงมีนัยสำคัญหรือก่อน deployment; การ deploy/apply migrations ต้องได้รับอนุญาตแยกต่างหาก
+
 ## คำสั่งที่ใช้บ่อย
 
 | คำสั่ง | การทำงาน |
 | --- | --- |
 | `pnpm dev` | เปิด Vite dev server สำหรับ frontend |
-| `pnpm lint` | ตรวจ JavaScript/JSX ด้วย ESLint |
+| `pnpm lint` | primary check: ตรวจ JavaScript/JSX ด้วย ESLint |
+| `pnpm test:qr` | QR regression ด้วย in-memory SQLite/mock Storage |
+| `pnpm dev:qr` | local QR sandbox ที่ 127.0.0.1:5174 |
+| `pnpm --dir garage/storage test` | suite ของ Storage service แยกจาก root |
 | `pnpm build` | สร้าง production bundle ใน `dist/` |
 | `pnpm preview` | build แล้วเปิด Pages Functions ในเครื่อง |
 | `pnpm migrate` | แสดงสถานะ D1 migrations บน remote |
@@ -412,6 +425,11 @@ Migrations ใน repository:
 | `0004_add_issue_in_progress_at.sql` | คอลัมน์ `in_progress_at` เพื่อแสดงประวัติบนหน้าติดตาม |
 | `0005_create_oauth_accounts.sql` | ตาราง `oauth_accounts` สำหรับเชื่อม provider identity กับบัญชีผู้ใช้ |
 | `0006_create_attendance_records.sql` | ตาราง `attendance_records` และ index สำหรับระบบลงเวลา |
+| `0007_create_network_monitoring.sql` | `network_snapshots`, `network_events`, `network_agent_state` |
+| `0008_create_network_monitor_viewers.sql` | viewer leases ของ Network Monitor |
+| `0009_create_network_ping_checks.sql` | คิวและประวัติ LAN ping |
+| `0010_create_qr_studio_tables.sql` | QR codes และ Short Links |
+| `0011_create_qr_logo_ownership.sql` | เจ้าของและ MIME type ของโลโก้ QR |
 
 ตารางหลัก:
 
@@ -423,6 +441,9 @@ Migrations ใน repository:
 | `sessions` | hash ของโทเคน Session และวันหมดอายุ |
 | `login_attempts` | ประวัติพยายามเข้าสู่ระบบ/สมัคร เพื่อจำกัดอัตรา |
 | `attendance_records` | วันทำงาน เวลาเช็คอิน/เช็คเอาต์ สถานะ และเจ้าของรายการ |
+| `oauth_accounts` | provider identity ที่เชื่อมกับผู้ใช้ |
+| Network Monitor tables | snapshot, events, agent state, viewer leases และ ping jobs/results ตาม migrations `0007`–`0009` |
+| `qr_codes`, `short_links`, `qr_logos` | ข้อมูล QR, ปลายทางลิงก์ และเจ้าของโลโก้ |
 
 ตรวจสอบหรือ apply migration บน remote:
 
@@ -435,7 +456,7 @@ pnpm migrate-apply
 
 ## API
 
-รายการนี้ตรวจจาก exports `onRequestGet/Post/Patch/Delete` ใน `functions/api/` เมื่อ 26 ตุลาคม 2026 ครบ **37 ไฟล์ endpoint / 53 คู่ method + route** และแยก helper 6 ไฟล์ออกจาก API สาธารณะ ตารางอธิบายพฤติกรรมใน source ไม่ได้ยืนยันว่า configuration, migrations หรือบริการภายนอกพร้อมในทุก environment
+รายการนี้ตรวจจาก exports `onRequestGet/Post/Patch/Delete/Options` ทั้ง function และ const ใน `functions/api/` เมื่อ 28 ตุลาคม 2026 ครบ **38 ไฟล์ endpoint / 55 คู่ method + route** และแยก helper 7 ไฟล์ออกจาก API สาธารณะ ตารางอธิบายพฤติกรรมใน source ไม่ได้ยืนยันว่า configuration, migrations หรือบริการภายนอกพร้อมในทุก environment
 
 ความหมายของสิทธิ์:
 
@@ -453,6 +474,17 @@ Source: [health.js](functions/api/health.js), [storage-health.js](functions/api/
 | --- | --- | --- | --- |
 | `GET` | `/api/health` | สาธารณะ | ตรวจ D1 ด้วย `SELECT 1`; ไม่ใช่การตรวจ schema/migrations ทั้งหมด |
 | `GET` | `/api/storage-health` | สาธารณะ | ตรวจ configuration และการเรียกรายการไฟล์ของ Storage project; คืนสถานะเชื่อมต่อและจำนวนไฟล์ ไม่ใช่การทดสอบ upload |
+
+### Contact form สำหรับเว็บไซต์ภายนอก
+
+Source: [resend.js](functions/api/resend.js), [RESEND_API.md](RESEND_API.md)
+
+| Method | Route | สิทธิ์ | หน้าที่/ข้อมูลสำคัญ |
+| --- | --- | --- | --- |
+| `OPTIONS` | `/api/resend` | Origin ใน allowlist | CORS preflight สำหรับ POST/Content-Type |
+| `POST` | `/api/resend` | Origin ใน allowlist; ไม่บังคับ session | ตรวจ JSON/contact fields และ body สูงสุด 24,000 bytes; ส่งถึง `RESEND_TO_EMAIL` หรือ fallback `ISSUE_NOTIFICATION_EMAIL` |
+
+ตั้ง `RESEND_ALLOWED_ORIGINS` เป็น exact origins คั่น comma และตั้ง Resend key/from บน server เท่านั้น CORS ไม่ใช่ authentication หรือระบบป้องกัน abuse ดูรายละเอียดและข้อจำกัดในคู่มือแยก
 
 ### Authentication และ OAuth
 
@@ -591,7 +623,7 @@ Source: [functions/api/qr-logos/](functions/api/qr-logos/)
 
 ### Public Short Link redirect นอก /api
 
-Source: [functions/q/[slug].js](functions/q/[slug].js) อยู่ภายนอก `functions/api/` จึงไม่นับรวม 53 คู่ method + route ด้านบน
+Source: [functions/q/[slug].js](functions/q/[slug].js) อยู่ภายนอก `functions/api/` จึงไม่นับรวม 55 คู่ method + route ด้านบน
 
 | Method | Route | สิทธิ์ | หน้าที่/ข้อมูลสำคัญ |
 | --- | --- | --- | --- |
@@ -607,6 +639,7 @@ Source: [functions/q/[slug].js](functions/q/[slug].js) อยู่ภายน�
 - `functions/api/storage/_utils.js` — Storage configuration, admin guard, upstream headers และ file normalization
 - `functions/api/qr-codes/_utils.js` — QR/Short Link session/origin wrapper, validation, pagination และ errors
 - `functions/api/qr-logos/_storage.js` — แยก upstream upload errors และ log ที่ไม่เปิดเผย secrets
+- `functions/api/resend/_utils.js` — ส่งอีเมล Resend และ notification ของ Ticket
 
 Endpoints ส่วนใหญ่ใช้ `{ success: false, message: "..." }`; QR Codes/Short Links/QR Logos ใช้ `{ success: false, error: { code, message } }` อย่าสมมติว่า error envelope ของ API ทุกกลุ่มเหมือนกัน OAuth/public redirect คืน HTTP redirect และ file proxy คืน binary เมื่อสำเร็จ
 
@@ -620,6 +653,12 @@ python3 scripts/bootstrap-admin.py
 
 สคริปต์ถามชื่อ อีเมล และรหัสผ่านใน terminal จากนั้นต้องพิมพ์ `create` เพื่อยืนยันการเขียนไปยัง D1 remote จะสร้าง Admin ได้เฉพาะเมื่อยังไม่มีบัญชี role `admin` ห้ามส่งรหัสผ่านให้ผู้อื่นหรือวางไว้ใน command line
 
+## ผลตรวจเอกสาร — 28 ตุลาคม 2026
+
+ตรวจ checkout `/Users/ghuninew/GitHub/issuedesk`, branch `main`, HEAD `2b4f2f1`; ก่อนเริ่มไม่มี tracked/untracked changes ตรวจ routes/guards, API exports, package scripts, migrations และ Storage service source แล้วแก้เอกสาร 3 ไฟล์เท่านั้น โดยไม่เปลี่ยน behavior
+
+ลอง `pnpm lint` แล้วแต่ขั้นเตรียม dependencies ติด DNS ไป registry.npmjs.org จึงหยุดก่อน ESLint เริ่ม; ไม่ถือว่าผ่าน lint ไม่รัน build/tests/browser QA สำหรับงานเอกสารนี้ และไม่ได้ตรวจหรือเปลี่ยน remote D1, deployment, secrets หรือ runtime data ตรวจเนื้อหาและ `git diff --check` สำหรับเอกสารรอบนี้ผ่าน ผลตรวจ QR/Storage และ production ที่กล่าวถึงส่วนอื่นเป็นประวัติเดิม
+
 ## สถานะโปรเจกต์
 
 ระบบหลักมีหน้าและ API ครบตาม flow ปัจจุบัน; สถานะค่าตั้งค่า production และ migration remote ต้องตรวจใน Cloudflare:
@@ -629,7 +668,7 @@ python3 scripts/bootstrap-admin.py
 - Pages Functions สำหรับ Issue, Authentication, Ticket tracking, Storage และอีเมลอยู่ใน `functions/api/`
 - Authentication และการคุมสิทธิ์ Admin เชื่อมกับ routes และ API แล้ว
 - Google/Facebook OAuth มี authorization/callback flow และ migration `0005`; ต้องตั้ง provider credentials และตรวจ migration/environment ก่อนเปิดใช้
-- หน้า `/storage/images` จัดการรูปผ่าน Storage API proxy โดย URL ที่คัดลอกยังต้องใช้ Admin session
+- หน้า `/storage/images` จัดการรูปผ่าน Storage API proxy โดย URL ที่คัดลอกต้องใช้ session ตามชนิดไฟล์ (ภาพ raster สำหรับสมาชิก, ไฟล์อื่นสำหรับ Admin)
 - หน้า `/attendance` ใช้ Attendance API; API ตรวจ Session ทุกคำขอ และ Admin endpoints ตรวจ role `admin`
 - เช็คอินซ้ำป้องกันด้วย unique constraint `(user_id, work_date)`; เช็คเอาต์ใช้ conditional update เพื่อกันคำขอซ้ำหรือพร้อมกัน
 - เวลา `work_date` คำนวณตาม `Asia/Bangkok`; ต้องตรวจว่า migration `0006_create_attendance_records.sql` ถูก apply ใน D1 environment ที่จะใช้งานแล้ว
