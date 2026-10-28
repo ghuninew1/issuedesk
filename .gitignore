@@ -43,3 +43,11 @@ test*
 # Keep Shared Storage regression tests
 !garage/storage/tests/
 !garage/storage/tests/*.js
+
+# Storage API runtime database
+garage/storage/data/*.db
+garage/storage/data/*.db-wal
+garage/storage/data/*.db-shm
+garage/storage/data/*.sqlite
+garage/storage/data/*.sqlite-wal
+garage/storage/data/*.sqlite-shm
