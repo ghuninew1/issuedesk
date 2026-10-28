@@ -51,3 +51,4 @@ garage/storage/data/*.db-shm
 garage/storage/data/*.sqlite
 garage/storage/data/*.sqlite-wal
 garage/storage/data/*.sqlite-shm
+garage/garage.toml
