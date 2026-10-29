@@ -1,5 +1,11 @@
 # IssueDesk — Project Handoff
 
+## Sidebar NavLink hover — 29 ตุลาคม 2026
+
+- ปรับ `src/components/layout/Sidebar.jsx` และ `src/index.css` ให้ NavLink ใน Sidebar ใช้ Liquid Glass hover โหมด Light ที่อิง currentColor สำหรับพื้นหลัง แสง ขอบ และเงา ให้สอดคล้องกับปุ่ม Collapse; shared `glassHover` และ Dark mode ยังคงเดิม
+- อัปเดต README และ AGENTS.md ให้ตรงกับ interaction ปัจจุบัน
+- ตรวจ `git diff --check` ผ่าน; ยังไม่ได้รัน lint/build หรือ browser QA รอบนี้
+
 ## Shared Storage Phase S1/S2 — local implementation
 
 2026-10-27: S1 added the manager/Garage boundary and streaming download; S2 added an additive local folder/file schema, internal `/v3` File Manager routes, paging, duplicate-name enforcement, copy verification, Trash/restore/permanent-delete operations and reconciliation state. Existing v2 auth/scope and response formats remain; v2 permanent DELETE is preserved. Historical checks: `pnpm --dir garage/storage test` 27/27, IssueDesk `pnpm lint` and `git diff --check` passed; not rerun in this documentation audit. Tests use memory SQLite/fake S3; Garage/Cloudflare Access were not checked. The original S2 work did not apply the migration; current deployment/database state was not inspected. Inspect migration state and back up before an authorized run of `pnpm --dir garage/storage migrate` before starting this service version. See [PHASE_S2.md](garage/storage/PHASE_S2.md) for API, migration and rollback details. S2 is complete locally. No deployment was performed in this audit. This checkout does not establish the current status of Nexora.

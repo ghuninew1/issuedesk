@@ -140,6 +140,7 @@ const SidebarContent = ({ isCollapsed, onNavigate, onToggleSidebar, mobile = fal
                                             isActive
                                                 ? "glass-nav-active font-medium text-sidebar-accent-foreground"
                                                 : "text-muted-foreground hover:text-sidebar-accent-foreground",
+                                            "glass-sidebar-nav",
                                             glassHover,
                                         )
                                     }

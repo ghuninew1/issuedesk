@@ -263,6 +263,34 @@
     }
 }
 
+/* Keep Sidebar navigation's Light hover visible like the Collapse button. */
+:root:not(.dark) .glass-sidebar-nav:hover {
+    background-color: color-mix(in oklch, currentColor 20%, transparent);
+    box-shadow:
+        inset 0 1px 0 color-mix(in oklch, currentColor 34%, transparent),
+        inset 0 -1px 0 color-mix(in oklch, currentColor 12%, transparent),
+        inset 0 0 0 1px color-mix(in oklch, currentColor 22%, transparent),
+        0 6px 20px -6px rgb(0 0 0 / 25%);
+}
+
+:root:not(.dark) .glass-sidebar-nav:hover::before {
+    background: linear-gradient(
+        135deg,
+        color-mix(in oklch, currentColor 28%, transparent) 0%,
+        transparent 40%,
+        color-mix(in oklch, currentColor 12%, transparent) 100%
+    );
+}
+
+:root:not(.dark) .glass-sidebar-nav:hover::after {
+    background: radial-gradient(
+        90px circle at var(--mx) var(--my),
+        color-mix(in oklch, currentColor 40%, transparent),
+        color-mix(in oklch, currentColor 14%, transparent) 45%,
+        transparent 75%
+    );
+}
+
 
 @theme inline {
     --color-background: var(--background);
