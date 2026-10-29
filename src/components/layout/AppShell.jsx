@@ -69,7 +69,7 @@ const AppShell = ({ children }) => {
             <div
                 className="z-0 absolute inset-0 bg-cover bg-no-repeat bg-center opacity-[0.02] pointer-events-none"
                 style={{
-                    backgroundImage: "url('/it-workspace-bg.jpg')",
+                    backgroundImage: "url('/it-workspace-bg.avif')",
                 }}
             />
 

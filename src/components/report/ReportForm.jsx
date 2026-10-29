@@ -37,7 +37,7 @@ const fieldClassName = cx(
 );
 
 const Label = ({ htmlFor, children, required = false }) => (
-    <label htmlFor={htmlFor} className="block text-sm font-medium">
+    <label htmlFor={htmlFor} className="block font-medium text-sm">
         {children}
 
         {required && (
@@ -221,7 +221,7 @@ const ReportForm = () => {
                     )}
                 >
                     <img
-                        src="/check_pc_name.jpeg"
+                        src="/check_pc_name.avif"
                         alt="How to check PC name"
                         className={cx("max-h-[calc(100dvh-1.5rem)] max-w-full rounded-xl object-contain md:max-h-[90vh]", "shadow-2xl mt-20")}
                     />
@@ -231,10 +231,10 @@ const ReportForm = () => {
             {/* Created issue */}
             {createdIssue && (
                 <div role="status" className={cx("glass-surface rounded-2xl border-emerald-500/25", "bg-emerald-500/10 p-4")}>
-                    <p className="text-sm font-medium text-emerald-700 dark:text-emerald-400">บันทึก Issue สำเร็จ</p>
+                    <p className="font-medium text-emerald-700 dark:text-emerald-400 text-sm">บันทึก Issue สำเร็จ</p>
 
-                    <div className="mt-3 flex flex-wrap items-center gap-3">
-                        <span className="text-sm text-muted-foreground">Ticket Number</span>
+                    <div className="flex flex-wrap items-center gap-3 mt-3">
+                        <span className="text-muted-foreground text-sm">Ticket Number</span>
 
                         <code className="font-semibold text-foreground">{createdIssue.ticket_number}</code>
 
@@ -251,19 +251,19 @@ const ReportForm = () => {
                         >
                             {copied ? (
                                 <div className="flex items-center gap-2">
-                                    <CopyCheck className="mr-2 h-4 w-4" />
+                                    <CopyCheck className="mr-2 w-4 h-4" />
                                     คัดลอกแล้ว
                                 </div>
                             ) : (
                                 <div className="flex items-center gap-2">
-                                    <Copy className="mr-2 h-4 w-4" />
+                                    <Copy className="mr-2 w-4 h-4" />
                                     คัดลอกหมายเลข
                                 </div>
                             )}
                         </GlassButton>
                     </div>
 
-                    <div className="mt-3 space-y-1 text-sm text-muted-foreground">
+                    <div className="space-y-1 mt-3 text-muted-foreground text-sm">
                         <p>ผู้แจ้ง: {createdIssue.reporter_name}</p>
 
                         <p>หัวข้อ: {createdIssue.title}</p>
@@ -288,23 +288,23 @@ const ReportForm = () => {
             {/* Issue information */}
             <section className="space-y-4">
                 <div>
-                    <h3 className="text-base font-semibold">Issue Information</h3>
+                    <h3 className="font-semibold text-base">Issue Information</h3>
 
-                    <p className="mt-1 text-sm text-muted-foreground">กรอกข้อมูลปัญหาที่ต้องการแจ้งให้T ทราบ</p>
+                    <p className="mt-1 text-muted-foreground text-sm">กรอกข้อมูลปัญหาที่ต้องการแจ้งให้T ทราบ</p>
                 </div>
 
-                <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+                <div className="gap-5 grid grid-cols-1 md:grid-cols-2">
                     <div className="space-y-2">
                         <div className="flex justify-between items-center">
                             <Label htmlFor="reporter" required>
                                 Reporter Name
                             </Label>
                             <div
-                                className="flex items-center cursor-pointer text-muted-foreground hover:text-primary"
+                                className="flex items-center text-muted-foreground hover:text-primary cursor-pointer"
                                 onClick={handleFileQuestion}
                                 title="วิธีดูชื่อเครื่อง"
                             >
-                                <FileQuestionMark className="mr-3 inline-block h-4 w-4" />
+                                <FileQuestionMark className="inline-block mr-3 w-4 h-4" />
                             </div>
                         </div>
 
@@ -323,7 +323,7 @@ const ReportForm = () => {
                         />
 
                         {errors.reporter && (
-                            <p id="reporter-error" className="text-sm text-destructive">
+                            <p id="reporter-error" className="text-destructive text-sm">
                                 {errors.reporter}
                             </p>
                         )}
@@ -362,7 +362,7 @@ const ReportForm = () => {
                         </div>
 
                         {errors.category && (
-                            <p id="category-error" className="text-sm text-destructive">
+                            <p id="category-error" className="text-destructive text-sm">
                                 {errors.category}
                             </p>
                         )}
@@ -388,7 +388,7 @@ const ReportForm = () => {
                     />
 
                     {errors.title && (
-                        <p id="title-error" className="text-sm text-destructive">
+                        <p id="title-error" className="text-destructive text-sm">
                             {errors.title}
                         </p>
                     )}
@@ -440,31 +440,31 @@ const ReportForm = () => {
                         className={cx(fieldClassName, "resize-y")}
                     />
 
-                    <div className="flex items-start justify-between gap-3">
+                    <div className="flex justify-between items-start gap-3">
                         {errors.description ? (
-                            <p id="description-error" className="text-sm text-destructive">
+                            <p id="description-error" className="text-destructive text-sm">
                                 {errors.description}
                             </p>
                         ) : (
-                            <p className="text-xs text-muted-foreground">ให้รายละเอียดมากที่สุดเท่าที่ทำได้</p>
+                            <p className="text-muted-foreground text-xs">ให้รายละเอียดมากที่สุดเท่าที่ทำได้</p>
                         )}
 
-                        <span className="shrink-0 text-xs text-muted-foreground">{form.description.length}/5000</span>
+                        <span className="text-muted-foreground text-xs shrink-0">{form.description.length}/5000</span>
                     </div>
                 </div>
             </section>
 
-            <section className="space-y-4 border-t border-white/60 pt-6 dark:border-white/10">
+            <section className="space-y-4 pt-6 border-white/60 dark:border-white/10 border-t">
                 <div>
-                    <h3 className="text-base font-semibold">Attachments</h3>
+                    <h3 className="font-semibold text-base">Attachments</h3>
 
-                    <p className="mt-1 text-sm text-muted-foreground">แนบภาพหน้าจอหรือรูปอุปกรณ์ที่พบปัญหา</p>
+                    <p className="mt-1 text-muted-foreground text-sm">แนบภาพหน้าจอหรือรูปอุปกรณ์ที่พบปัญหา</p>
                 </div>
 
                 <ImageUploader files={files} onChange={setFiles} />
             </section>
 
-            <div className="flex flex-col-reverse justify-between gap-3 border-t border-white/60 pt-6 md:flex-row dark:border-white/10">
+            <div className="flex md:flex-row flex-col-reverse justify-between gap-3 pt-6 border-white/60 dark:border-white/10 border-t">
                 <GlassButton
                     className={cx(
                         "glass-surface mt-2 flex cursor-pointer items-center justify-center gap-3 rounded-xl border-white/70 bg-white/55 px-5 py-2.5 text-sm font-medium text-slate-700 transition-all hover:bg-white/80 md:mt-0 dark:border-white/10 dark:bg-white/5 dark:text-slate-200 dark:hover:bg-white/10",
@@ -473,10 +473,10 @@ const ReportForm = () => {
                     )}
                     onClick={(e) => e.preventDefault() || navigate("/")}
                 >
-                    <ArrowLeft size={16} className="animate-bounceLeft transition-all" />
+                    <ArrowLeft size={16} className="transition-all animate-bounceLeft" />
                     Back
                 </GlassButton>
-                <div className="flex items-center md:flex-row justify-center gap-5 px-3 w-auto flex-col-reverse">
+                <div className="flex md:flex-row flex-col-reverse justify-center items-center gap-5 px-3 w-auto">
                     <GlassButton
                         type="reset"
                         disabled={isSubmitting}
