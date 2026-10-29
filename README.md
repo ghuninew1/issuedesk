@@ -32,7 +32,8 @@ Sidebar NavLink และปุ่ม `GlassButton` ใช้ Liquid Glass hover
 - รายการ Ticket ค้นหาและกรองตามสถานะหรือความสำคัญ
 - ดูรายละเอียด Ticket เปลี่ยนสถานะ ดูตัวอย่างไฟล์แนบ ดาวน์โหลด และลบ Ticket พร้อมไฟล์ใน Storage
 - เส้นทาง `/dashboard`, `/issues` และ `/issues/:ticketNumber` รวมถึง API จัดการ Ticket จำกัดเฉพาะ role `admin`
-- หน้า `/storage/images` จัดการภาพใน Storage และ `/network-monitor` ดูสถานะ RouterOS/ประวัติ พร้อมสั่ง LAN ping (Admin เท่านั้น)
+- หน้า `/network-monitor` (Admin) แสดง Router Health, WAN state/counters และ WAN RX/TX history พร้อม Network Events; รายการ Interfaces, DHCP/ARP devices, RouterOS version, PPPoE uptime และ historical CPU/RAM/latency/packet loss แสดง unavailable เพราะ API/Agent ปัจจุบันยังไม่ส่งข้อมูลเหล่านี้ และย้าย Ping Monitor ไว้ล่างสุดของหน้า
+- หน้า `/storage/images` จัดการภาพใน Storage
 - หน้า `/sheet` ดูทะเบียนอุปกรณ์จาก Google Sheets เปิดให้สมาชิกที่เข้าสู่ระบบ
 - หน้า `/attendance` แสดงภาพรวมการลงเวลาของทีม ค้นหาด้วยชื่อ/อีเมล และกรองวันที่ (Admin ดูข้อมูลอย่างเดียว)
 
@@ -160,7 +161,7 @@ issuedesk/
 | `/issues/:ticketNumber` | Admin | รายละเอียด เปลี่ยนสถานะ ไฟล์แนบ ลบ Ticket |
 | `/storage/images` | Admin | จัดการภาพใน Storage: ดูตัวอย่าง อัปโหลด ดาวน์โหลด ลบ และคัดลอกลิงก์ |
 | `/sheet` | ผู้ใช้ที่เข้าสู่ระบบ | ทะเบียนอุปกรณ์จาก Google Sheets; ค้นหา กรองสถานะ และดูรูปอุปกรณ์ |
-| `/network-monitor` | Admin | RouterOS snapshot/history/events, viewer lease และ LAN ping ผ่าน agent |
+| `/network-monitor` | Admin | Router health (CPU/RAM/uptime/optional temperature), AIS/True WAN interface state and counters, WAN RX/TX history, supported WAN/agent events, และ Ping Monitor ด้านล่างสุด; unavailable states ใช้กับข้อมูลที่ API ยังไม่ส่ง เช่น interface list/errors, DHCP/ARP devices, RouterOS version, PPPoE uptime, historical CPU/RAM/latency/packet loss |
 | `/attendance` | ผู้ใช้ที่เข้าสู่ระบบ | พนักงานเช็คอิน/เช็คเอาต์และดูประวัติ; Admin ดูภาพรวมและรายการของทีม |
 | `/qr-studio` | ผู้ใช้ที่เข้าสู่ระบบ | Create QR: ปรับเนื้อหา/ดีไซน์ ดู preview บันทึก และ export |
 | `/qr-studio/links` | ผู้ใช้ที่เข้าสู่ระบบ | จัดการ Short Links ของตนเอง |

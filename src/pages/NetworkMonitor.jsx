@@ -122,6 +122,12 @@ function WanCard({ name, wan, rates }) {
                     <p className="flex items-center gap-1.5 mt-1 font-medium text-sm"><ArrowUpFromLine className="size-4 text-violet-500" />{readableRate(rates?.upload)}</p>
                 </div>
             </div>
+            <div className="gap-x-4 gap-y-2 grid grid-cols-2 mt-4 text-xs">
+                <div><p className="text-muted-foreground">Public IP</p><p className="mt-1 font-mono">{wan?.ipAddress || "ไม่มีข้อมูลจาก Agent"}</p></div>
+                <div><p className="text-muted-foreground">PPPoE Uptime</p><p className="mt-1">ไม่มีข้อมูลใน Snapshot</p></div>
+                <div><p className="text-muted-foreground">RX รวม</p><p className="mt-1">{wan ? readableBytes(wan.rxBytes) : "—"}</p></div>
+                <div><p className="text-muted-foreground">TX รวม</p><p className="mt-1">{wan ? readableBytes(wan.txBytes) : "—"}</p></div>
+            </div>
         </article>
     );
 }
@@ -434,9 +440,139 @@ function NetworkMonitor() {
             {snapshot && !agentOnline && <div role="status" className="bg-amber-500/5 px-4 py-3 border-amber-500/30 rounded-xl text-amber-800 dark:text-amber-200 text-sm glass-surface">กำลังแสดง Snapshot ล่าสุดจาก {bangkokStamp(snapshot.collectedAt)} · Heartbeat เกินเกณฑ์ที่กำหนด</div>}
 
             <section className={cx(glassCard, "space-y-4")}>
+                <div className="flex flex-wrap justify-between items-center gap-3">
+                    <div><h2 className="font-semibold">Router Health</h2><p className="mt-1 text-muted-foreground text-xs">{snapshot ? `Snapshot ${bangkokStamp(snapshot.collectedAt)}` : "รอ Snapshot จาก Router"}</p></div>
+                    <StatusPill tone={agentOnline ? "good" : "muted"}>{agentOnline ? "Agent Online" : snapshot ? "แสดงข้อมูลล่าสุด · Agent Offline" : "ยังไม่มีข้อมูล"}</StatusPill>
+                </div>
+                <div className="gap-3 grid sm:grid-cols-2 xl:grid-cols-5">
+                <section className={cx(glassCard, "sm:col-span-2 xl:col-span-1")}>
+                    <div className="flex justify-between items-start gap-3">
+                        <div>
+                            <p className="text-muted-foreground text-sm">Router</p>
+                            <p className="mt-2 font-semibold text-base">{snapshot?.router.identity || "MikroTik Router"}</p>
+                            <p className="mt-1 text-muted-foreground text-xs">{snapshot ? `Snapshot ${bangkokStamp(snapshot.collectedAt)}` : "ยังไม่มีข้อมูลสถานะ"}</p>
+                        </div>
+                        <span className="bg-background/35 p-2.5 border border-border/70 rounded-xl"><Router className="size-5 text-primary" aria-hidden="true" /></span>
+                    </div>
+                </section>
+                <section className={cx(glassCard, "sm:col-span-2 xl:col-span-1")}>
+                    <div className="flex justify-between items-start gap-3">
+                        <div>
+                            <p className="text-muted-foreground text-sm">Monitoring Agent</p>
+                            <p className="mt-2 font-semibold text-base">QNAP</p>
+                            <p className="mt-1 text-muted-foreground text-xs">Heartbeat ล่าสุด {bangkokStamp(status?.agent?.lastHeartbeatAt)}</p>
+                        </div>
+                        <span className="bg-background/35 p-2.5 border border-border/70 rounded-xl"><Bot className="size-5 text-primary" aria-hidden="true" /></span>
+                    </div>
+                </section>
+                <MetricCard icon={Cpu} label="CPU Load" value={snapshot ? `${snapshot.router.cpuLoad}%` : "—"} detail={snapshot ? `อัปเดต ${bangkokStamp(snapshot.collectedAt)}` : "รอ Snapshot แรก"} accent="text-sky-500" />
+                <MetricCard icon={HardDrive} label="RAM Usage" value={memoryPercent === null ? "—" : `${memoryPercent}%`} detail={snapshot ? `${readableBytes(snapshot.router.memoryTotalBytes - snapshot.router.memoryFreeBytes)} / ${readableBytes(snapshot.router.memoryTotalBytes)}` : "รอ Snapshot แรก"} accent="text-violet-500" />
+                <MetricCard icon={Clock3} label="Uptime" value={snapshot?.router.uptime || "—"} detail={snapshot ? "Router uptime" : "รอ Snapshot แรก"} accent="text-emerald-500" />
+                </div>
+            </section>
+
+            <div className="gap-3 grid sm:grid-cols-2">
+                <MetricCard icon={Gauge} label="อุณหภูมิ Router" value={snapshot?.router.temperatureC == null ? "ไม่มีข้อมูล" : `${snapshot.router.temperatureC}°C`} detail={snapshot?.router.temperatureC == null ? "Router รุ่นนี้หรือ Agent ไม่ได้ส่งค่า sensor" : `อัปเดต ${bangkokStamp(snapshot.collectedAt)}`} accent="text-amber-500" />
+                <MetricCard icon={Router} label="RouterOS Version" value="ไม่มีข้อมูลใน Snapshot" detail="Agent ปัจจุบันไม่ได้อ่านเวอร์ชัน RouterOS" accent="text-primary" />
+            </div>
+
+            <div className="gap-4 grid xl:grid-cols-3">
+                <section className={cx(glassCard, "xl:col-span-2")}>
+                    <div className="flex flex-wrap justify-between items-center gap-3">
+                        <div className="flex items-center gap-2.5">
+                            <Network className="size-5 text-primary" aria-hidden="true" />
+                            <h2 className="font-semibold">สถานะ WAN</h2>
+                        </div>
+                        <span className="text-muted-foreground text-xs">สถานะ Interface ไม่ได้ยืนยันการเข้าถึงอินเทอร์เน็ต</span>
+                    </div>
+                    <div className="gap-3 grid md:grid-cols-2 mt-4">
+                        <WanCard name="AIS PPPoE" wan={snapshot?.wan.ais} rates={latestRates?.ais} />
+                        <WanCard name="True PPPoE" wan={snapshot?.wan.true} rates={latestRates?.true} />
+                    </div>
+                </section>
+
+            </div>
+
+            <div className="gap-4 grid xl:grid-cols-2">
+                <section className={cx(glassCard, "space-y-3")}>
+                    <div className="flex items-center gap-2.5"><Network className="size-5 text-primary" aria-hidden="true" /><h2 className="font-semibold">Interfaces</h2></div>
+                    <div className="bg-background/20 p-4 border border-border/70 border-dashed rounded-xl">
+                        <p className="font-medium text-sm">ยังไม่มีรายการ Interface</p>
+                        <p className="mt-1 text-muted-foreground text-xs leading-5">API ส่งเฉพาะสถานะและ counters ของ WAN1/WAN2 ไม่ได้ส่งรายการพอร์ตทั้งหมดหรือค่า errors</p>
+                    </div>
+                </section>
+                <section className={cx(glassCard, "space-y-3")}>
+                    <div className="flex items-center gap-2.5"><Router className="size-5 text-primary" aria-hidden="true" /><h2 className="font-semibold">Connected Devices</h2></div>
+                    <div className="bg-background/20 p-4 border border-border/70 border-dashed rounded-xl">
+                        <p className="font-medium text-sm">ยังไม่มีข้อมูล DHCP Lease / ARP</p>
+                        <p className="mt-1 text-muted-foreground text-xs leading-5">Agent และ API ปัจจุบันไม่ได้รวบรวม hostname, IP, MAC, interface หรือ last seen ของอุปกรณ์</p>
+                    </div>
+                </section>
+            </div>
+
+            <div className="gap-4 grid xl:grid-cols-3">
+                <section className={cx(glassCard, "xl:col-span-2")}>
+                    <div className="flex flex-wrap justify-between items-center gap-3">
+                        <div className="flex items-center gap-2.5"><Activity className="size-5 text-primary" aria-hidden="true" /><h2 className="font-semibold">WAN RX / TX History</h2></div>
+                        <span className="bg-background/25 px-3 py-1.5 border border-border/70 rounded-lg text-muted-foreground text-xs">24 ชั่วโมง</span>
+                    </div>
+                    <TrafficChart series={traffic} />
+                    <p className="mt-3 text-muted-foreground text-xs">คำนวณจาก WAN byte counters ใน snapshots · API ยังไม่มีประวัติ CPU/RAM, latency หรือ packet loss</p>
+                </section>
+                <section className={cx(glassCard, "flex flex-col")}>
+                    <div className="flex items-center gap-2.5"><Network className="size-5 text-primary" aria-hidden="true" /><h2 className="font-semibold">Traffic แยกตาม WAN</h2></div>
+                    <div className="flex-1 content-start gap-3 grid mt-4">
+                        {[{ name: "AIS", rates: latestRates?.ais }, { name: "True", rates: latestRates?.true }].map((wan) => (
+                            <div key={wan.name} className="bg-background/20 p-3.5 border border-border/70 rounded-xl">
+                                <div className="flex justify-between items-center"><p className="font-medium text-sm">{wan.name}</p><span className="text-muted-foreground text-xs">↓ {readableRate(wan.rates?.download)}</span></div>
+                                <p className="mt-2 text-muted-foreground text-xs">↑ {readableRate(wan.rates?.upload)} · {snapshot?.collectedAt ? bangkokStamp(snapshot.collectedAt) : "รอข้อมูล Rate"}</p>
+                            </div>
+                        ))}
+                    </div>
+                </section>
+            </div>
+
+            <section className={cx(glassCard, "grid gap-5 xl:grid-cols-[1.4fr_1fr]")}>
+                <div>
+                    <div className="flex items-center gap-2.5"><History className="size-5 text-primary" aria-hidden="true" /><h2 className="font-semibold">Event History</h2></div>
+                    <div className="flex justify-center items-center bg-background/20 mt-4 px-4 border border-border/70 border-dashed rounded-xl min-h-15 text-center">
+                        <div>
+                            <p className="font-medium text-sm">{events.length ? "เหตุการณ์ล่าสุด" : "ยังไม่มีเหตุการณ์"}</p>
+                            <p className="mt-1 text-muted-foreground text-xs">API ปัจจุบันรองรับ WAN transitions และ Agent heartbeat เท่านั้น</p>
+                        </div>
+                    </div>
+                    {events.length > 0 && (
+                        <ul className="bg-background/20 mt-3 px-3 border border-border/60 rounded-xl divide-y divide-border/60">
+                            {events.slice(0, 5).map((event) => (
+                                <li key={event.id} className="flex flex-wrap justify-between items-center gap-2 py-2.5 text-xs">
+                                    <span className="min-w-0"><span className="font-medium">{event.type.replaceAll("_", " ")}</span><span className="ml-2 text-muted-foreground">{event.description}</span></span>
+                                    <span className="text-muted-foreground shrink-0">{bangkokStamp(event.occurredAt)}</span>
+                                </li>
+                            ))}
+                        </ul>
+                    )}
+                </div>
+                <div>
+                    <div className="flex items-center gap-2.5"><Activity className="size-5 text-primary" aria-hidden="true" /><h2 className="font-semibold">สรุปสถานะเครือข่าย</h2></div>
+                    <ul className="bg-background/20 mt-4 px-3 border border-border/60 rounded-xl divide-y divide-border/60">
+                        {[
+                            { name: "Router", value: snapshot ? "Snapshot received" : "ไม่มีข้อมูล", good: Boolean(snapshot) },
+                            { name: "Monitoring Agent", value: agentOnline ? "Online" : snapshot ? "Offline" : "ไม่มีข้อมูล", good: agentOnline },
+                            { name: "AIS WAN Interface", value: snapshot ? snapshot.wan.ais.running ? "Connected" : "Down" : "ไม่มีข้อมูล", good: snapshot?.wan.ais.running === true },
+                            { name: "True WAN Interface", value: snapshot ? snapshot.wan.true.running ? "Connected" : "Down" : "ไม่มีข้อมูล", good: snapshot?.wan.true.running === true },
+                        ].map((item) => (
+                            <li key={item.name} className="flex justify-between items-center gap-3 py-3 text-sm">
+                                <span className="text-muted-foreground">{item.name}</span>
+                                <StatusPill tone={item.good ? "good" : "muted"}>{item.value}</StatusPill>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            </section>
+            <section className={cx(glassCard, "space-y-4")} aria-labelledby="ping-monitor-heading">
                 <div className="flex flex-wrap justify-between items-start gap-3">
                     <div>
-                        <h2 className="font-semibold">เช็ค Ping อุปกรณ์</h2>
+                        <h2 id="ping-monitor-heading" className="font-semibold">Ping Monitor</h2>
                         <p className="mt-1 text-muted-foreground text-sm">ใส่ IP ในวง 192.168.11.x ได้สูงสุด 20 เครื่อง แล้วกดเช็คเพื่อให้ Agent บน QNAP ตรวจสอบ</p>
                     </div>
                     <StatusPill tone={pingCheck?.status === "completed" ? "good" : "muted"}>
@@ -550,118 +686,6 @@ function NetworkMonitor() {
                 </div>
             </section>
 
-            <div className="gap-3 grid sm:grid-cols-2 xl:grid-cols-5">
-                <section className={cx(glassCard, "sm:col-span-2 xl:col-span-1")}>
-                    <div className="flex justify-between items-start gap-3">
-                        <div>
-                            <p className="text-muted-foreground text-sm">Router</p>
-                            <p className="mt-2 font-semibold text-base">{snapshot?.router.identity || "MikroTik Router"}</p>
-                            <p className="mt-1 text-muted-foreground text-xs">{snapshot ? `Snapshot ${bangkokStamp(snapshot.collectedAt)}` : "ยังไม่มีข้อมูลสถานะ"}</p>
-                        </div>
-                        <span className="bg-background/35 p-2.5 border border-border/70 rounded-xl"><Router className="size-5 text-primary" aria-hidden="true" /></span>
-                    </div>
-                </section>
-                <section className={cx(glassCard, "sm:col-span-2 xl:col-span-1")}>
-                    <div className="flex justify-between items-start gap-3">
-                        <div>
-                            <p className="text-muted-foreground text-sm">Monitoring Agent</p>
-                            <p className="mt-2 font-semibold text-base">QNAP</p>
-                            <p className="mt-1 text-muted-foreground text-xs">Heartbeat ล่าสุด {bangkokStamp(status?.agent?.lastHeartbeatAt)}</p>
-                        </div>
-                        <span className="bg-background/35 p-2.5 border border-border/70 rounded-xl"><Bot className="size-5 text-primary" aria-hidden="true" /></span>
-                    </div>
-                </section>
-                <MetricCard icon={Cpu} label="CPU Load" value={snapshot ? `${snapshot.router.cpuLoad}%` : "—"} detail={snapshot ? `อัปเดต ${bangkokStamp(snapshot.collectedAt)}` : "รอ Snapshot แรก"} accent="text-sky-500" />
-                <MetricCard icon={HardDrive} label="RAM Usage" value={memoryPercent === null ? "—" : `${memoryPercent}%`} detail={snapshot ? `${readableBytes(snapshot.router.memoryTotalBytes - snapshot.router.memoryFreeBytes)} / ${readableBytes(snapshot.router.memoryTotalBytes)}` : "รอ Snapshot แรก"} accent="text-violet-500" />
-                <MetricCard icon={Clock3} label="Uptime" value={snapshot?.router.uptime || "—"} detail={snapshot?.router.temperatureC === null || snapshot?.router.temperatureC === undefined ? "รอ Snapshot แรก" : `อุณหภูมิ ${snapshot.router.temperatureC}°C`} accent="text-emerald-500" />
-            </div>
-
-            <div className="gap-4 grid xl:grid-cols-3">
-                <section className={cx(glassCard, "xl:col-span-2")}>
-                    <div className="flex flex-wrap justify-between items-center gap-3">
-                        <div className="flex items-center gap-2.5">
-                            <Network className="size-5 text-primary" aria-hidden="true" />
-                            <h2 className="font-semibold">สถานะ WAN</h2>
-                        </div>
-                        <span className="text-muted-foreground text-xs">ตรวจจากสถานะ Interface และ Counter</span>
-                    </div>
-                    <div className="gap-3 grid md:grid-cols-2 mt-4">
-                        <WanCard name="AIS PPPoE" wan={snapshot?.wan.ais} rates={latestRates?.ais} />
-                        <WanCard name="True PPPoE" wan={snapshot?.wan.true} rates={latestRates?.true} />
-                    </div>
-                </section>
-
-                <section className={cx(glassCard, "flex flex-col")}>
-                    <div className="flex items-center gap-2.5">
-                        <Router className="size-5 text-primary" aria-hidden="true" />
-                        <h2 className="font-semibold">ข้อมูลอุปกรณ์ MikroTik</h2>
-                    </div>
-                    <div className="flex flex-col flex-1 justify-center bg-background/20 mt-4 p-4 border border-border/70 border-dashed rounded-xl text-center">
-                        <Gauge className="mx-auto size-6 text-muted-foreground/70" aria-hidden="true" />
-                        <p className="mt-3 font-medium text-sm">{snapshot?.router.identity || "รอข้อมูลอุปกรณ์"}</p>
-                        <p className="mt-1 text-muted-foreground text-xs leading-5">{snapshot ? `RouterOS Snapshot · ${bangkokStamp(snapshot.collectedAt)}` : "CPU, หน่วยความจำ, อุณหภูมิ และ Uptime จะแสดงเมื่อ Agent เชื่อมต่อ"}</p>
-                    </div>
-                </section>
-            </div>
-
-            <div className="gap-4 grid xl:grid-cols-3">
-                <section className={cx(glassCard, "xl:col-span-2")}>
-                    <div className="flex flex-wrap justify-between items-center gap-3">
-                        <div className="flex items-center gap-2.5"><Activity className="size-5 text-primary" aria-hidden="true" /><h2 className="font-semibold">Traffic รวม</h2></div>
-                        <span className="bg-background/25 px-3 py-1.5 border border-border/70 rounded-lg text-muted-foreground text-xs">24 ชั่วโมง</span>
-                    </div>
-                    <TrafficChart series={traffic} />
-                </section>
-                <section className={cx(glassCard, "flex flex-col")}>
-                    <div className="flex items-center gap-2.5"><Network className="size-5 text-primary" aria-hidden="true" /><h2 className="font-semibold">Traffic แยกตาม WAN</h2></div>
-                    <div className="flex-1 content-start gap-3 grid mt-4">
-                        {[{ name: "AIS", rates: latestRates?.ais }, { name: "True", rates: latestRates?.true }].map((wan) => (
-                            <div key={wan.name} className="bg-background/20 p-3.5 border border-border/70 rounded-xl">
-                                <div className="flex justify-between items-center"><p className="font-medium text-sm">{wan.name}</p><span className="text-muted-foreground text-xs">↓ {readableRate(wan.rates?.download)}</span></div>
-                                <p className="mt-2 text-muted-foreground text-xs">↑ {readableRate(wan.rates?.upload)} · {snapshot?.collectedAt ? bangkokStamp(snapshot.collectedAt) : "รอข้อมูล Rate"}</p>
-                            </div>
-                        ))}
-                    </div>
-                </section>
-            </div>
-
-            <section className={cx(glassCard, "grid gap-5 xl:grid-cols-[1.4fr_1fr]")}>
-                <div>
-                    <div className="flex items-center gap-2.5"><History className="size-5 text-primary" aria-hidden="true" /><h2 className="font-semibold">Event History</h2></div>
-                    <div className="flex justify-center items-center bg-background/20 mt-4 px-4 border border-border/70 border-dashed rounded-xl min-h-15 text-center">
-                        <div>
-                            <p className="font-medium text-sm">{events.length ? "เหตุการณ์ล่าสุด" : "ยังไม่มีเหตุการณ์"}</p>
-                            <p className="mt-1 text-muted-foreground text-xs">WAN และ Agent events จะแสดงที่นี่</p>
-                        </div>
-                    </div>
-                    {events.length > 0 && (
-                        <ul className="bg-background/20 mt-3 px-3 border border-border/60 rounded-xl divide-y divide-border/60">
-                            {events.slice(0, 5).map((event) => (
-                                <li key={event.id} className="flex flex-wrap justify-between items-center gap-2 py-2.5 text-xs">
-                                    <span className="min-w-0"><span className="font-medium">{event.type.replaceAll("_", " ")}</span><span className="ml-2 text-muted-foreground">{event.description}</span></span>
-                                    <span className="text-muted-foreground shrink-0">{bangkokStamp(event.occurredAt)}</span>
-                                </li>
-                            ))}
-                        </ul>
-                    )}
-                </div>
-                <div>
-                    <div className="flex items-center gap-2.5"><Activity className="size-5 text-primary" aria-hidden="true" /><h2 className="font-semibold">สรุปสถานะเครือข่าย</h2></div>
-                    <ul className="bg-background/20 mt-4 px-3 border border-border/60 rounded-xl divide-y divide-border/60">
-                        {[
-                            { name: "Router", value: snapshot ? "Snapshot received" : "ไม่มีข้อมูล", good: Boolean(snapshot) },
-                            { name: "Monitoring Agent", value: agentOnline ? "Online" : snapshot ? "Offline" : "ไม่มีข้อมูล", good: agentOnline },
-                            { name: "AIS WAN Interface", value: snapshot ? snapshot.wan.ais.running ? "Connected" : "Down" : "ไม่มีข้อมูล", good: snapshot?.wan.ais.running === true },
-                            { name: "True WAN Interface", value: snapshot ? snapshot.wan.true.running ? "Connected" : "Down" : "ไม่มีข้อมูล", good: snapshot?.wan.true.running === true },
-                        ].map((item) => (
-                            <li key={item.name} className="flex justify-between items-center gap-3 py-3 text-sm">
-                                <span className="text-muted-foreground">{item.name}</span>
-                                <StatusPill tone={item.good ? "good" : "muted"}>{item.value}</StatusPill>
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-            </section>
         </div>
     );
 }
