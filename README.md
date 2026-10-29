@@ -64,7 +64,7 @@ Sidebar NavLink และปุ่ม `GlassButton` ใช้ Liquid Glass hover
 - เก็บไฟล์แนบผ่าน Storage API ภายนอก (Garage ผ่าน S3-compatible API) และเก็บเฉพาะ metadata ใน D1
 - Session ใน HttpOnly Cookie อายุ 7 วัน ตรวจสิทธิ์ที่ Cloudflare Pages Functions
 - ธีมสว่าง / มืด / ตามระบบ และ Web App Manifest สำหรับเปิดแบบ standalone
-- ธีม Dark ใช้พื้นผิวเขียวเข้มและสีเน้นมินต์ โดย Light mode คงโทนเดิม
+- ธีม Dark ใช้พื้นหลังดำอมฟ้า `#090d12` กับสีเน้นมินต์ โดย Light mode คงโทนเดิม
 
 ## เส้นทางการใช้งาน
 
