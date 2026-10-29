@@ -1,5 +1,11 @@
 # IssueDesk — Project Handoff
 
+## Dark theme palette — 30 ตุลาคม 2026
+
+- ปรับ `src/index.css` เฉพาะ `.dark` ให้พื้นหลัง การ์ด เมนู glass, accent, primary, sidebar และ chart เป็นโทนเขียวเข้ม/มินต์ตามสีพอร์ตโฟลิโอ Sites; Light mode คงเดิม
+- ตรวจ `AGENTS.md`, `README.md` และ handoff ให้ตรงกับ source; `pnpm build` และ `git diff --check` ผ่าน
+- ยังไม่ได้ตรวจภาพใน browser หรือ deploy; โหมด Light และ production ยังไม่ได้ตรวจใน browser
+
 ## Sidebar NavLink hover — 29 ตุลาคม 2026
 
 - ปรับ `src/components/layout/Sidebar.jsx` และ `src/index.css` ให้ NavLink ใน Sidebar ใช้ Liquid Glass hover โหมด Light ที่อิง currentColor สำหรับพื้นหลัง แสง ขอบ และเงา ให้สอดคล้องกับปุ่ม Collapse; shared `glassHover` และ Dark mode ยังคงเดิม
