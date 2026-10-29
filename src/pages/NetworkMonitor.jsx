@@ -6,7 +6,6 @@ import {
     ArrowUpFromLine,
     Bot,
     Cpu,
-    Gauge,
     HardDrive,
     History,
     LoaderCircle,
@@ -470,11 +469,6 @@ function NetworkMonitor() {
                 <MetricCard icon={Clock3} label="Uptime" value={snapshot?.router.uptime || "—"} detail={snapshot ? "Router uptime" : "รอ Snapshot แรก"} accent="text-emerald-500" />
                 </div>
             </section>
-
-            <div className="gap-3 grid sm:grid-cols-2">
-                <MetricCard icon={Gauge} label="อุณหภูมิ Router" value={snapshot?.router.temperatureC == null ? "ไม่มีข้อมูล" : `${snapshot.router.temperatureC}°C`} detail={snapshot?.router.temperatureC == null ? "Router รุ่นนี้หรือ Agent ไม่ได้ส่งค่า sensor" : `อัปเดต ${bangkokStamp(snapshot.collectedAt)}`} accent="text-amber-500" />
-                <MetricCard icon={Router} label="RouterOS Version" value="ไม่มีข้อมูลใน Snapshot" detail="Agent ปัจจุบันไม่ได้อ่านเวอร์ชัน RouterOS" accent="text-primary" />
-            </div>
 
             <div className="gap-4 grid xl:grid-cols-3">
                 <section className={cx(glassCard, "xl:col-span-2")}>
