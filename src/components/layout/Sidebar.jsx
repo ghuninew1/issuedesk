@@ -16,7 +16,7 @@ import {
     PanelLeftClose,
     PanelLeftOpen,
 } from "lucide-react";
-import logoFull from "../../assets/GhuniNew_full_color.avif";
+import logoFull from "../../assets/logo_full.avif";
 import logo from "../../assets/logo.avif";
 
 const navGroups = [
@@ -90,9 +90,7 @@ const SidebarContent = ({ isCollapsed, onNavigate, onToggleSidebar, mobile = fal
                         <img
                             src={logoFull}
                             alt="IssueDesk"
-                            width={120}
-                            height={36}
-                            className="w-auto h-8 object-contain"
+                            className="p-6 w-auto object-contain"
                         />
                     ) : (
                         <img src={logo} alt="IssueDesk" width={32} height={32} className="size-8 object-cover" />
