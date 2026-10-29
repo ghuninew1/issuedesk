@@ -43,7 +43,7 @@
 - Use `src/utils/cx.js` for this rule even though `src/lib/utils.js` also exports `cn`. Existing components do not all comply yet; their older patterns are not exceptions for new changes.
 - When editing a component, bring any `className` props touched by the change into compliance with the `cx()` rule. Avoid unrelated bulk rewrites.
 - Follow the existing dark theme conventions and preserve light/dark behavior.
-- Sidebar NavLinks use a currentColor Liquid Glass hover treatment in Light mode to match the Collapse control while preserving the shared `glassHover` interaction.
+- Sidebar NavLinks and shared `GlassButton` controls use currentColor Liquid Glass hover treatments in Light mode for readable sheen, pointer light, rim, and shadow; Dark mode keeps the existing shared `glassHover` behavior.
 - Keep class names statically discoverable by Tailwind where possible; do not construct utility class fragments dynamically.
 - Keep components readable and separated according to existing project patterns.
 - Prefer existing dependencies over adding new ones.

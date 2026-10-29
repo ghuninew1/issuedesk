@@ -10,7 +10,7 @@ IssueDesk เป็นเว็บแอป IT Help Desk สำหรับแ�
 
 เวอร์ชันปัจจุบัน: `1.3.4` (อ้างอิงจาก `package.json`)
 
-Sidebar ใช้ Liquid Glass hover กับ NavLink; ใน Light mode แสง ขอบ และเงาอิงสีตัวอักษรเพื่อให้มองเห็นชัดเหมือนปุ่ม Collapse
+Sidebar NavLink และปุ่ม `GlassButton` ใช้ Liquid Glass hover ใน Light mode โดยแสง ขอบ และเงาอิงสีตัวอักษรเพื่อให้มองเห็นชัด; ปุ่มต่าง ๆ ใช้ treatment เดียวกับปุ่ม Collapse
 
 ## ความสามารถ
 

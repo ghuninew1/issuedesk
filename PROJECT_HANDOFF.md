@@ -3,6 +3,7 @@
 ## Sidebar NavLink hover — 29 ตุลาคม 2026
 
 - ปรับ `src/components/layout/Sidebar.jsx` และ `src/index.css` ให้ NavLink ใน Sidebar ใช้ Liquid Glass hover โหมด Light ที่อิง currentColor สำหรับพื้นหลัง แสง ขอบ และเงา ให้สอดคล้องกับปุ่ม Collapse; shared `glassHover` และ Dark mode ยังคงเดิม
+- ขยาย treatment เดียวกันให้ `.glass-button` เพื่อให้ปุ่ม `GlassButton` ทั่วแอปใช้พื้นหลัง แสง ขอบ และเงาที่อิง currentColor ใน Light mode
 - อัปเดต README และ AGENTS.md ให้ตรงกับ interaction ปัจจุบัน
 - ตรวจ `git diff --check` ผ่าน; ยังไม่ได้รัน lint/build หรือ browser QA รอบนี้
 
