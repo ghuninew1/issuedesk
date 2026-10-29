@@ -470,8 +470,8 @@ function NetworkMonitor() {
                 </div>
             </section>
 
-            <div className="gap-4 grid xl:grid-cols-3">
-                <section className={cx(glassCard, "xl:col-span-2")}>
+            <div className="gap-4 grid xl:grid-cols-2">
+                <section className={cx(glassCard)}>
                     <div className="flex flex-wrap justify-between items-center gap-3">
                         <div className="flex items-center gap-2.5">
                             <Network className="size-5 text-primary" aria-hidden="true" />
@@ -484,45 +484,31 @@ function NetworkMonitor() {
                         <WanCard name="True PPPoE" wan={snapshot?.wan.true} rates={latestRates?.true} />
                     </div>
                 </section>
-
-            </div>
-
-            <div className="gap-4 grid xl:grid-cols-2">
-                <section className={cx(glassCard, "space-y-3")}>
-                    <div className="flex items-center gap-2.5"><Network className="size-5 text-primary" aria-hidden="true" /><h2 className="font-semibold">Interfaces</h2></div>
-                    <div className="bg-background/20 p-4 border border-border/70 border-dashed rounded-xl">
-                        <p className="font-medium text-sm">ยังไม่มีรายการ Interface</p>
-                        <p className="mt-1 text-muted-foreground text-xs leading-5">API ส่งเฉพาะสถานะและ counters ของ WAN1/WAN2 ไม่ได้ส่งรายการพอร์ตทั้งหมดหรือค่า errors</p>
-                    </div>
-                </section>
-                <section className={cx(glassCard, "space-y-3")}>
-                    <div className="flex items-center gap-2.5"><Router className="size-5 text-primary" aria-hidden="true" /><h2 className="font-semibold">Connected Devices</h2></div>
-                    <div className="bg-background/20 p-4 border border-border/70 border-dashed rounded-xl">
-                        <p className="font-medium text-sm">ยังไม่มีข้อมูล DHCP Lease / ARP</p>
-                        <p className="mt-1 text-muted-foreground text-xs leading-5">Agent และ API ปัจจุบันไม่ได้รวบรวม hostname, IP, MAC, interface หรือ last seen ของอุปกรณ์</p>
+                <section className={cx(glassCard)}>
+                    <div className="flex items-center gap-2.5"><Network className="size-5 text-primary" aria-hidden="true" /><h2 className="font-semibold">Traffic แยกตาม WAN</h2></div>
+                    <div className="gap-3 grid sm:grid-cols-2 mt-4">
+                        {[{ name: "AIS", rates: latestRates?.ais }, { name: "True", rates: latestRates?.true }].map((wan) => (
+                            <div key={wan.name} className="bg-background/20 p-3.5 border border-border/70 rounded-xl">
+                                <p className="font-medium text-sm">{wan.name}</p>
+                                <div className="flex flex-wrap justify-between gap-2 mt-3 text-xs">
+                                    <span className="text-muted-foreground">↓ {readableRate(wan.rates?.download)}</span>
+                                    <span className="text-muted-foreground">↑ {readableRate(wan.rates?.upload)}</span>
+                                </div>
+                                <p className="mt-2 text-muted-foreground text-xs">{snapshot?.collectedAt ? bangkokStamp(snapshot.collectedAt) : "รอข้อมูล Rate"}</p>
+                            </div>
+                        ))}
                     </div>
                 </section>
             </div>
 
-            <div className="gap-4 grid xl:grid-cols-3">
-                <section className={cx(glassCard, "xl:col-span-2")}>
+            <div>
+                <section className={cx(glassCard)}>
                     <div className="flex flex-wrap justify-between items-center gap-3">
                         <div className="flex items-center gap-2.5"><Activity className="size-5 text-primary" aria-hidden="true" /><h2 className="font-semibold">WAN RX / TX History</h2></div>
                         <span className="bg-background/25 px-3 py-1.5 border border-border/70 rounded-lg text-muted-foreground text-xs">24 ชั่วโมง</span>
                     </div>
                     <TrafficChart series={traffic} />
                     <p className="mt-3 text-muted-foreground text-xs">คำนวณจาก WAN byte counters ใน snapshots · API ยังไม่มีประวัติ CPU/RAM, latency หรือ packet loss</p>
-                </section>
-                <section className={cx(glassCard, "flex flex-col")}>
-                    <div className="flex items-center gap-2.5"><Network className="size-5 text-primary" aria-hidden="true" /><h2 className="font-semibold">Traffic แยกตาม WAN</h2></div>
-                    <div className="flex-1 content-start gap-3 grid mt-4">
-                        {[{ name: "AIS", rates: latestRates?.ais }, { name: "True", rates: latestRates?.true }].map((wan) => (
-                            <div key={wan.name} className="bg-background/20 p-3.5 border border-border/70 rounded-xl">
-                                <div className="flex justify-between items-center"><p className="font-medium text-sm">{wan.name}</p><span className="text-muted-foreground text-xs">↓ {readableRate(wan.rates?.download)}</span></div>
-                                <p className="mt-2 text-muted-foreground text-xs">↑ {readableRate(wan.rates?.upload)} · {snapshot?.collectedAt ? bangkokStamp(snapshot.collectedAt) : "รอข้อมูล Rate"}</p>
-                            </div>
-                        ))}
-                    </div>
                 </section>
             </div>
 

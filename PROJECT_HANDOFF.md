@@ -23,6 +23,7 @@
 ## Network Monitor UI follow-up — 30 ตุลาคม 2026
 
 - นำการ์ดอุณหภูมิ Router และ RouterOS Version ออกจากหน้า Network Monitor ตามคำขอ; API และ Agent ยังคงรูปแบบเดิม
+- ซ่อนส่วน Interfaces และ Connected Devices ระหว่างที่ API ยังไม่มีข้อมูล และจัด Traffic แยกตาม WAN ไว้ข้างสถานะ WAN; ขยาย WAN RX/TX History เต็มความกว้าง
 
 - ปรับหน้า `/network-monitor` เฉพาะ UI: เพิ่ม Router Health, WAN RX/TX counters/IP slots, แยก Interfaces และ Connected Devices พร้อม unavailable states, ทำให้ history/events บอกขอบเขต API ชัด และย้าย Ping Monitor ไว้ล่างสุด โดยคง viewer lease และ ping queue/polling เดิม
 - Source API/Agent ปัจจุบันส่ง Router identity/uptime/CPU/RAM/optional temperature และ WAN AIS/True interface running/IP (ปัจจุบัน Agent ใส่ null)/RX/TX; events มี WAN transitions และ Agent heartbeat/offline เท่านั้น. ยังไม่มี RouterOS version, interface errors/list, DHCP/ARP devices, PPPoE uptime หรือ historical CPU/RAM/latency/packet loss

@@ -73,7 +73,7 @@
 - WAN `running` describes interface state, not verified public Internet access. Preserve raw counters, rate derivation, stale-heartbeat handling, and existing data-retention behavior when changing reports or charts.
 - Ping runs only on an explicit admin request through the existing queue/agent/report flow. Preserve the 1–20 unique target limit and current allowlist (`192.168.11.1`–`192.168.11.254`); do not broaden it or add automatic probing without a requested behavior change.
 - Preserve duplicate/recheck handling, pending-job protections, and cleanup of page polling timers and viewer leases.
-- The current dashboard snapshot includes Router identity/uptime/CPU/RAM/optional temperature and AIS/True WAN interface state, nullable IP, and byte counters. It does not include RouterOS version, all interface/error counters, DHCP leases, ARP devices, PPPoE uptime, or historical CPU/RAM/latency/packet-loss samples; show explicit unavailable states instead of deriving or mocking these values. The dashboard does not display temperature or RouterOS version. Historical events currently cover WAN transitions and agent heartbeat/offline state.
+- The current dashboard snapshot includes Router identity/uptime/CPU/RAM and AIS/True WAN interface state, nullable IP, and byte counters. It does not include RouterOS version, all interface/error counters, DHCP leases, ARP devices, PPPoE uptime, or historical CPU/RAM/latency/packet-loss samples; do not add UI sections for those fields until a real data source exists. Historical events currently cover WAN transitions and agent heartbeat/offline state.
 
 ## Frontend
 - Follow a mobile-first responsive design approach.
