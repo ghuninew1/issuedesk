@@ -470,8 +470,8 @@ function NetworkMonitor() {
                 </div>
             </section>
 
-            <div className="gap-4 grid xl:grid-cols-2">
-                <section className={cx(glassCard)}>
+            <div className="gap-4 grid xl:grid-cols-4">
+                <section className={cx(glassCard, "xl:col-span-3")}>
                     <div className="flex flex-wrap justify-between items-center gap-3">
                         <div className="flex items-center gap-2.5">
                             <Network className="size-5 text-primary" aria-hidden="true" />
@@ -486,7 +486,7 @@ function NetworkMonitor() {
                 </section>
                 <section className={cx(glassCard)}>
                     <div className="flex items-center gap-2.5"><Network className="size-5 text-primary" aria-hidden="true" /><h2 className="font-semibold">Traffic แยกตาม WAN</h2></div>
-                    <div className="gap-3 grid sm:grid-cols-2 mt-4">
+                    <div className="gap-3 grid mt-4">
                         {[{ name: "AIS", rates: latestRates?.ais }, { name: "True", rates: latestRates?.true }].map((wan) => (
                             <div key={wan.name} className="bg-background/20 p-3.5 border border-border/70 rounded-xl">
                                 <p className="font-medium text-sm">{wan.name}</p>
