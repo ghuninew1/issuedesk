@@ -1,5 +1,10 @@
 # IssueDesk — Project Handoff
 
+## Sidebar hover color — 31 ตุลาคม 2026
+
+- ปรับสีพื้นหลัง highlight ที่เลื่อนใน Sidebar ให้ตรงกับพื้นหลัง hover ของ GlassButton ทั้ง Light และ Dark โดยคง animation และ active state เดิม
+- ตรวจ `AGENTS.md` และ `README.md`; อัปเดตกฎ Sidebar ใน `AGENTS.md` และ README ยังตรงกับ source. `pnpm --config.verifyDepsBeforeRun=false lint` และ `git diff --check` ผ่าน; ยังไม่ได้ตรวจใน browser หรือ deploy
+
 ## Sidebar highlight exit — 31 ตุลาคม 2026
 
 - ให้พื้นหลัง Sidebar จาง ณ ตำแหน่งล่าสุดเมื่อเลิก hover หรือ focus โดยไม่เลื่อนกลับจุดเริ่มต้น
