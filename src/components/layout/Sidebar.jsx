@@ -1,3 +1,5 @@
+import { NavHighlight } from "./NavHighlight";
+import { useNavHighlight } from "./useNavHighlight";
 import GlassButton from "../GlassButton";
 import { NavLink } from "react-router-dom";
 import { useAuth } from "../../auth/useAuth";
@@ -55,6 +57,7 @@ const handleGlowMove = (e) => {
 
 const SidebarContent = ({ isCollapsed, onNavigate, onToggleSidebar, mobile = false }) => {
     const { user, isLoading } = useAuth();
+    const { highlight, ...highlightEvents } = useNavHighlight();
     const visibleGroups = navGroups.map((group) => ({
         ...group,
         links: group.links.filter((link) => {
@@ -101,11 +104,13 @@ const SidebarContent = ({ isCollapsed, onNavigate, onToggleSidebar, mobile = fal
             {/* Navigation */}
             <nav
                 aria-label="Main navigation"
+                {...highlightEvents}
                 className={cx(
-                    "flex-1 space-y-1 overflow-y-auto p-2 animate-fadeInLeft",
+                    "relative flex-1 space-y-1 overflow-y-auto p-2 animate-fadeInLeft",
                     mobile || !isCollapsed ? "w-56" : "overflow-x-hidden",
                 )}
             >
+                <NavHighlight highlight={highlight} />
                 {visibleGroups.map((group, index) => (
                     <section
                         key={group.label}
@@ -124,13 +129,14 @@ const SidebarContent = ({ isCollapsed, onNavigate, onToggleSidebar, mobile = fal
                             {group.links.map((link) => (
                                 <NavLink
                                     key={link.to}
+                                    data-nav-highlight
                                     to={link.to}
                                     title={isCollapsed ? link.label : undefined}
                                     onClick={onNavigate}
                                     onPointerMove={handleGlowMove}
                                     className={({ isActive }) =>
                                         cx(
-                                            "flex min-h-11 items-center rounded-xl px-3 py-2.5",
+                                            "relative flex min-h-11 items-center rounded-xl px-3 py-2.5",
                                             mobile || !isCollapsed ? "w-full gap-3" : "mx-auto size-11 justify-center px-0",
                                             "animate-fadeInLeft",
                                             "focus-visible:outline-none focus-visible:ring-2",
@@ -138,8 +144,6 @@ const SidebarContent = ({ isCollapsed, onNavigate, onToggleSidebar, mobile = fal
                                             isActive
                                                 ? "glass-nav-active font-medium text-sidebar-accent-foreground"
                                                 : "text-muted-foreground hover:text-sidebar-accent-foreground",
-                                            "glass-sidebar-nav",
-                                            glassHover,
                                         )
                                     }
                                 >
