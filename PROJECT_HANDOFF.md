@@ -280,3 +280,15 @@ Regression suite ครอบคลุมกรณี failure และตรว
 ### ปัญหา upload 502 ที่แก้ไขแล้ว
 
 Storage API เคยคืน `SQLITE_READONLY: attempt to write a readonly database` ขณะ INSERT metadata ใน SQLite ของ Storage เพราะ `storage-api` รันด้วย UID/GID `1000:1000` แต่ bind mount `/app/data` และ `storage.db` เป็นของ `0:0` mode `755`/`644` เมื่อแก้ ownership ให้ตรงกับ runtime user แล้ว ผู้ใช้ยืนยันว่าอัปโหลดได้ทั้ง Storage Images และ QR Studio ปัญหานี้ปิดแล้ว; เก็บสาเหตุและวิธีแก้ไว้ในเอกสาร Storage ข้างต้นสำหรับดูแลการติดตั้งครั้งต่อไป
+
+
+## Documentation organization — 30 ตุลาคม 2026
+
+- ปรับ README ให้เป็นภาพรวมโปรเจกต์ ความสามารถ การเริ่มพัฒนา และเอกสารอ้างอิง; บันทึกการแก้ไข ผลตรวจ และงานค้างอยู่ใน PROJECT_HANDOFF.md
+- งานเอกสารเท่านั้น; ตรวจ diff สำหรับ whitespace หลังแก้ไข ไม่ได้รัน lint/build/tests หรือเปลี่ยน production
+
+
+## Release notes v1.3.4 — 30 ตุลาคม 2026
+
+- เพิ่ม V1.3.4_RELEASE.md เป็น release notes ฉบับแรก สรุป source baseline และข้อจำกัดโดยไม่อ้างว่าเป็น diff จาก release ก่อนหน้า
+- ตรวจ source, routes, package version และ migrations สำหรับเอกสาร; ตรวจ whitespace ด้วย git diff --check ไม่ได้รัน lint/build/tests/browser QA หรือเปลี่ยน production

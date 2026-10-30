@@ -134,7 +134,7 @@
 
 ## Documentation Sync — required completion step
 - After every completed feature, fix, migration, API, infrastructure, or other significant change, review and sync **all three** files: `AGENTS.md`, `README.md`, and `PROJECT_HANDOFF.md` in the same task before reporting completion.
-- `AGENTS.md`: keep project rules, architecture boundaries, commands, security requirements, and validation policy current. `README.md`: keep setup, features, routes, APIs, environment names, and operator guidance current. `PROJECT_HANDOFF.md`: record the resulting state, affected areas, actual checks, limitations, and the next starting point.
+- `AGENTS.md`: keep project rules, architecture boundaries, commands, security requirements, and validation policy current. `README.md`: keep project overview, setup, features, and usage current without task history. `PROJECT_HANDOFF.md`: record all changes, resulting state, affected areas, actual checks, limitations, and the next starting point.
 - If a file needs no factual change, explicitly record that it was reviewed and remains accurate; do not invent edits or duplicate task history in the rules file.
 - Verify documentation against the current source and configuration. Distinguish source implementation, historical local checks, user-reported production results, and checks executed in the current task. Never turn an old result into a fresh pass.
 - Keep D1 migrations separate from the Storage service's SQLite migrations and internal `/v3` API. Do not infer another project's status from this checkout.
