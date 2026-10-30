@@ -1,5 +1,10 @@
 # IssueDesk — Project Handoff
 
+## Sidebar highlight exit — 31 ตุลาคม 2026
+
+- ให้พื้นหลัง Sidebar จาง ณ ตำแหน่งล่าสุดเมื่อเลิก hover หรือ focus โดยไม่เลื่อนกลับจุดเริ่มต้น
+- ตรวจ `AGENTS.md` และ `README.md` แล้ว ยังคงตรงกับ source; `pnpm lint` ผ่าน ยังไม่ได้ตรวจใน browser หรือ deploy
+
 ## Sidebar navigation highlight — 30 ตุลาคม 2026
 
 - เพิ่มพื้นหลังสีตามธีมที่เลื่อนระหว่างเมนู Sidebar เมื่อ hover หรือ focus โดยคงสถานะ active แยกไว้ และรองรับ reduced motion
