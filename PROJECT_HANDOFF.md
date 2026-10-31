@@ -1,5 +1,12 @@
 # IssueDesk — Project Handoff
 
+## Network Monitor details — 31 ตุลาคม 2026
+
+- Agent อ่าน System Health, PPPoE monitor (local address/uptime) และ DHCP leases แบบ read-only เฉพาะเมื่อ viewer active; คำสั่ง optional ที่ Router ปฏิเสธให้ข้อมูลเป็น null และไม่หยุด snapshot หลัก. Health API temperature แปลงจากหน่วยสิบเท่าตามเอกสาร MikroTik; ต้องตรวจบน RouterOS จริง
+- D1 migration 0012 เพิ่ม PPPoE uptime ใน snapshots และ DHCP leases ล่าสุดใน agent state; เก็บสูงสุด 100 รายการพร้อมจำนวนทั้งหมด ไม่เก็บประวัติ lease และไม่อ่าน ARP. หน้า Admin แสดงข้อมูลเหล่านี้และอุณหภูมิ
+- ตรวจ AGENTS.md และ README.md และปรับตาม source; lint, build และ agent unit tests ผ่านในเครื่อง ยังไม่ได้ตรวจ browser, RouterOS, Pages/D1 จริง หรือ deploy/apply migration. ต้องตรวจและ apply migration โดยได้รับอนุญาตก่อน deploy Pages และอัปเดต agent บน QNAP; ตรวจอุณหภูมิและผล monitor ตามเวอร์ชัน RouterOS
+
+
 ## Sidebar hover color — 31 ตุลาคม 2026
 
 - ปรับสีพื้นหลัง highlight ที่เลื่อนใน Sidebar ให้ตรงกับพื้นหลัง hover ของ GlassButton ทั้ง Light และ Dark โดยคง animation และ active state เดิม
@@ -41,7 +48,7 @@
 - ซ่อนส่วน Interfaces และ Connected Devices ระหว่างที่ API ยังไม่มีข้อมูล และจัด Traffic แยกตาม WAN ไว้ข้างสถานะ WAN; ขยาย WAN RX/TX History เต็มความกว้าง
 
 - ปรับหน้า `/network-monitor` เฉพาะ UI: เพิ่ม Router Health, WAN RX/TX counters/IP slots, แยก Interfaces และ Connected Devices พร้อม unavailable states, ทำให้ history/events บอกขอบเขต API ชัด และย้าย Ping Monitor ไว้ล่างสุด โดยคง viewer lease และ ping queue/polling เดิม
-- Source API/Agent ปัจจุบันส่ง Router identity/uptime/CPU/RAM/optional temperature และ WAN AIS/True interface running/IP (ปัจจุบัน Agent ใส่ null)/RX/TX; events มี WAN transitions และ Agent heartbeat/offline เท่านั้น. ยังไม่มี RouterOS version, interface errors/list, DHCP/ARP devices, PPPoE uptime หรือ historical CPU/RAM/latency/packet loss
+- Source API/Agent ณ เวลาบันทึกเดิมส่ง Router identity/uptime/CPU/RAM/optional temperature และ WAN AIS/True interface running/IP (ปัจจุบัน Agent ใส่ null)/RX/TX; events มี WAN transitions และ Agent heartbeat/offline เท่านั้น. ยังไม่มี RouterOS version, interface errors/list, DHCP/ARP devices, PPPoE uptime หรือ historical CPU/RAM/latency/packet loss
 - เปลี่ยนแปลงถูกนำเข้า checkout หลัก `/Users/ghuninew/GitHub/issuedesk` (branch `main`) เป็นการแก้ไขที่ยังไม่ commit; ตรวจใน worktree แยก `/Users/ghuninew/Documents/Codex/issuedesk-network-monitor-ui`. `pnpm --config.verifyDepsBeforeRun=false lint` ผ่าน; `git diff --check` ผ่าน. `pnpm lint` แบบปกติถูก pnpm พยายาม sync dependencies แต่ติด DNS registry; lint ที่ผ่านใช้ dependencies ที่ติดตั้งอยู่แล้ว. ไม่ได้ build, browser QA, deploy หรือเปลี่ยน production
 
 ## กฎส่งต่องานและผลตรวจรอบนี้ — 28 ตุลาคม 2026

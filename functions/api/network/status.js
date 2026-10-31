@@ -6,7 +6,7 @@ export async function onRequestGet({ request, env }) {
     if (auth.response) return auth.response;
     try {
         const state = await env.DB.prepare(
-            `SELECT st.last_heartbeat_at, st.latest_snapshot_at, s.*
+            `SELECT st.last_heartbeat_at, st.latest_snapshot_at, st.dhcp_leases_json, s.*
              FROM network_agent_state st
              LEFT JOIN network_snapshots s ON s.id = st.latest_snapshot_id
              WHERE st.agent_id = ?`,
@@ -26,6 +26,7 @@ export async function onRequestGet({ request, env }) {
             },
             latestSnapshotAt: state?.latest_snapshot_at ?? null,
             snapshot: toSnapshotRow(state),
+            dhcpLeases: state?.dhcp_leases_json ? JSON.parse(state.dhcp_leases_json) : null,
         });
     } catch (error) {
         return serverError(error, "Failed to load network monitoring status:");

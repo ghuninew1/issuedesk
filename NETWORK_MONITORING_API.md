@@ -26,7 +26,7 @@ Example payload:
 }
 ```
 
-`collectedAt` must be an ISO 8601 timestamp with timezone and cannot be over one minute in the future. Payloads are limited to 32 KiB. Counters are non-negative safe integers; the API stores raw counters and does not infer Internet reachability or calculate rates. A repeated `(agent, collectedAt)` returns `409`.
+`collectedAt` must be an ISO 8601 timestamp with timezone and cannot be over one minute in the future. Payloads are limited to 128 KiB. Optional `wan.ais.uptime` and `wan.true.uptime` are nullable strings. Optional `dhcpLeases` is null or `{ "total": number, "items": [...] }`, with up to 100 items containing `address`, `macAddress`, `hostName`, `status`, and `server`. Only the latest list is stored in agent state and returned by status; leases are not proof that a device is online. Counters are non-negative safe integers; the API stores raw counters and does not infer Internet reachability or calculate rates. A repeated `(agent, collectedAt)` returns `409`.
 
 Successful response (`201`): `{ "success": true, "receivedAt": "...", "snapshotId": "..." }`.
 

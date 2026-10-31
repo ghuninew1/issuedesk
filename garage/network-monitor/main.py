@@ -316,6 +316,21 @@ def _read_router(config: Config) -> dict[str, Any]:
                 "/system/resource/print",
                 "=.proplist=uptime,cpu-load,free-memory,total-memory,temperature,cpu-temperature",
             )
+            try:
+                health = api.command("/system/health/print")
+            except RouterConnectionError:
+                health = []
+            monitors = {}
+            for key, name in ROUTER_INTERFACE_NAMES.items():
+                try:
+                    rows = api.command("/interface/pppoe-client/monitor", f"=numbers={name}", "=once=")
+                    monitors[key] = rows[0] if rows else {}
+                except RouterConnectionError:
+                    monitors[key] = {}
+            try:
+                leases = api.command("/ip/dhcp-server/lease/print", "=.proplist=address,mac-address,host-name,status,server")
+            except RouterConnectionError:
+                leases = None
             interfaces = api.command(
                 "/interface/print",
                 "=stats-detail",
@@ -332,6 +347,21 @@ def _read_router(config: Config) -> dict[str, Any]:
     if not identity or not uptime:
         raise RouterConnectionError("RouterOS identity or uptime is missing")
 
+    # RouterOS health API reports temperatures in tenths of a degree Celsius.
+    temperature = _parse_temperature(resources[0])
+    if temperature is None:
+        for sensor in health:
+            if sensor.get("name") in ("temperature", "cpu-temperature"):
+                try:
+                    temperature = float(sensor["value"]) / 10
+                except (KeyError, ValueError):
+                    continue
+                break
+        if temperature is None and health:
+            temperature = _parse_temperature(health[0])
+            if temperature is not None:
+                temperature /= 10
+
     interfaces_by_name = {item.get("name"): item for item in interfaces if item.get("name")}
     wan_data: dict[str, dict[str, Any]] = {}
     for key, interface_name in ROUTER_INTERFACE_NAMES.items():
@@ -339,7 +369,8 @@ def _read_router(config: Config) -> dict[str, Any]:
         wan_data[key] = {
             "interface": interface_name,
             "running": interface.get("running", "false").lower() in {"true", "yes", "1"},
-            "ipAddress": None,
+            "ipAddress": monitors[key].get("local-address") or None,
+            "uptime": monitors[key].get("uptime") or None,
             "rxBytes": _parse_int(interface.get("rx-byte", "0"), f"{interface_name} RX byte counter"),
             "txBytes": _parse_int(interface.get("tx-byte", "0"), f"{interface_name} TX byte counter"),
         }
@@ -351,9 +382,15 @@ def _read_router(config: Config) -> dict[str, Any]:
             "cpuLoad": _parse_float(resources[0].get("cpu-load"), "CPU load"),
             "memoryTotalBytes": _parse_int(resources[0].get("total-memory"), "total memory"),
             "memoryFreeBytes": _parse_int(resources[0].get("free-memory"), "free memory"),
-            "temperatureC": _parse_temperature(resources[0]),
+            "temperatureC": temperature,
         },
         "wan": wan_data,
+        "dhcpLeases": None if leases is None else {
+            "total": len(leases),
+            "items": [{"address": row.get("address", "")[:45], "macAddress": row.get("mac-address", "")[:32],
+                       "hostName": row.get("host-name", "")[:80], "status": row.get("status", "")[:32],
+                       "server": row.get("server", "")[:64]} for row in leases[:100]],
+        },
     }
 
 
@@ -602,6 +639,7 @@ def run_agent(config: Config, stop_event: threading.Event) -> None:
                     "collectedAt": _utc_now(),
                     "router": collected["router"],
                     "wan": collected["wan"],
+                    "dhcpLeases": collected["dhcpLeases"],
                 }
                 was_already_received = _send_with_retry(config, payload, stop_event)
                 if not stop_event.is_set():

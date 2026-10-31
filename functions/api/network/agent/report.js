@@ -5,8 +5,8 @@ const INSERT_SNAPSHOT = `
         id, agent_id, collected_at, received_at, router_identity, router_uptime,
         cpu_load, memory_total_bytes, memory_free_bytes, temperature_c,
         ais_interface, ais_running, ais_ip_address, ais_rx_bytes, ais_tx_bytes,
-        true_interface, true_running, true_ip_address, true_rx_bytes, true_tx_bytes
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        true_interface, true_running, true_ip_address, true_rx_bytes, true_tx_bytes, ais_uptime, true_uptime
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 `;
 
 export async function onRequestPost({ request, env }) {
@@ -56,18 +56,20 @@ export async function onRequestPost({ request, env }) {
             snapshot.wan.ais.interface, Number(snapshot.wan.ais.running), snapshot.wan.ais.ipAddress,
             snapshot.wan.ais.rxBytes, snapshot.wan.ais.txBytes,
             snapshot.wan.true.interface, Number(snapshot.wan.true.running), snapshot.wan.true.ipAddress,
-            snapshot.wan.true.rxBytes, snapshot.wan.true.txBytes,
+            snapshot.wan.true.rxBytes, snapshot.wan.true.txBytes, snapshot.wan.ais.uptime, snapshot.wan.true.uptime,
         );
         const updateState = env.DB.prepare(
-            `INSERT INTO network_agent_state (agent_id, latest_snapshot_id, latest_snapshot_at, last_heartbeat_at)
-             VALUES (?, ?, ?, ?)
+            `INSERT INTO network_agent_state (agent_id, latest_snapshot_id, latest_snapshot_at, last_heartbeat_at, dhcp_leases_json)
+             VALUES (?, ?, ?, ?, ?)
              ON CONFLICT(agent_id) DO UPDATE SET
                 latest_snapshot_id = CASE
                     WHEN excluded.latest_snapshot_at >= network_agent_state.latest_snapshot_at THEN excluded.latest_snapshot_id
                     ELSE network_agent_state.latest_snapshot_id END,
                 latest_snapshot_at = MAX(network_agent_state.latest_snapshot_at, excluded.latest_snapshot_at),
-                last_heartbeat_at = excluded.last_heartbeat_at`,
-        ).bind(agentId, snapshotId, snapshot.collectedAt, receivedAt);
+                last_heartbeat_at = excluded.last_heartbeat_at,
+                dhcp_leases_json = CASE WHEN excluded.latest_snapshot_at >= network_agent_state.latest_snapshot_at
+                    THEN excluded.dhcp_leases_json ELSE network_agent_state.dhcp_leases_json END`,
+        ).bind(agentId, snapshotId, snapshot.collectedAt, receivedAt, snapshot.dhcpLeases === null ? null : JSON.stringify(snapshot.dhcpLeases));
 
         const statements = [insert, updateState];
         const staleSeconds = staleAfterSeconds(env);

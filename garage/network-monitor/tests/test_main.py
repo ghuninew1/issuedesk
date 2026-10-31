@@ -8,7 +8,7 @@ from urllib.error import HTTPError
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from main import Config, RateTracker, _encode_length, _send_once  # noqa: E402
+from main import Config, RateTracker, _encode_length, _send_once, _read_router  # noqa: E402
 
 
 def sample_wan(ais_rx: int, ais_tx: int, true_rx: int, true_tx: int, running: bool = True):
@@ -36,6 +36,30 @@ def sample_config() -> Config:
         http_timeout_seconds=10,
         max_retry_attempts=5,
     )
+
+
+class RouterDetailsTests(unittest.TestCase):
+    @patch("main.RouterOSAPI")
+    @patch("main.socket.create_connection")
+    @patch("main.ssl.create_default_context")
+    def test_collects_health_pppoe_and_leases(self, context, connection, api_type):
+        context.return_value.verify_mode = __import__("ssl").CERT_REQUIRED
+        context.return_value.check_hostname = True
+        context.return_value.wrap_socket.return_value.__enter__.return_value = MagicMock()
+        connection.return_value.__enter__.return_value = MagicMock()
+        def command(name, *args):
+            if name == "/system/identity/print": return [{"name": "router"}]
+            if name == "/system/resource/print": return [{"uptime": "1d", "cpu-load": "5", "total-memory": "100", "free-memory": "50"}]
+            if name == "/system/health/print": return [{"name": "temperature", "value": "420"}]
+            if name == "/interface/pppoe-client/monitor": return [{"local-address": "203.0.113.1", "uptime": "2h"}]
+            if name == "/ip/dhcp-server/lease/print": return [{"address": "192.168.11.2", "host-name": "client"}]
+            return []
+        api_type.return_value.command.side_effect = command
+        result = _read_router(sample_config())
+        self.assertEqual(result["router"]["temperatureC"], 42)
+        self.assertEqual(result["wan"]["ais"]["uptime"], "2h")
+        self.assertEqual(result["wan"]["true"]["ipAddress"], "203.0.113.1")
+        self.assertEqual(result["dhcpLeases"]["items"][0]["hostName"], "client")
 
 
 class RateTrackerTests(unittest.TestCase):
@@ -105,8 +129,8 @@ class IssueDeskSenderTests(unittest.TestCase):
             "https://issuedesk.example.invalid/api/network/agent/report",
             409,
             "Duplicate",
-            None,
-            io.BytesIO(b"{}"),
+            {"Content-Type": "application/json"},
+            io.BytesIO(b'{"message":"Snapshot already received"}'),
         )
 
         duplicate = _send_once(sample_config(), {"collectedAt": "2026-10-25T00:00:00Z"})

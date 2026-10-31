@@ -2,7 +2,7 @@ import { jsonResponse } from "../auth/_utils.js";
 
 export const DEFAULT_AGENT_ID = "qnap-agent";
 export const DEFAULT_STALE_SECONDS = 90;
-export const MAX_REPORT_BYTES = 32 * 1024;
+export const MAX_REPORT_BYTES = 128 * 1024;
 
 export function staleAfterSeconds(env) {
     const configured = Number(env.NETWORK_AGENT_STALE_SECONDS);
@@ -58,11 +58,20 @@ export function validateSnapshot(payload, now = new Date()) {
         return { error: "router.temperatureC must be between -40 and 150, or null" };
     }
 
+    const leases = payload.dhcpLeases;
+    const leaseFields = { address: 45, macAddress: 32, hostName: 80, status: 32, server: 64 };
+    if (leases != null && (!isRecord(leases) || !nonNegativeSafeInteger(leases.total) ||
+        !Array.isArray(leases.items) || leases.items.length > 100 || leases.items.length > leases.total ||
+        leases.items.some((item) => !isRecord(item) || Object.entries(leaseFields).some(([key, max]) =>
+            typeof item[key] !== "string" || item[key].length > max)))) {
+        return { error: "Invalid DHCP leases" };
+    }
     const wanKeys = ["ais", "true"];
     for (const key of wanKeys) {
         const item = wan[key];
         if (!isRecord(item) || !boundedString(item.interface, 64) || typeof item.running !== "boolean" ||
-            !nonNegativeSafeInteger(item.rxBytes) || !nonNegativeSafeInteger(item.txBytes) || !nullableIp(item.ipAddress)) {
+            !nonNegativeSafeInteger(item.rxBytes) || !nonNegativeSafeInteger(item.txBytes) || !nullableIp(item.ipAddress) ||
+            (item.uptime != null && !boundedString(item.uptime, 80))) {
             return { error: `wan.${key} has invalid interface or counter values` };
         }
     }
@@ -78,10 +87,12 @@ export function validateSnapshot(payload, now = new Date()) {
                 memoryFreeBytes: router.memoryFreeBytes,
                 temperatureC: router.temperatureC ?? null,
             },
+            dhcpLeases: leases ?? null,
             wan: Object.fromEntries(wanKeys.map((key) => [key, {
                 interface: wan[key].interface.trim(),
                 running: wan[key].running,
                 ipAddress: wan[key].ipAddress ?? null,
+                uptime: wan[key].uptime ?? null,
                 rxBytes: wan[key].rxBytes,
                 txBytes: wan[key].txBytes,
             }])),
@@ -105,8 +116,8 @@ export function toSnapshotRow(row) {
             temperatureC: row.temperature_c === null ? null : Number(row.temperature_c),
         },
         wan: {
-            ais: { interface: row.ais_interface, running: Boolean(row.ais_running), ipAddress: row.ais_ip_address, rxBytes: Number(row.ais_rx_bytes), txBytes: Number(row.ais_tx_bytes) },
-            true: { interface: row.true_interface, running: Boolean(row.true_running), ipAddress: row.true_ip_address, rxBytes: Number(row.true_rx_bytes), txBytes: Number(row.true_tx_bytes) },
+            ais: { interface: row.ais_interface, running: Boolean(row.ais_running), ipAddress: row.ais_ip_address, uptime: row.ais_uptime ?? null, rxBytes: Number(row.ais_rx_bytes), txBytes: Number(row.ais_tx_bytes) },
+            true: { interface: row.true_interface, running: Boolean(row.true_running), ipAddress: row.true_ip_address, uptime: row.true_uptime ?? null, rxBytes: Number(row.true_rx_bytes), txBytes: Number(row.true_tx_bytes) },
         },
     };
 }

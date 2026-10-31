@@ -122,8 +122,8 @@ function WanCard({ name, wan, rates }) {
                 </div>
             </div>
             <div className="gap-x-4 gap-y-2 grid grid-cols-2 mt-4 text-xs">
-                <div><p className="text-muted-foreground">Public IP</p><p className="mt-1 font-mono">{wan?.ipAddress || "ไม่มีข้อมูลจาก Agent"}</p></div>
-                <div><p className="text-muted-foreground">PPPoE Uptime</p><p className="mt-1">ไม่มีข้อมูลใน Snapshot</p></div>
+                <div><p className={cx("text-muted-foreground")}>PPPoE IP</p><p className={cx("mt-1 font-mono")}>{wan?.ipAddress || "ไม่มีข้อมูลจาก Agent"}</p></div>
+                <div><p className={cx("text-muted-foreground")}>PPPoE Uptime</p><p className={cx("mt-1")}>{wan?.uptime || "ไม่มีข้อมูลจาก Agent"}</p></div>
                 <div><p className="text-muted-foreground">RX รวม</p><p className="mt-1">{wan ? readableBytes(wan.rxBytes) : "—"}</p></div>
                 <div><p className="text-muted-foreground">TX รวม</p><p className="mt-1">{wan ? readableBytes(wan.txBytes) : "—"}</p></div>
             </div>
@@ -464,6 +464,7 @@ function NetworkMonitor() {
                         <span className="bg-background/35 p-2.5 border border-border/70 rounded-xl"><Bot className="size-5 text-primary" aria-hidden="true" /></span>
                     </div>
                 </section>
+                <MetricCard icon={Activity} label="Temperature" value={snapshot?.router.temperatureC != null ? `${snapshot.router.temperatureC} °C` : "—"} detail="Router health" accent="text-orange-500" />
                 <MetricCard icon={Cpu} label="CPU Load" value={snapshot ? `${snapshot.router.cpuLoad}%` : "—"} detail={snapshot ? `อัปเดต ${bangkokStamp(snapshot.collectedAt)}` : "รอ Snapshot แรก"} accent="text-sky-500" />
                 <MetricCard icon={HardDrive} label="RAM Usage" value={memoryPercent === null ? "—" : `${memoryPercent}%`} detail={snapshot ? `${readableBytes(snapshot.router.memoryTotalBytes - snapshot.router.memoryFreeBytes)} / ${readableBytes(snapshot.router.memoryTotalBytes)}` : "รอ Snapshot แรก"} accent="text-violet-500" />
                 <MetricCard icon={Clock3} label="Uptime" value={snapshot?.router.uptime || "—"} detail={snapshot ? "Router uptime" : "รอ Snapshot แรก"} accent="text-emerald-500" />
@@ -500,6 +501,12 @@ function NetworkMonitor() {
                     </div>
                 </section>
             </div>
+
+            <section className={cx(glassCard)}>
+                <h2 className={cx("font-semibold")}>DHCP Leases</h2>
+                <p className={cx("mt-1 text-muted-foreground text-xs")}>ข้อมูลจาก DHCP server ไม่ยืนยันว่าอุปกรณ์ออนไลน์{status?.dhcpLeases ? ` · แสดง ${status.dhcpLeases.items.length} จาก ${status.dhcpLeases.total} รายการ` : " · ไม่มีข้อมูลจาก Agent"}</p>
+                {status?.dhcpLeases && (status.dhcpLeases.items.length ? <div className={cx("mt-4 overflow-x-auto")}><table className={cx("w-full text-left text-sm")}><thead><tr>{["IP", "MAC", "Host", "Status", "Server"].map((label) => <th key={label} className={cx("px-3 py-2 font-medium")}>{label}</th>)}</tr></thead><tbody>{status.dhcpLeases.items.map((lease, index) => <tr key={`${lease.address}-${lease.macAddress}-${index}`} className={cx("border-t border-border/60")}>{[lease.address, lease.macAddress, lease.hostName, lease.status, lease.server].map((value, column) => <td key={column} className={cx("px-3 py-2 break-all")}>{value || "—"}</td>)}</tr>)}</tbody></table></div> : <p className={cx("mt-4 text-sm text-muted-foreground")}>ไม่มี DHCP lease</p>)}
+            </section>
 
             <div>
                 <section className={cx(glassCard)}>
