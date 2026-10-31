@@ -1,8 +1,18 @@
 # IssueDesk — Project Handoff
 
+## DHCP Leases collapse — 31 ตุลาคม 2026
+
+- เพิ่มปุ่มย่อ/ขยายด้านขวาของหัวข้อ DHCP Leases โดยเริ่มต้นแสดงตาราง และคงข้อความสรุปจำนวนรายการไว้เมื่อย่อ
+- ตรวจ AGENTS.md และ README.md แล้ว ยังตรงกับ source; lint และ diff check ผ่าน ยังไม่ได้ตรวจ browser หรือ deploy
+
+## Network Monitor temperature — 31 ตุลาคม 2026
+
+- แก้ named System Health sensor ให้ใช้ค่าเป็นองศาโดยตรง หลังผู้ใช้พบ 3.4 °C ซึ่งสอดคล้องกับการหารค่า 34 ซ้ำ; รูปแบบ legacy ยังคงหาร 10. ตรวจ AGENTS.md และ README.md แล้ว ยังตรงกับ source
+- Agent unit tests และ lint ผ่าน; ยังไม่ได้ตรวจค่า RouterOS จริงหลังแก้หรือ deploy agent ต้องเทียบค่า System Health บน router หลังอัปเดต
+
 ## Network Monitor details — 31 ตุลาคม 2026
 
-- Agent อ่าน System Health, PPPoE monitor (local address/uptime) และ DHCP leases แบบ read-only เฉพาะเมื่อ viewer active; คำสั่ง optional ที่ Router ปฏิเสธให้ข้อมูลเป็น null และไม่หยุด snapshot หลัก. Health API temperature แปลงจากหน่วยสิบเท่าตามเอกสาร MikroTik; ต้องตรวจบน RouterOS จริง
+- Agent อ่าน System Health, PPPoE monitor (local address/uptime) และ DHCP leases แบบ read-only เฉพาะเมื่อ viewer active; คำสั่ง optional ที่ Router ปฏิเสธให้ข้อมูลเป็น null และไม่หยุด snapshot หลัก. Health API temperature ใช้ค่า sensor แบบ named เป็นองศาโดยตรง ส่วนรูปแบบ legacy แปลงจากหน่วยสิบเท่า; ต้องเทียบกับ RouterOS จริง
 - D1 migration 0012 เพิ่ม PPPoE uptime ใน snapshots และ DHCP leases ล่าสุดใน agent state; เก็บสูงสุด 100 รายการพร้อมจำนวนทั้งหมด ไม่เก็บประวัติ lease และไม่อ่าน ARP. หน้า Admin แสดงข้อมูลเหล่านี้และอุณหภูมิ
 - ตรวจ AGENTS.md และ README.md และปรับตาม source; lint, build และ agent unit tests ผ่านในเครื่อง ยังไม่ได้ตรวจ browser, RouterOS, Pages/D1 จริง หรือ deploy/apply migration. ต้องตรวจและ apply migration โดยได้รับอนุญาตก่อน deploy Pages และอัปเดต agent บน QNAP; ตรวจอุณหภูมิและผล monitor ตามเวอร์ชัน RouterOS
 

@@ -347,13 +347,13 @@ def _read_router(config: Config) -> dict[str, Any]:
     if not identity or not uptime:
         raise RouterConnectionError("RouterOS identity or uptime is missing")
 
-    # RouterOS health API reports temperatures in tenths of a degree Celsius.
+    # Named health sensors report their value in Celsius on RouterOS 7.
     temperature = _parse_temperature(resources[0])
     if temperature is None:
         for sensor in health:
             if sensor.get("name") in ("temperature", "cpu-temperature"):
                 try:
-                    temperature = float(sensor["value"]) / 10
+                    temperature = float(sensor["value"])
                 except (KeyError, ValueError):
                     continue
                 break

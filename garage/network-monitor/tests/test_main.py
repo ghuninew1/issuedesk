@@ -50,13 +50,13 @@ class RouterDetailsTests(unittest.TestCase):
         def command(name, *args):
             if name == "/system/identity/print": return [{"name": "router"}]
             if name == "/system/resource/print": return [{"uptime": "1d", "cpu-load": "5", "total-memory": "100", "free-memory": "50"}]
-            if name == "/system/health/print": return [{"name": "temperature", "value": "420"}]
+            if name == "/system/health/print": return [{"name": "temperature", "value": "34", "type": "C"}]
             if name == "/interface/pppoe-client/monitor": return [{"local-address": "203.0.113.1", "uptime": "2h"}]
             if name == "/ip/dhcp-server/lease/print": return [{"address": "192.168.11.2", "host-name": "client"}]
             return []
         api_type.return_value.command.side_effect = command
         result = _read_router(sample_config())
-        self.assertEqual(result["router"]["temperatureC"], 42)
+        self.assertEqual(result["router"]["temperatureC"], 34)
         self.assertEqual(result["wan"]["ais"]["uptime"], "2h")
         self.assertEqual(result["wan"]["true"]["ipAddress"], "203.0.113.1")
         self.assertEqual(result["dhcpLeases"]["items"][0]["hostName"], "client")

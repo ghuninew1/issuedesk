@@ -16,6 +16,8 @@ import {
     Trash2,
     Wifi,
     Clock3,
+    ChevronDown,
+    ChevronUp,
 } from "lucide-react";
 import { cx } from "../utils/cx";
 import { api } from "../utils/api";
@@ -173,6 +175,7 @@ function NetworkMonitor() {
     const [recheckAllProgress, setRecheckAllProgress] = useState("");
     const [deletingPingIp, setDeletingPingIp] = useState("");
     const [pingError, setPingError] = useState("");
+    const [dhcpExpanded, setDhcpExpanded] = useState(true);
     const [status, setStatus] = useState(null);
     const [snapshots, setSnapshots] = useState([]);
     const [events, setEvents] = useState([]);
@@ -503,9 +506,17 @@ function NetworkMonitor() {
             </div>
 
             <section className={cx(glassCard)}>
-                <h2 className={cx("font-semibold")}>DHCP Leases</h2>
+                <div className={cx("flex items-center justify-between gap-3")}>
+                    <h2 className={cx("font-semibold")}>DHCP Leases</h2>
+                    <GlassButton type="button" className={cx("inline-flex items-center gap-1.5 rounded-lg border border-border/70 px-3 py-1.5 text-sm")} aria-expanded={dhcpExpanded} aria-controls="dhcp-leases-content" onClick={() => setDhcpExpanded((expanded) => !expanded)}>
+                        {dhcpExpanded ? "ย่อ" : "ขยาย"}
+                        {dhcpExpanded ? <ChevronUp className={cx("size-4")} aria-hidden="true" /> : <ChevronDown className={cx("size-4")} aria-hidden="true" />}
+                    </GlassButton>
+                </div>
                 <p className={cx("mt-1 text-muted-foreground text-xs")}>ข้อมูลจาก DHCP server ไม่ยืนยันว่าอุปกรณ์ออนไลน์{status?.dhcpLeases ? ` · แสดง ${status.dhcpLeases.items.length} จาก ${status.dhcpLeases.total} รายการ` : " · ไม่มีข้อมูลจาก Agent"}</p>
+                <div id="dhcp-leases-content" hidden={!dhcpExpanded}>
                 {status?.dhcpLeases && (status.dhcpLeases.items.length ? <div className={cx("mt-4 overflow-x-auto")}><table className={cx("w-full text-left text-sm")}><thead><tr>{["IP", "MAC", "Host", "Status", "Server"].map((label) => <th key={label} className={cx("px-3 py-2 font-medium")}>{label}</th>)}</tr></thead><tbody>{status.dhcpLeases.items.map((lease, index) => <tr key={`${lease.address}-${lease.macAddress}-${index}`} className={cx("border-t border-border/60")}>{[lease.address, lease.macAddress, lease.hostName, lease.status, lease.server].map((value, column) => <td key={column} className={cx("px-3 py-2 break-all")}>{value || "—"}</td>)}</tr>)}</tbody></table></div> : <p className={cx("mt-4 text-sm text-muted-foreground")}>ไม่มี DHCP lease</p>)}
+                </div>
             </section>
 
             <div>
