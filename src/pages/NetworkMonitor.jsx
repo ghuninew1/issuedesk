@@ -182,7 +182,7 @@ function NetworkMonitor() {
     const [recheckAllProgress, setRecheckAllProgress] = useState("");
     const [deletingPingIp, setDeletingPingIp] = useState("");
     const [pingError, setPingError] = useState("");
-    const [dhcpExpanded, setDhcpExpanded] = useState(true);
+    const [dhcpExpanded, setDhcpExpanded] = useState(false);
     const [status, setStatus] = useState(null);
     const [snapshots, setSnapshots] = useState([]);
     const [events, setEvents] = useState([]);
