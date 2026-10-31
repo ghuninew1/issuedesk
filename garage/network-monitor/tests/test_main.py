@@ -52,10 +52,14 @@ class RouterDetailsTests(unittest.TestCase):
             if name == "/system/resource/print": return [{"uptime": "1d", "cpu-load": "5", "total-memory": "100", "free-memory": "50"}]
             if name == "/system/health/print": return [{"name": "temperature", "value": "34", "type": "C"}]
             if name == "/interface/pppoe-client/monitor": return [{"local-address": "203.0.113.1", "uptime": "2h"}]
+            if name == "/ip/address/print": return [{"address": "192.168.11.1/24", "interface": "bridge-lan"}]
+            if name == "/interface/bridge/port/print": return [{"bridge": "bridge-lan", "interface": "ether2"}, {"bridge": "bridge-lan", "interface": "ether3"}, {"bridge": "other", "interface": "ether4"}]
+            if name == "/interface/print" and args == ("=.proplist=name,running,disabled",): return [{"name": "ether2", "running": "true"}, {"name": "ether3", "running": "false"}, {"name": "ether4", "running": "true"}]
             if name == "/ip/dhcp-server/lease/print": return [{"address": "192.168.11.2", "host-name": "client"}]
             return []
         api_type.return_value.command.side_effect = command
         result = _read_router(sample_config())
+        self.assertEqual(result["lanPorts"], {"total": 1, "items": [{"bridge": "bridge-lan", "interface": "ether2"}]})
         self.assertEqual(result["router"]["temperatureC"], 34)
         self.assertEqual(result["wan"]["ais"]["uptime"], "2h")
         self.assertEqual(result["wan"]["true"]["ipAddress"], "203.0.113.1")

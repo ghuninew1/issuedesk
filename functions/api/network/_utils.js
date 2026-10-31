@@ -66,6 +66,12 @@ export function validateSnapshot(payload, now = new Date()) {
             typeof item[key] !== "string" || item[key].length > max)))) {
         return { error: "Invalid DHCP leases" };
     }
+    const lanPorts = payload.lanPorts;
+    if (lanPorts != null && (!isRecord(lanPorts) || !nonNegativeSafeInteger(lanPorts.total) ||
+        !Array.isArray(lanPorts.items) || lanPorts.items.length > 100 || lanPorts.items.length > lanPorts.total ||
+        lanPorts.items.some((item) => !isRecord(item) || !boundedString(item.bridge, 64) || !boundedString(item.interface, 64)))) {
+        return { error: "Invalid LAN bridge ports" };
+    }
     const wanKeys = ["ais", "true"];
     for (const key of wanKeys) {
         const item = wan[key];
@@ -88,6 +94,7 @@ export function validateSnapshot(payload, now = new Date()) {
                 temperatureC: router.temperatureC ?? null,
             },
             dhcpLeases: leases ?? null,
+            lanPorts: lanPorts ?? null,
             wan: Object.fromEntries(wanKeys.map((key) => [key, {
                 interface: wan[key].interface.trim(),
                 running: wan[key].running,

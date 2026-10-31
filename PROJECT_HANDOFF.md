@@ -1,5 +1,16 @@
 # IssueDesk — Project Handoff
 
+## LAN bridge interfaces — 31 ตุลาคม 2026
+
+- Agent อ่าน bridge members และ interface running โดยระบุ bridge จาก IPv4 192.168.11.0/24 ที่กำหนดบน bridge โดยตรง; ไม่รองรับการอนุมาน bridge ผ่าน VLAN และ running ไม่ยืนยัน endpoint ออนไลน์ ข้อมูลล่าสุดจำกัด 100 พอร์ตพร้อมจำนวนทั้งหมด; อ่านไม่ได้หรือไม่พบ bridge เป็น null
+- เพิ่ม D1 migration 0013, API report/status และหน้า Admin; อ่าน Router เฉพาะเมื่อ viewer active. ตรวจ AGENTS.md และ README.md แล้วและปรับตาม source
+- Agent unit tests, lint, build และ migration ใน SQLite memory ผ่าน; browser, RouterOS, remote D1 และ deployment ยังไม่ได้ตรวจ ต้อง apply migration โดยได้รับอนุญาตก่อน deploy Pages และอัปเดต agent
+
+## DHCP Leases IP sorting — 31 ตุลาคม 2026
+
+- ตาราง DHCP Leases เรียง IPv4 ตามค่าตัวเลขจากน้อยไปมาก โดยรายการ IP ว่างหรือไม่ถูกต้องอยู่ท้ายตาราง; เรียงเฉพาะรายการสูงสุด 100 รายการที่ Agent ส่งมา
+- ตรวจ AGENTS.md และ README.md แล้ว ยังตรงกับ source; lint และ diff check ผ่าน ยังไม่ได้ตรวจ browser หรือ deploy
+
 ## DHCP Leases collapse — 31 ตุลาคม 2026
 
 - เพิ่มปุ่มย่อ/ขยายด้านขวาของหัวข้อ DHCP Leases โดยเริ่มต้นแสดงตาราง และคงข้อความสรุปจำนวนรายการไว้เมื่อย่อ
