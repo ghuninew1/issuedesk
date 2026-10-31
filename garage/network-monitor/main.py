@@ -331,12 +331,6 @@ def _read_router(config: Config) -> dict[str, Any]:
                 leases = api.command("/ip/dhcp-server/lease/print", "=.proplist=address,mac-address,host-name,status,server")
             except RouterConnectionError:
                 leases = None
-            try:
-                lan_addresses = api.command("/ip/address/print", "=.proplist=address,interface,disabled")
-                bridge_ports = api.command("/interface/bridge/port/print", "=.proplist=interface,bridge,disabled,inactive")
-                lan_interfaces = api.command("/interface/print", "=.proplist=name,running,disabled")
-            except RouterConnectionError:
-                lan_addresses = bridge_ports = lan_interfaces = None
             interfaces = api.command(
                 "/interface/print",
                 "=stats-detail",
@@ -368,29 +362,6 @@ def _read_router(config: Config) -> dict[str, Any]:
             if temperature is not None:
                 temperature /= 10
 
-    lan_ports = None
-    if lan_addresses is not None and bridge_ports is not None and lan_interfaces is not None:
-        lan_bridges = set()
-        for row in lan_addresses:
-            try:
-                address = ipaddress.ip_interface(row.get("address", ""))
-                if address.version == 4 and address.ip in LAN_NETWORK and row.get("disabled") != "true":
-                    lan_bridges.add(row.get("interface"))
-            except ValueError:
-                continue
-        bridge_names = {row.get("bridge") for row in bridge_ports}
-        lan_bridges &= bridge_names
-        if lan_bridges:
-            running = {row.get("name") for row in lan_interfaces
-                       if row.get("running", "false").lower() in {"true", "yes", "1"}
-                       and row.get("disabled", "false").lower() not in {"true", "yes", "1"}}
-            ports = [{"bridge": row["bridge"][:64], "interface": row["interface"][:64]}
-                     for row in bridge_ports if row.get("bridge") in lan_bridges
-                     and row.get("interface") in running
-                     and row.get("disabled", "false").lower() not in {"true", "yes", "1"}
-                     and row.get("inactive", "false").lower() not in {"true", "yes", "1"}]
-            lan_ports = {"total": len(ports), "items": ports[:100]}
-
     interfaces_by_name = {item.get("name"): item for item in interfaces if item.get("name")}
     wan_data: dict[str, dict[str, Any]] = {}
     for key, interface_name in ROUTER_INTERFACE_NAMES.items():
@@ -414,7 +385,6 @@ def _read_router(config: Config) -> dict[str, Any]:
             "temperatureC": temperature,
         },
         "wan": wan_data,
-        "lanPorts": lan_ports,
         "dhcpLeases": None if leases is None else {
             "total": len(leases),
             "items": [{"address": row.get("address", "")[:45], "macAddress": row.get("mac-address", "")[:32],
@@ -670,7 +640,6 @@ def run_agent(config: Config, stop_event: threading.Event) -> None:
                     "router": collected["router"],
                     "wan": collected["wan"],
                     "dhcpLeases": collected["dhcpLeases"],
-                    "lanPorts": collected["lanPorts"],
                 }
                 was_already_received = _send_with_retry(config, payload, stop_event)
                 if not stop_event.is_set():

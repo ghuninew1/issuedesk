@@ -59,8 +59,8 @@ export async function onRequestPost({ request, env }) {
             snapshot.wan.true.rxBytes, snapshot.wan.true.txBytes, snapshot.wan.ais.uptime, snapshot.wan.true.uptime,
         );
         const updateState = env.DB.prepare(
-            `INSERT INTO network_agent_state (agent_id, latest_snapshot_id, latest_snapshot_at, last_heartbeat_at, dhcp_leases_json, lan_ports_json)
-             VALUES (?, ?, ?, ?, ?, ?)
+            `INSERT INTO network_agent_state (agent_id, latest_snapshot_id, latest_snapshot_at, last_heartbeat_at, dhcp_leases_json)
+             VALUES (?, ?, ?, ?, ?)
              ON CONFLICT(agent_id) DO UPDATE SET
                 latest_snapshot_id = CASE
                     WHEN excluded.latest_snapshot_at >= network_agent_state.latest_snapshot_at THEN excluded.latest_snapshot_id
@@ -68,10 +68,8 @@ export async function onRequestPost({ request, env }) {
                 latest_snapshot_at = MAX(network_agent_state.latest_snapshot_at, excluded.latest_snapshot_at),
                 last_heartbeat_at = excluded.last_heartbeat_at,
                 dhcp_leases_json = CASE WHEN excluded.latest_snapshot_at >= network_agent_state.latest_snapshot_at
-                    THEN excluded.dhcp_leases_json ELSE network_agent_state.dhcp_leases_json END,
-                lan_ports_json = CASE WHEN excluded.latest_snapshot_at >= network_agent_state.latest_snapshot_at
-                    THEN excluded.lan_ports_json ELSE network_agent_state.lan_ports_json END`,
-        ).bind(agentId, snapshotId, snapshot.collectedAt, receivedAt, snapshot.dhcpLeases === null ? null : JSON.stringify(snapshot.dhcpLeases), snapshot.lanPorts === null ? null : JSON.stringify(snapshot.lanPorts));
+                    THEN excluded.dhcp_leases_json ELSE network_agent_state.dhcp_leases_json END`,
+        ).bind(agentId, snapshotId, snapshot.collectedAt, receivedAt, snapshot.dhcpLeases === null ? null : JSON.stringify(snapshot.dhcpLeases));
 
         const statements = [insert, updateState];
         const staleSeconds = staleAfterSeconds(env);

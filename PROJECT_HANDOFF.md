@@ -1,6 +1,11 @@
 # IssueDesk — Project Handoff
 
-## LAN bridge interfaces — 31 ตุลาคม 2026
+## Remove LAN bridge interfaces — 31 ตุลาคม 2026
+
+- นำการอ่านและแสดง LAN bridge ports รวมถึง API fields ออกตามคำขอ; DHCP และ WAN คงเดิม เก็บ migration 0013 เดิมไว้เพราะอาจเคย apply แล้ว แต่แอปไม่ใช้ column นั้น
+- ตรวจ AGENTS.md และ README.md และปรับให้ตรง source; lint, agent unit tests 7 รายการ และ git diff --check ผ่าน ยังไม่ได้ตรวจ browser หรือ deploy. ข้อมูลใน column เดิมหากมีไม่ถูกลบ
+
+## LAN bridge interfaces — 31 ตุลาคม 2026 (historical; removed)
 
 - Agent อ่าน bridge members และ interface running โดยระบุ bridge จาก IPv4 192.168.11.0/24 ที่กำหนดบน bridge โดยตรง; ไม่รองรับการอนุมาน bridge ผ่าน VLAN และ running ไม่ยืนยัน endpoint ออนไลน์ ข้อมูลล่าสุดจำกัด 100 พอร์ตพร้อมจำนวนทั้งหมด; อ่านไม่ได้หรือไม่พบ bridge เป็น null
 - เพิ่ม D1 migration 0013, API report/status และหน้า Admin; อ่าน Router เฉพาะเมื่อ viewer active. ตรวจ AGENTS.md และ README.md แล้วและปรับตาม source

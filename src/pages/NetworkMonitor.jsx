@@ -513,15 +513,6 @@ function NetworkMonitor() {
             </div>
 
             <section className={cx(glassCard)}>
-                <h2 className={cx("font-semibold")}>LAN Bridge Interfaces</h2>
-                <p className={cx("mt-1 text-muted-foreground text-xs")}>พอร์ตใน bridge ของเครือข่าย 192.168.11.0/24 ที่ interface กำลังทำงาน · ไม่ยืนยันการเชื่อมต่อของอุปกรณ์ปลายทาง</p>
-                {!status?.lanPorts ? <p className={cx("mt-4 text-sm text-muted-foreground")}>ไม่มีข้อมูล LAN bridge จาก Agent</p> : status.lanPorts.items.length === 0 ? <p className={cx("mt-4 text-sm text-muted-foreground")}>ไม่มีพอร์ตที่กำลังทำงาน</p> : <div className={cx("mt-4 overflow-x-auto")}>
-                    <p className={cx("mb-2 text-xs text-muted-foreground")}>แสดง {status.lanPorts.items.length} จาก {status.lanPorts.total} พอร์ต</p>
-                    <table className={cx("w-full text-left text-sm")}><thead><tr><th className={cx("px-3 py-2 font-medium")}>Bridge</th><th className={cx("px-3 py-2 font-medium")}>Interface</th><th className={cx("px-3 py-2 font-medium")}>สถานะ</th></tr></thead><tbody>{status.lanPorts.items.map((port, index) => <tr key={`${port.bridge}-${port.interface}-${index}`} className={cx("border-t border-border/60")}><td className={cx("px-3 py-2 break-all")}>{port.bridge}</td><td className={cx("px-3 py-2 break-all")}>{port.interface}</td><td className={cx("px-3 py-2")}><StatusPill tone="good">Running</StatusPill></td></tr>)}</tbody></table>
-                </div>}
-            </section>
-
-            <section className={cx(glassCard)}>
                 <div className={cx("flex items-center justify-between gap-3")}>
                     <h2 className={cx("font-semibold")}>DHCP Leases</h2>
                     <GlassButton type="button" className={cx("inline-flex items-center gap-1.5 rounded-lg border border-border/70 px-3 py-1.5 text-sm")} aria-expanded={dhcpExpanded} aria-controls="dhcp-leases-content" onClick={() => setDhcpExpanded((expanded) => !expanded)}>
