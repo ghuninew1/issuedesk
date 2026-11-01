@@ -106,7 +106,7 @@ export async function onRequestGet({ request, params, env }) {
         if (!user || user.is_active !== 1) return failure(request, "inactive");
 
         const sessionToken = await createSession(env, user.id);
-        const destination = new URL(user.role === "admin" ? "/dashboard" : "/", url.origin);
+        const destination = new URL("/login", url.origin);
         const response = redirect(destination.toString(), sessionCookie(sessionToken));
         return response;
     } catch (error) {

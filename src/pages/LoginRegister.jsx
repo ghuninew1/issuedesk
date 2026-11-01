@@ -1,15 +1,17 @@
 import { cx } from "../utils/cx";
 import GlassButton from "../components/GlassButton";
 import { useCallback, useEffect, useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import { User, Mail, Lock, Eye, EyeOff, ArrowRight, ShieldCheck, Sparkles, ArrowLeft } from "lucide-react";
 import ElectricBorder from "../components/ElectricBorder";
 import { api } from "../utils/api";
 import { useAuth } from "../auth/useAuth";
 import { useDocumentTitle } from "../hooks/useDocumentTitle";
+import { consumeSocialReturn, loginDestination, readSocialReturn, saveSocialReturn } from "../auth/loginDestination";
 
 export default function LoginRegister() {
     const navigate = useNavigate();
+    const location = useLocation();
     const { setUser } = useAuth();
 
     // Page mode: 'login' | 'register'
@@ -56,7 +58,7 @@ export default function LoginRegister() {
             failed: "Social sign-in failed. Please try again.",
         };
         const toastTimer = window.setTimeout(() => triggerToast(messages[reason] || messages.failed), 0);
-        window.history.replaceState({}, "", `${window.location.pathname}${window.location.hash}`);
+        window.history.replaceState(window.history.state, "", `${window.location.pathname}${window.location.hash}`);
         return () => window.clearTimeout(toastTimer);
     }, [triggerToast]);
 
@@ -75,7 +77,8 @@ export default function LoginRegister() {
             });
             setUser(result.user);
             triggerToast(`Welcome back, ${result.user.name}!`);
-            navigate(result.user.role === "admin" ? "/dashboard" : "/", { replace: true });
+            const socialReturn = consumeSocialReturn();
+            navigate(loginDestination(location.state?.from || socialReturn, result.user), { replace: true });
         } catch (error) {
             triggerToast(error.message || "Unable to sign in. Please try again.");
         } finally {
@@ -116,6 +119,7 @@ export default function LoginRegister() {
             return;
         }
         setIsSubmitting(true);
+        saveSocialReturn(location.state?.from || readSocialReturn());
         window.location.assign(`/api/auth/oauth?provider=${normalizedProvider}`);
     };
 

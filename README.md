@@ -30,6 +30,8 @@ IssueDesk เป็นเว็บแอป IT Help Desk สำหรับร�
 | `/qr-studio`, `/qr-studio/links`, `/qr-studio/saved` | สมาชิก | สร้าง QR และจัดการ QR กับ Short Links ของตนเอง |
 | `/q/:slug` | สาธารณะ | เปิดปลายทางของ Short Link ที่ใช้งานอยู่ |
 
+เมื่อเปิดหน้าที่ต้องเข้าสู่ระบบ ระบบจะพากลับไปยังหน้านั้นหลังเข้าสู่ระบบสำเร็จ โดยยังตรวจสิทธิ์ของแต่ละหน้าตามปกติ
+
 ## เริ่มต้นพัฒนา
 
 ต้องมี Node.js และ pnpm ติดตั้ง dependencies และเปิด frontend development server:

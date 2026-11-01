@@ -1,10 +1,11 @@
-import { Navigate, Outlet, Route, Routes } from "react-router-dom";
-import { lazy, Suspense } from "react";
+import { Navigate, Outlet, Route, Routes, useLocation } from "react-router-dom";
+import { lazy, Suspense, useEffect } from "react";
 import { Loader } from "lucide-react";
 import { useAuth } from "./auth/useAuth";
 import AppShell from "./components/layout/AppShell";
 import ProtectedRoute from "./auth/ProtectedRoute";
 import { cx } from "./utils/cx";
+import { consumeSocialReturn, loginDestination, readSocialReturn } from "./auth/loginDestination";
 
 const QRCodeStudio = lazy(() => import("./pages/qr/QRCodeStudio"));
 const QRLinks = lazy(() => import("./pages/qr/QRLinks"));
@@ -27,6 +28,11 @@ const NetworkMonitor = lazy(() => import("./pages/NetworkMonitor"));
 
 function LoginRoute() {
     const { user, isLoading } = useAuth();
+    const location = useLocation();
+    const socialReturn = readSocialReturn();
+    useEffect(() => {
+        if (user) consumeSocialReturn();
+    }, [user]);
 
     if (isLoading) {
         return (
@@ -38,7 +44,7 @@ function LoginRoute() {
     }
 
     if (user) {
-        return <Navigate to={user.role === "admin" ? "/dashboard" : "/"} replace />;
+        return <Navigate to={loginDestination(location.state?.from || socialReturn, user)} replace />;
     }
 
     return <LoginRegister />;
