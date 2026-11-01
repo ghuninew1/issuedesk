@@ -1,5 +1,10 @@
 # IssueDesk — Project Handoff
 
+## Sidebar Liquid Glass hover — 1 พฤศจิกายน 2026
+
+- คืน hover แบบ Liquid Glass ให้ NavLink แต่ละรายการเหมือนปุ่ม Collapse รวมแสงตามเมาส์ ขอบและเงา พร้อมคง active และ focus state เดิม
+- ตรวจ `AGENTS.md` และ `README.md`; ปรับกฎ Sidebar และ README ยังตรงกับ source. `pnpm --config.verifyDepsBeforeRun=false lint` และ `git diff --check` ผ่าน; ยังไม่ได้ตรวจ browser หรือ deploy
+
 ## Remove LAN bridge interfaces — 31 ตุลาคม 2026
 
 - นำการอ่านและแสดง LAN bridge ports รวมถึง API fields ออกตามคำขอ; DHCP และ WAN คงเดิม เก็บ migration 0013 เดิมไว้เพราะอาจเคย apply แล้ว แต่แอปไม่ใช้ column นั้น
