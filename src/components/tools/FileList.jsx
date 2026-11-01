@@ -12,10 +12,10 @@ function FileList({ files, onRemove, onClear, disabled = false }) {
         <section className={cx("glass-surface mt-6 rounded-2xl p-5 md:p-6")}>
             <div className={cx("mb-4 flex items-center justify-between gap-4")}>
                 <div>
-                    <h2 className={cx("font-semibold")}>Selected Images</h2>
+                    <h2 className={cx("font-semibold")}>Selected Files</h2>
 
                     <p className={cx("mt-1 text-sm text-muted-foreground")}>
-                        {files.length} image{files.length > 1 ? "s" : ""}
+                        {files.length} image{files.length > 1 ? "s" : ""} · {(files.reduce((total, file) => total + file.size, 0) / 1024 / 1024).toFixed(2)} MB total
                     </p>
                 </div>
 

@@ -1,3 +1,10 @@
+## Image Converter UI refresh — 2026-11-01
+
+- ปรับ header navigation placeholder, drop zone, quality presets (100/85/60 และ custom), advanced dimensions, รายการไฟล์แบบกระชับ และสรุปขนาดไฟล์ที่แปลงสำเร็จ โดยใช้ settings และข้อมูลผลลัพธ์เดิม
+- ZIP ยังคงดาวน์โหลดอัตโนมัติหลังแปลง และยังดาวน์โหลดรายไฟล์ได้; Video Converter เป็นเพียงข้อความเตรียมพื้นที่ ยังไม่มี route หรือ conversion logic
+- ตรวจ `pnpm lint` และ `git diff --check`; ไม่มี Playwright ในโปรเจกต์ จึงยังไม่ได้ทดสอบ UI, drag/drop, conversion, resize หรือ ZIP ใน browser ในงานนี้ ควรตรวจ flow เหล่านี้บน desktop/mobile และ light/dark โดยใช้ session ที่ใช้งานได้
+- ทบทวน `AGENTS.md` แล้ว กฎและขอบเขตสถาปัตยกรรมยังตรงกับงานนี้ จึงไม่ต้องแก้ไข
+
 # IssueDesk — Project Handoff
 
 ## Release notes v1.4.0 — 1 พฤศจิกายน 2026

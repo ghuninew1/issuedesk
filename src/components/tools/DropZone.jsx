@@ -64,18 +64,19 @@ function DropZone({ onFiles }) {
                     "flex min-h-36 w-full flex-col items-center justify-center rounded-xl border-2 border-dashed p-6 text-center",
                     "transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                     isDragging
-                        ? "border-cyan-500/60 bg-cyan-500/10"
-                        : "border-white/70 bg-white/30 hover:border-cyan-400/50 hover:bg-white/55 dark:border-white/10 dark:bg-white/[.02] dark:hover:bg-white/5",
+                        ? "border-primary bg-primary/15"
+                        : "border-white/70 bg-white/30 hover:border-primary/50 hover:bg-white/55 dark:border-white/10 dark:bg-white/[.02] dark:hover:bg-white/5",
                 )}
             >
                 <Images className={cx("mb-3 size-10 text-muted-foreground")} aria-hidden="true" />
 
                 <span className={cx("text-sm font-medium")}>
-                    คลิกเพื่อเลือกรูปภาพ หรือลากไฟล์มาวางที่นี่
+                    Drop images here
                 </span>
+                <span className={cx("mt-1 text-sm text-muted-foreground")}>or click to browse</span>
 
                 <span className={cx("mt-2 text-xs text-muted-foreground")}>
-                    JPG, PNG, WebP, AVIF และรูปแบบอื่นที่เบราว์เซอร์รองรับ · เลือกได้หลายภาพ
+                    JPG • PNG • WebP • AVIF and other browser-supported images · Multiple files supported
                 </span>
             </GlassButton>
 

@@ -54,14 +54,14 @@ function FileItem({ file, onRemove, disabled = false }) {
     const outputFilename = file.outputFormat ? `${file.name.replace(/\.[^/.]+$/, "")}.${file.outputFormat}` : "";
 
     return (
-        <div className={cx("flex flex-col justify-center gap-4 rounded-xl border border-border/70 bg-background/35 p-4 md:flex-row md:items-center md:justify-between")}>
-            <img src={file.preview} alt={file.name} className={cx("mx-auto h-16 w-auto max-w-32 rounded-lg object-contain md:mx-0 md:h-20")} />
+        <div className={cx("flex flex-wrap items-center gap-3 rounded-xl border border-border/70 bg-background/35 p-3")}>
+            <img src={file.preview} alt={file.name} className={cx("size-14 shrink-0 rounded-lg object-cover")} />
 
-            <div className={cx("min-w-0 flex-1 text-center md:text-left")}>
+            <div className={cx("min-w-0 flex-1 basis-40 text-left")}>
                 <p className={cx("truncate font-medium text-sm md:text-base")}>{file.name}</p>
 
                 <div className={cx("mt-1 text-xs text-muted-foreground md:text-sm")}>
-                    <p>Original: {formatFileSize(file.size)}</p>
+                    <p>{file.file.type.split("/")[1]?.toUpperCase() || "IMAGE"} · {formatFileSize(file.size)}</p>
 
                     <p>
                         {file.width} × {file.height} px
@@ -69,7 +69,7 @@ function FileItem({ file, onRemove, disabled = false }) {
                 </div>
             </div>
             {file.outputBlob && (
-                <div className={cx("mt-2 flex flex-col items-center justify-center rounded-xl border border-border/60 bg-muted/40 px-3 py-2 text-sm md:ml-4 md:mt-0 md:text-base")}>
+                <div className={cx("rounded-lg bg-muted/40 px-3 py-2 text-sm")}>
                     <p className={cx("text-xs font-medium text-muted-foreground md:text-sm")}>Converted</p>
 
                     <p className={cx("mt-1 text-muted-foreground")}>
@@ -86,7 +86,7 @@ function FileItem({ file, onRemove, disabled = false }) {
                     </div>
                 </div>
             )}
-            <div className={cx("flex shrink-0 flex-col items-center justify-center gap-2 md:ml-4 md:flex-row")}>
+            <div className={cx("flex flex-wrap items-center gap-2")}>
                 <span
                     className={cx(
                         "text-xs md:text-base font-medium",
@@ -100,13 +100,13 @@ function FileItem({ file, onRemove, disabled = false }) {
                    {getStatusLabel(file.status)}
                 </span>
 
-                <div className={cx("mt-2 flex w-full shrink-0 flex-col items-center justify-center gap-2 md:ml-2 md:mt-0 md:w-auto md:flex-row")}>
+                <div className={cx("flex flex-wrap items-center gap-2")}>
                     {file.outputBlob && (
                         <GlassButton
                             type="button"
                             onClick={() => downloadFile(file.outputBlob, outputFilename)}
                             disabled={disabled}
-                            className={cx("w-full rounded-lg border border-primary/30 px-3 py-2 text-sm font-medium text-primary hover:bg-primary/10 disabled:cursor-not-allowed disabled:opacity-50 md:w-auto")}
+                            className={cx("rounded-lg border border-primary/30 px-3 py-2 text-sm font-medium text-primary hover:bg-primary/10 disabled:cursor-not-allowed disabled:opacity-50 md:w-auto")}
                         >
                             Download
                         </GlassButton>
@@ -116,7 +116,7 @@ function FileItem({ file, onRemove, disabled = false }) {
                         type="button"
                         onClick={() => onRemove(file.id)}
                         disabled={disabled || file.status === "converting"}
-                        className={cx("w-full rounded-lg border border-destructive/30 px-3 py-2 text-sm font-medium text-destructive hover:bg-destructive/10 disabled:cursor-not-allowed disabled:opacity-50 md:w-auto")}
+                        className={cx("rounded-lg border border-destructive/30 px-3 py-2 text-sm font-medium text-destructive hover:bg-destructive/10 disabled:cursor-not-allowed disabled:opacity-50 md:w-auto")}
                     >
                         Remove
                     </GlassButton>

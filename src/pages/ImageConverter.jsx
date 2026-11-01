@@ -323,6 +323,10 @@ function ImageConverter() {
                 </div>
             </header>
 
+            <nav aria-label="Converter tools" className={cx("mb-6 flex flex-wrap items-center gap-2")}>
+                <span aria-current="page" className={cx("rounded-xl border border-primary/40 bg-primary/10 px-4 py-2 text-sm font-semibold text-primary")}>Image Converter</span>
+                <span className={cx("rounded-xl border border-border/60 px-4 py-2 text-sm text-muted-foreground")}>Video Converter <span className={cx("text-xs")}>(coming soon)</span></span>
+            </nav>
             <DropZone onFiles={handleFiles} />
 
             <FileList files={files} onRemove={handleRemove} onClear={handleClear} disabled={isConverting} />
@@ -379,6 +383,23 @@ function ImageConverter() {
                     Convert to {settings.format.toUpperCase()} ({files.length} image{files.length > 1 ? "s" : ""})
                 </GlassButton>
             )}
+            {!isConverting && files.some((file) => file.status === "done" && file.outputBlob) && (() => {
+                const completed = files.filter((file) => file.status === "done" && file.outputBlob);
+                const original = completed.reduce((total, file) => total + file.size, 0);
+                const converted = completed.reduce((total, file) => total + file.outputSize, 0);
+                const difference = original - converted;
+                return (
+                    <section className={cx("glass-surface mt-6 rounded-2xl p-5 md:p-6")} aria-label="Conversion summary">
+                        <h2 className={cx("font-semibold")}>Conversion complete · {completed.length} image{completed.length === 1 ? "" : "s"}</h2>
+                        <div className={cx("mt-4 grid gap-3 text-sm sm:grid-cols-3")}>
+                            <p><span className={cx("block text-muted-foreground")}>Original total size</span>{formatFileSize(original)}</p>
+                            <p><span className={cx("block text-muted-foreground")}>Converted total size</span>{formatFileSize(converted)}</p>
+                            <p><span className={cx("block text-muted-foreground")}>{difference >= 0 ? "Saved" : "Size increase"}</span>{formatFileSize(Math.abs(difference))} ({Math.abs(calculateSizeReduction(original, converted))}%)</p>
+                        </div>
+                        <p className={cx("mt-4 text-xs text-muted-foreground")}>Your ZIP download starts automatically. Individual downloads are available above.</p>
+                    </section>
+                );
+            })()}
             <ConversionLog logs={logs} onClear={() => setLogs([])} />
         </section>
     );

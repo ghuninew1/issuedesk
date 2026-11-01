@@ -1,14 +1,19 @@
+import { useState } from "react";
 import { cx } from "../../utils/cx";
 import { Settings2 } from "lucide-react";
 
 function ConverterSettings({ settings, onChange }) {
+    const [preset, setPreset] = useState("balanced");
     const handleChange = (event) => {
         const { name, value, type, checked } = event.target;
 
+        if (name === "quality") setPreset("custom");
         onChange({
             [name]: type === "checkbox" ? checked : value,
         });
     };
+
+    const presets = { best: 100, balanced: 85, small: 60 };
 
     const isPng = settings.format === "png";
 
@@ -41,6 +46,34 @@ function ConverterSettings({ settings, onChange }) {
                     </select>
                 </div>
 
+                <div>
+                    <label htmlFor="preset" className={cx("mb-2 block font-medium text-sm")}>Quality Preset</label>
+                    <select id="preset" value={preset} onChange={(event) => {
+                        const nextPreset = event.target.value;
+                        setPreset(nextPreset);
+                        if (nextPreset !== "custom") onChange({ quality: presets[nextPreset] });
+                    }} className={cx("w-full rounded-xl border border-input bg-background/60 px-3 py-2.5 text-sm text-foreground focus-visible:ring-2 focus-visible:ring-ring/30")}>
+                        <option value="best">Best Quality</option>
+                        <option value="balanced">Balanced — Recommended</option>
+                        <option value="small">Small File</option>
+                        <option value="custom">Custom</option>
+                    </select>
+                    <p className={cx("mt-2 text-xs text-muted-foreground")}>{isPng ? "PNG is lossless; quality does not apply." : `Quality: ${settings.quality}%`}</p>
+                </div>
+
+                <div className={cx("sm:col-span-2")}>
+                    <p className={cx("mb-2 font-medium text-sm")}>Resolution</p>
+                    <p className={cx("text-sm text-muted-foreground")}>Leave dimensions empty to keep the original size.</p>
+                    <label className={cx("mt-3 flex cursor-pointer items-center gap-3 text-sm")}>
+                        <input type="checkbox" name="keepAspectRatio" checked={settings.keepAspectRatio} onChange={handleChange} className={cx("size-4 accent-primary")} />
+                        <span className={cx("font-medium")}>Keep Aspect Ratio</span>
+                    </label>
+                </div>
+            </div>
+
+            <details className={cx("mt-5 rounded-xl border border-border/70 bg-background/30 p-4")} open={preset === "custom" ? true : undefined}>
+                <summary className={cx("cursor-pointer text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring")}>Advanced Settings · Quality and dimensions</summary>
+                <div className={cx("mt-4 grid gap-5 sm:grid-cols-3")}>
                 <div>
                     <label htmlFor="quality" className={cx("mb-2 block font-medium text-sm")}>
                         Quality
@@ -107,19 +140,8 @@ function ConverterSettings({ settings, onChange }) {
                         className={cx("w-full rounded-xl border border-input bg-background/60 px-3 py-2.5 text-sm text-foreground outline-none placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring/30")}
                     />
                 </div>
-            </div>
-
-            <label className={cx("mt-6 flex cursor-pointer items-center gap-3 text-sm")}>
-                <input
-                    type="checkbox"
-                    name="keepAspectRatio"
-                    checked={settings.keepAspectRatio}
-                    onChange={handleChange}
-                    className={cx("size-4 accent-primary")}
-                />
-
-                <span className={cx("font-medium")}>Keep Aspect Ratio</span>
-            </label>
+                </div>
+            </details>
         </section>
     );
 }
