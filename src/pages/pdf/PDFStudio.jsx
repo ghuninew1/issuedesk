@@ -11,6 +11,8 @@ import {
     Undo2,
     Redo2,
     UploadCloud,
+    LayoutGrid,
+    FileArchive,
 } from "lucide-react";
 import GlassButton from "../../components/GlassButton";
 import { cx } from "../../utils/cx";
@@ -333,9 +335,9 @@ function PDFStudio() {
                 </div>
             ) : (
                 <>
-                    <div role="group" aria-label="PDF Studio mode" className={cx("flex flex-wrap gap-2")}>
-                        <GlassButton className={cx(controlClass)} disabled={!!busy} aria-pressed={mode === "organize"} onClick={() => setMode("organize")}>Organize</GlassButton>
-                        <GlassButton className={cx(controlClass)} disabled={!!busy} aria-pressed={mode === "compress"} onClick={() => setMode("compress")}>Compress</GlassButton>
+                    <div role="group" aria-label="PDF Studio mode" className={cx("inline-flex max-w-full gap-1 rounded-2xl border border-border bg-card/60 p-1")}>
+                        <GlassButton className={cx(controlClass, "border-transparent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary", mode === "organize" ? "bg-primary/15 text-primary ring-1 ring-inset ring-primary/40" : "text-muted-foreground")} disabled={!!busy} aria-pressed={mode === "organize"} onClick={() => setMode("organize")}><LayoutGrid size={16} aria-hidden="true" />Organize</GlassButton>
+                        <GlassButton className={cx(controlClass, "border-transparent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary", mode === "compress" ? "bg-primary/15 text-primary ring-1 ring-inset ring-primary/40" : "text-muted-foreground")} disabled={!!busy} aria-pressed={mode === "compress"} onClick={() => setMode("compress")}><FileArchive size={16} aria-hidden="true" />Compress</GlassButton>
                     </div>
                     {mode === "compress" ? <Suspense fallback={<p role="status">Loading compression…</p>}><PDFCompression pages={pages} sources={sources} busy={busy} setBusy={setBusy} /></Suspense> : <>
                     <div

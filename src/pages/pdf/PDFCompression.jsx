@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { ArrowDownToLine, ArrowRight, Check, FileArchive, Info, LoaderCircle, Sparkles, Minimize2, ScanLine } from "lucide-react";
 import GlassButton from "../../components/GlassButton";
 import { cx } from "../../utils/cx";
 
@@ -8,7 +9,12 @@ const PRESETS = {
     small: { label: "Small File", scale: 1, quality: 0.6 },
 };
 const button = "min-h-10 rounded-xl border border-border px-4 py-2 text-sm disabled:opacity-40";
-const field = "min-h-10 rounded-xl border border-border bg-background px-3 py-2 text-sm";
+const field = "min-h-11 rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary";
+const presetPresentation = {
+    high: { description: "Best quality · Less compression", icon: Sparkles, color: "text-emerald-700 dark:text-emerald-300", selected: "border-emerald-500 bg-emerald-500/10 ring-1 ring-emerald-500/50" },
+    balanced: { description: "Good quality and file size", icon: ScanLine, color: "text-cyan-700 dark:text-cyan-300", selected: "border-cyan-500 bg-cyan-500/10 ring-1 ring-cyan-500/50" },
+    small: { description: "Smallest file · More compression", icon: Minimize2, color: "text-amber-700 dark:text-amber-300", selected: "border-amber-500 bg-amber-500/10 ring-1 ring-amber-500/50" },
+};
 const formatSize = (size) =>
     size < 1024 * 1024 ? `${(size / 1024).toFixed(1)} KB` : `${(size / 1048576).toFixed(2)} MB`;
 
@@ -154,91 +160,64 @@ export default function PDFCompression({ pages, sources, busy, setBusy }) {
         }, 1000);
         urlsRef.current.set(url, timer);
     };
+    const isSmaller = result && result.bytes.byteLength < result.originalSize;
+    const isLarger = result && result.bytes.byteLength > result.originalSize;
+    const targetMet = result?.targetBytes && result.bytes.byteLength <= result.targetBytes;
     return (
-        <section className={cx("space-y-4 rounded-2xl border border-border bg-card/60 p-4 sm:p-6")}>
+        <section className={cx("space-y-6 rounded-2xl border border-border bg-card/60 p-4 sm:p-6")}>
             <div>
-                <h2 className={cx("text-lg font-semibold")}>Compress PDF</h2>
-                <p className={cx("mt-1 text-sm text-muted-foreground")}>
-                    Compress the current ordered workspace locally, one page at a time.
-                </p>
+                <h2 className={cx("text-xl font-semibold tracking-tight")}>Compress PDF</h2>
+                <p className={cx("mt-1 text-sm text-muted-foreground")}>Reduce the size of your current PDF workspace on this device.</p>
             </div>
-            <p className={cx("rounded-xl border border-amber-500/40 bg-amber-500/10 p-3 text-sm")}>
-                Compression flattens pages into images. Selectable text, links, form fields, annotations, signatures and
-                interactive content may be lost. Original files are unchanged.
-            </p>
-            <div className={cx("flex flex-wrap items-end gap-3")}>
-                <label className={cx("flex flex-col gap-1 text-sm")}>
-                    Quality
-                    <select
-                        className={cx(field)}
-                        value={preset}
-                        onChange={(event) => setPreset(event.target.value)}
-                        disabled={!!busy}
-                    >
-                        {Object.entries(PRESETS).map(([key, value]) => (
-                            <option value={key} key={key}>
-                                {value.label}
-                            </option>
-                        ))}
-                    </select>
-                </label>
-                <label className={cx("flex flex-col gap-1 text-sm")}>
-                    Target size (optional, best effort)
-                    <input
-                        className={cx(field, "w-36")}
-                        type="number"
-                        min="0.01"
-                        step="any"
-                        value={target}
-                        onChange={(event) => setTarget(event.target.value)}
-                        placeholder="e.g. 2"
-                        disabled={!!busy}
-                    />
-                </label>
-                <label className={cx("flex flex-col gap-1 text-sm")}>
-                    Unit
-                    <select
-                        className={cx(field)}
-                        value={unit}
-                        onChange={(event) => setUnit(event.target.value)}
-                        disabled={!!busy}
-                    >
-                        <option>MB</option>
-                        <option>KB</option>
-                    </select>
-                </label>
-                <GlassButton className={cx(button)} disabled={!pages.length || !!busy} onClick={start}>
-                    Compress
+
+            <fieldset disabled={!!busy} className={cx("space-y-3")}>
+                <legend className={cx("mb-3 text-sm font-semibold")}>Compression level</legend>
+                <div className={cx("grid gap-3 sm:grid-cols-3")}>
+                    {Object.entries(PRESETS).map(([key, value]) => {
+                        const presentation = presetPresentation[key];
+                        const Icon = presentation.icon;
+                        return (
+                            <label key={key} className={cx("relative flex min-h-28 cursor-pointer flex-col gap-2 rounded-2xl border bg-background/60 p-4 transition-colors focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-primary", preset === key ? presentation.selected : "border-border", busy && "cursor-not-allowed opacity-60")}>
+                                <input className={cx("sr-only")} type="radio" name="compression-level" value={key} checked={preset === key} onChange={() => setPreset(key)} />
+                                <span className={cx("flex items-center gap-2", presentation.color)}><Icon className={cx("size-4 shrink-0")} aria-hidden="true" /><span className={cx("font-semibold")}>{value.label}</span>{preset === key && <Check className={cx("ml-auto size-4 shrink-0")} aria-hidden="true" />}</span>
+                                <span className={cx("text-xs text-muted-foreground")}>{presentation.description}</span>
+                                {key === "balanced" && <span className={cx("w-fit rounded-full bg-cyan-500/10 px-2 py-0.5 text-xs font-medium text-cyan-700 dark:text-cyan-300")}>Recommended</span>}
+                            </label>
+                        );
+                    })}
+                </div>
+            </fieldset>
+
+            <div className={cx("space-y-3 rounded-2xl border border-border bg-background/40 p-4")}>
+                <div className={cx("flex items-center justify-between gap-3")}><h3 className={cx("text-sm font-semibold")}>Target file size</h3><span className={cx("text-xs text-muted-foreground")}>Optional</span></div>
+                <div className={cx("flex flex-wrap gap-2")}>
+                    <label className={cx("sr-only")} htmlFor="pdf-compression-target">Target file size</label>
+                    <input id="pdf-compression-target" className={cx(field, "w-36 max-w-full")} type="number" min="0.01" step="any" value={target} onChange={(event) => setTarget(event.target.value)} placeholder="e.g. 2" disabled={!!busy} />
+                    <label className={cx("sr-only")} htmlFor="pdf-compression-unit">Target size unit</label>
+                    <select id="pdf-compression-unit" className={cx(field)} value={unit} onChange={(event) => setUnit(event.target.value)} disabled={!!busy}><option>MB</option><option>KB</option></select>
+                </div>
+                <p className={cx("text-xs text-muted-foreground")}>{target && Number(target) > 0 ? `Try to keep the compressed PDF at or below ${target} ${unit}.` : "No target set — compression uses the selected quality preset."} Best effort — some PDFs may not reach the requested size.</p>
+            </div>
+
+            <div className={cx("flex gap-3 rounded-2xl border border-border bg-muted/40 p-4 text-sm")}>
+                <Info className={cx("mt-0.5 size-4 shrink-0 text-muted-foreground")} aria-hidden="true" />
+                <div className={cx("space-y-1")}><h3 className={cx("font-medium")}>About compression</h3><p className={cx("text-muted-foreground")}>Pages are flattened into images, so selectable text, links, forms, annotations and signatures may be lost. Your original PDF is never modified.</p></div>
+            </div>
+
+            {error && <p role="alert" className={cx("rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive")}>{error}</p>}
+            <div className={cx("flex justify-end")}>
+                <GlassButton className={cx("inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto")} disabled={!pages.length || !!busy} onClick={start}>
+                    {busy ? <LoaderCircle className={cx("size-4 animate-spin")} aria-hidden="true" /> : <FileArchive className={cx("size-4")} aria-hidden="true" />}{busy ? "Compressing…" : "Compress PDF"}
                 </GlassButton>
             </div>
-            {error && (
-                <p role="alert" className={cx("text-sm text-destructive")}>
-                    {error}
-                </p>
-            )}
+
             {result && (
-                <div
-                    role="status"
-                    className={cx("space-y-2 rounded-xl border border-border bg-background/60 p-4 text-sm")}
-                >
-                    <p>
-                        Original workspace: {formatSize(result.originalSize)} · Result:{" "}
-                        {formatSize(result.bytes.byteLength)} ·{" "}
-                        {result.bytes.byteLength <= result.originalSize
-                            ? `${Math.round((1 - result.bytes.byteLength / result.originalSize) * 100)}% reduction`
-                            : "Larger than original — keep the original recommended."}
-                    </p>
-                    {result.targetBytes && (
-                        <p>
-                            Target: ≤ {formatSize(result.targetBytes)} ·{" "}
-                            {result.bytes.byteLength <= result.targetBytes
-                                ? "Target met"
-                                : "Target not met within the quality floor."}
-                        </p>
-                    )}
-                    <GlassButton className={cx(button)} onClick={download}>
-                        Download compressed PDF
-                    </GlassButton>
+                <div role="status" className={cx("space-y-4 rounded-2xl border p-4 sm:p-5", isSmaller ? "border-emerald-500/30 bg-emerald-500/5" : "border-border bg-background/60")}>
+                    <div className={cx("flex flex-wrap items-center justify-between gap-2")}><h3 className={cx("font-semibold")}>Compression result</h3>{isSmaller && <span className={cx("rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-700 dark:text-emerald-300")}>{Math.round((1 - result.bytes.byteLength / result.originalSize) * 100)}% smaller</span>}</div>
+                    <div className={cx("flex flex-wrap items-center gap-4 sm:gap-8")}><div className={cx("min-w-0")}><p className={cx("text-xs text-muted-foreground")}>Original workspace</p><p className={cx("break-words text-xl font-semibold sm:text-2xl")}>{formatSize(result.originalSize)}</p></div><ArrowRight className={cx("size-5 shrink-0 text-muted-foreground")} aria-hidden="true" /><div className={cx("min-w-0")}><p className={cx("text-xs text-muted-foreground")}>Compressed</p><p className={cx("break-words text-xl font-semibold sm:text-2xl")}>{formatSize(result.bytes.byteLength)}</p></div></div>
+                    {isLarger && <p className={cx("text-sm text-muted-foreground")}>The compressed file is larger than the original. We recommend keeping the original.</p>}
+                    {result.targetBytes && <p className={cx("text-sm", targetMet ? "text-emerald-700 dark:text-emerald-300" : "text-muted-foreground")}>{targetMet ? `Target reached: ≤ ${formatSize(result.targetBytes)}` : `Target not reached: ${formatSize(result.targetBytes)} could not be reached at the allowed quality.`}</p>}
+                    <GlassButton className={cx(button, "inline-flex items-center justify-center gap-2 font-medium")} onClick={download}><ArrowDownToLine className={cx("size-4")} aria-hidden="true" />Download PDF</GlassButton>
                 </div>
             )}
         </section>
