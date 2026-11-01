@@ -64,8 +64,8 @@ const AppShell = ({ children }) => {
     return (
         <div className="isolate relative flex bg-background selection:bg-cyan-500 min-h-screen overflow-x-clip font-sans text-foreground selection:text-white antialiased">
             <div className="top-1/4 -left-20 z-0 absolute bg-green-500/5 blur-3xl rounded-full size-96 pointer-events-none" />
-            <div className="right-0 bottom-1/4 z-0 absolute bg-red-400/5 blur-3xl rounded-full size-96 pointer-events-none" />
-            <div className="top-1/2 left-1/2 z-0 absolute bg-cyan-500/5 blur-[120px] rounded-full size-[500px] -translate-x-1/2 -translate-y-1/2 pointer-events-none" />
+            <div className="right-0 bottom-1/4 z-0 absolute bg-cyan-400/5 blur-3xl rounded-full size-96 pointer-events-none" />
+            {/* <div className="top-1/2 left-1/2 z-0 absolute bg-cyan-500/5 blur-[120px] rounded-full size-[500px] -translate-x-1/2 -translate-y-1/2 pointer-events-none" /> */}
             <div
                 className="z-0 absolute inset-0 bg-cover bg-no-repeat bg-center opacity-[0.02] pointer-events-none"
                 style={{
