@@ -84,7 +84,7 @@
 - Lazy-load or defer expensive content when appropriate.
 - Do not load asset images until needed when the existing page uses deferred image rendering.
 - Maintain accessibility, keyboard interaction, and loading/error states.
-- Preserve route-level lazy loading and clean up timers, listeners, object URLs, and body-scroll locks introduced by effects.
+- Preserve route-level lazy loading: page modules load directly, while the shell and route guard remain eager. The shell contains the shared page Suspense boundary; login has its own boundary. Clean up timers, listeners, object URLs, and body-scroll locks introduced by effects.
 - When changing file uploads, check both browser validation and server/storage limits, including existing HEIC/HEIF conversion and preview cleanup.
 - Follow the current CSS-based Tailwind v4 setup. `components.json` contains shadcn configuration, but it does not prove that generated UI components or every configured import alias exist in the runtime bundler; inspect actual files and Vite configuration before using them.
 

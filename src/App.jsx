@@ -2,13 +2,15 @@ import { Navigate, Outlet, Route, Routes } from "react-router-dom";
 import { lazy, Suspense } from "react";
 import { Loader } from "lucide-react";
 import { useAuth } from "./auth/useAuth";
+import AppShell from "./components/layout/AppShell";
+import ProtectedRoute from "./auth/ProtectedRoute";
+import { cx } from "./utils/cx";
 
 const QRCodeStudio = lazy(() => import("./pages/qr/QRCodeStudio"));
 const QRLinks = lazy(() => import("./pages/qr/QRLinks"));
 const SavedQRCodes = lazy(() => import("./pages/qr/SavedQRCodes"));
 const ImageConverter = lazy(() => import("./pages/ImageConverter"));
 
-const AppShell = lazy(() => import("./components/layout/AppShell"));
 const DashboardStats = lazy(() => import("./components/dashboard/DashboardStats"));
 const RecentIssues = lazy(() => import("./components/dashboard/RecentIssues"));
 const ReportIssue = lazy(() => import("./pages/ReportIssue"));
@@ -16,7 +18,6 @@ const Issues = lazy(() => import("./pages/Issues"));
 const IssueDetail = lazy(() => import("./pages/IssueDetail"));
 const PortalHome = lazy(() => import("./pages/PortalHome"));
 const LoginRegister = lazy(() => import("./pages/LoginRegister"));
-const ProtectedRoute = lazy(() => import("./auth/ProtectedRoute"));
 const TrackTicket = lazy(() => import("./pages/TrackTicket"));
 const Sheet = lazy(() => import("./pages/Sheet"));
 const StorageImages = lazy(() => import("./pages/StorageImages"));
@@ -73,16 +74,19 @@ function NotFoundPage() {
 function AppLayout() {
     return (
         <AppShell>
-            <Outlet />
+            <Suspense fallback={<PageLoading />}><Outlet /></Suspense>
         </AppShell>
     );
 }
 
+function PageLoading() {
+    return <div role="status" className={cx("flex items-center gap-2 p-8 text-sm text-muted-foreground")}><Loader className={cx("size-4 animate-spin")} />Loading page…</div>;
+}
+
 function App() {
     return (
-        <Suspense fallback={<Loader className="animate-spin" />}>
             <Routes>
-                <Route path="/login" element={<LoginRoute />} />
+                <Route path="/login" element={<Suspense fallback={<PageLoading />}><LoginRoute /></Suspense>} />
                 <Route element={<AppLayout />}>
                     <Route path="/" element={<PortalHome />} />
                     <Route
@@ -178,7 +182,6 @@ function App() {
                     <Route path="*" element={<NotFoundPage />} />
                 </Route>
             </Routes>
-        </Suspense>
     );
 }
 

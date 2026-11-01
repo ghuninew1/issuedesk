@@ -340,3 +340,8 @@ Storage API เคยคืน `SQLITE_READONLY: attempt to write a readonly dat
 
 - เพิ่ม V1.3.4_RELEASE.md เป็น release notes ฉบับแรก สรุป source baseline และข้อจำกัดโดยไม่อ้างว่าเป็น diff จาก release ก่อนหน้า
 - ตรวจ source, routes, package version และ migrations สำหรับเอกสาร; ตรวจ whitespace ด้วย git diff --check ไม่ได้รัน lint/build/tests/browser QA หรือเปลี่ยน production
+# 2026-11-01 — Route loading audit (in progress)
+
+- Existing page routes already used direct lazy imports. `src/App.jsx` now loads the shell and route guard eagerly and places the shared page Suspense boundary inside the shell; login retains a separate boundary. Routes and authorization checks were not changed.
+- Current checks: `pnpm lint` and `pnpm build` passed; build output contains separate page chunks. In the local Vite browser, home-to-report navigation, report refresh with the shell visible during loading, and unauthenticated dashboard redirect to login were observed.
+- Phase 0 remains incomplete: authenticated user/admin navigation and restrictions, every route, and actual on-demand network requests were not verified. The Vite-only server does not supply the Pages Functions session backend. PDF Studio Phase 1 has not been started because the requested Phase 0 validation gate is not complete. Next: validate those flows with an appropriate local Pages/D1 session setup, then implement PDF Studio.

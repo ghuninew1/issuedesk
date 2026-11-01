@@ -85,3 +85,6 @@ Secrets ของ Storage, OAuth และ Resend อยู่ฝั่ง serve
 - [AGENTS.md](AGENTS.md) — แนวทางทำงานใน repository
 
 การมี source หรือ configuration ใน repository ไม่ได้ยืนยันสถานะ deployment, credentials หรือ migrations บน production
+# Route loading
+
+Page routes are loaded on demand. The application shell and route guard load with the app; a shared loading state appears inside the shell while a page loads. The standalone login route has its own loading boundary.
