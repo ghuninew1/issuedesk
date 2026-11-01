@@ -161,5 +161,5 @@
 
 ## Video Converter
 
-- `/video-converter` is session-protected and processes MP4, MOV, WebM and MKV locally with lazy-loaded `@ffmpeg/ffmpeg` and `@ffmpeg/core`; never upload video data. The sequential queue cleans FFmpeg temporary files and terminates the worker on unmount. Outputs are MP4 (H.264/AAC) and WebM (VP9/Opus); large files and ZIP creation are limited by browser memory.
+- `/video-converter` is session-protected and processes MP4, MOV, WebM and MKV locally with lazy-loaded `@ffmpeg/ffmpeg` and `@ffmpeg/core`; never upload video data. The sequential queue cleans FFmpeg temporary files and terminates the worker on unmount. Output is MP4 (H.264/AAC); preserve compatible codec mapping, the no-upscale behavior and the 4K resource notice. WebM remains an input format, not an output option. Large files and ZIP creation are limited by browser memory.
 - The Vite build splits the FFmpeg WASM into assets below the Pages 25 MiB asset limit and the browser rejoins them before loading the core. Verify production asset loading and actual conversion separately from build success.

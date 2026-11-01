@@ -6,7 +6,10 @@ import { createZip } from "../utils/createZip";
 import { cx } from "../utils/cx";
 import { useDocumentTitle } from "../hooks/useDocumentTitle";
 
-const presets = { best: { mp4: 18, webm: 20 }, balanced: { mp4: 23, webm: 32 }, small: { mp4: 28, webm: 42 } };
+const formats = {
+    mp4: { video: "H.264", encoder: "libx264", audio: "AAC", audioEncoder: "aac", mime: "video/mp4" },
+};
+const presets = { best: { mp4: 18 }, balanced: { mp4: 23 }, small: { mp4: 28 } };
 const control =
     "w-full rounded-xl border border-input bg-background/60 px-3 py-2.5 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30";
 const action =
@@ -56,6 +59,7 @@ export default function VideoConverter() {
     const [files, setFiles] = useState([]);
     const [settings, setSettings] = useState({
         format: "mp4",
+        codec: "auto",
         quality: "balanced",
         resolution: "original",
         audio: "keep",
@@ -122,15 +126,14 @@ export default function VideoConverter() {
         setMessage("");
         setBusy(true);
         setOverall({ done: 0, total: queue.length });
-        let ffmpeg;
-        try {
+        const loadEngine = async () => {
             const [{ FFmpeg }, { default: coreURL }, { default: wasmURL }] = await Promise.all([
                 import("@ffmpeg/ffmpeg"),
                 import("@ffmpeg/core?url"),
                 import("@ffmpeg/core/wasm?url"),
             ]);
-            if (!alive.current) return;
-            ffmpeg = engine.current || new FFmpeg();
+            if (!alive.current) throw new Error("Converter closed");
+            const ffmpeg = engine.current || new FFmpeg();
             engine.current = ffmpeg;
             if (!ffmpeg.loaded) {
                 let wasm = wasmURL;
@@ -145,16 +148,23 @@ export default function VideoConverter() {
                     wasm = URL.createObjectURL(new Blob(chunks, { type: "application/wasm" }));
                 }
                 try {
+                    if (!alive.current) throw new Error("Converter closed");
                     await ffmpeg.load({ coreURL, wasmURL: wasm });
+                    if (!alive.current) { ffmpeg.terminate(); throw new Error("Converter closed"); }
                 } finally {
                     if (wasm !== wasmURL) URL.revokeObjectURL(wasm);
                 }
             }
+            return ffmpeg;
+        };
+        let ffmpeg;
+        try {
+            ffmpeg = await loadEngine();
         } catch {
+            engine.current?.terminate();
+            engine.current = null;
             if (alive.current) {
-                setMessage(
-                    "The video converter could not load. Check your connection or browser resources and try again.",
-                );
+                setMessage("The video converter could not load. Check your connection or browser resources and try again.");
                 setBusy(false);
             }
             return;
@@ -165,12 +175,26 @@ export default function VideoConverter() {
                 setOverall({ done: index + 1, total: queue.length });
                 continue;
             }
+            if (!ffmpeg) {
+                try { ffmpeg = await loadEngine(); }
+                catch {
+                    engine.current?.terminate();
+                    engine.current = null;
+                    update(item.id, { status: "failed", error: "The video converter could not restart. Check browser resources and try again." });
+                    if (alive.current) setOverall({ done: index + 1, total: queue.length });
+                    continue;
+                }
+            }
             const ext = item.file.name.split(".").pop().toLowerCase();
             const source = `input.${ext}`;
             const output = `output.${settings.format}`;
-            update(item.id, { status: "loading", progress: 0 });
-            const onProgress = ({ progress }) =>
-                update(item.id, { progress: Math.max(0, Math.min(100, Math.round(progress * 100))) });
+            update(item.id, { status: "loading", progress: 0, error: "" });
+            let lastProgress = 0;
+            const onProgress = ({ progress }) => {
+                if (!Number.isFinite(progress)) return;
+                lastProgress = Math.max(lastProgress, Math.min(99, Math.round(progress * 100)));
+                update(item.id, { progress: lastProgress });
+            };
             ffmpeg.on("progress", onProgress);
             try {
                 await ffmpeg.writeFile(source, new Uint8Array(await item.file.arrayBuffer()));
@@ -178,52 +202,63 @@ export default function VideoConverter() {
                 const args = ["-i", source, "-map", "0:v:0", "-map", "0:a:0?"];
                 let scale;
                 if (resolution !== "original" && resolution !== "custom")
-                    scale = `scale=-2:${resolution}:force_original_aspect_ratio=decrease:force_divisible_by=2`;
+                    scale = `scale=-2:'min(ih,${resolution})':force_divisible_by=2`;
                 if (resolution === "custom") {
-                    if (aspect)
-                        scale = `scale=${width || -2}:${height || -2}:force_original_aspect_ratio=decrease:force_divisible_by=2`;
-                    else scale = `scale=${width}:${height}:force_divisible_by=2`;
+                    const targetWidth = width ? `'min(iw,${width})'` : "-2";
+                    const targetHeight = height ? `'min(ih,${height})'` : "-2";
+                    scale = `scale=${targetWidth}:${targetHeight}${aspect && width && height ? ":force_original_aspect_ratio=decrease" : ""}:force_divisible_by=2`;
                 }
                 if (scale) args.push("-vf", scale);
                 if (settings.fps !== "original") args.push("-r", settings.fps);
-                args.push("-c:v", settings.format === "mp4" ? "libx264" : "libvpx-vp9", "-pix_fmt", "yuv420p");
+                args.push("-c:v", formats[settings.format].encoder, "-pix_fmt", "yuv420p");
                 if (settings.quality === "custom" && bitrate) args.push("-b:v", `${bitrate}k`);
                 else {
                     args.push("-crf", String((presets[settings.quality] || presets.balanced)[settings.format]));
-                    if (settings.format === "webm") args.push("-b:v", "0");
                 }
                 if (settings.audio === "mute") args.push("-an");
                 else {
-                    args.push("-c:a", settings.format === "mp4" ? "aac" : "libopus");
+                    args.push("-c:a", formats[settings.format].audioEncoder);
                     if (settings.audioBitrate !== "auto") args.push("-b:a", `${settings.audioBitrate}k`);
                 }
                 args.push(output);
                 const code = await ffmpeg.exec(args);
                 if (code !== 0) throw new Error("Conversion failed");
                 const data = await ffmpeg.readFile(output);
-                const blob = new Blob([data], { type: settings.format === "mp4" ? "video/mp4" : "video/webm" });
+                const blob = new Blob([data], { type: formats[settings.format].mime });
                 update(item.id, {
                     status: "completed",
                     progress: 100,
                     blob,
                     outputName: `${item.file.name.replace(/\.[^.]+$/, "")}.${settings.format}`,
                 });
-            } catch {
+            } catch (error) {
+                if (import.meta.env.DEV) console.error("Video conversion failed", error);
+                const resourceFailure = error instanceof WebAssembly.RuntimeError || String(error).includes("memory access");
+                if (resourceFailure) {
+                    ffmpeg.terminate();
+                    engine.current = null;
+                }
                 update(item.id, {
                     status: "failed",
-                    error: "This video could not be converted. It may be damaged, unsupported, or too large for this browser.",
+                    error: resourceFailure
+                        ? "The converter ran into a browser resource or encoder error. Try a lower resolution or another browser; your original file is unchanged."
+                        : "This video could not be converted. It may be damaged, unsupported, or too large for this browser.",
                 });
             } finally {
                 ffmpeg.off("progress", onProgress);
-                try {
-                    await ffmpeg.deleteFile(source);
-                } catch {
-                    /* File may not exist. */
-                }
-                try {
-                    await ffmpeg.deleteFile(output);
-                } catch {
-                    /* File may not exist. */
+                if (!engine.current) {
+                    ffmpeg = null;
+                } else {
+                    try {
+                        await ffmpeg.deleteFile(source);
+                    } catch {
+                        /* File may not exist. */
+                    }
+                    try {
+                        await ffmpeg.deleteFile(output);
+                    } catch {
+                        /* File may not exist. */
+                    }
                 }
             }
             if (alive.current) setOverall({ done: index + 1, total: queue.length });
@@ -327,14 +362,7 @@ export default function VideoConverter() {
                 </h2>
                 <fieldset disabled={busy} className={cx("mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4")}>
                     <Field label="Output Format">
-                        <select
-                            className={cx(control)}
-                            value={settings.format}
-                            onChange={(e) => change("format", e.target.value)}
-                        >
-                            <option value="mp4">MP4</option>
-                            <option value="webm">WebM</option>
-                        </select>
+                        <input className={cx(control)} value="MP4" readOnly />
                     </Field>
                     <Field label="Quality">
                         <select
@@ -355,6 +383,8 @@ export default function VideoConverter() {
                             onChange={(e) => change("resolution", e.target.value)}
                         >
                             <option value="original">Original</option>
+                            <option value="2160">4K / 2160p</option>
+                            <option value="1440">1440p</option>
                             <option value="1080">1080p</option>
                             <option value="720">720p</option>
                             <option value="480">480p</option>
@@ -372,15 +402,15 @@ export default function VideoConverter() {
                         </select>
                     </Field>
                 </fieldset>
+                <p className={cx("mt-3 text-xs text-muted-foreground")}>Resolution presets and custom dimensions will not upscale the source.</p>
                 <details className={cx("mt-5 border-t border-border pt-4")}>
                     <summary className={cx("cursor-pointer text-sm font-medium")}>Advanced Settings</summary>
                     <fieldset disabled={busy} className={cx("mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4")}>
                         <Field label="Video Codec">
-                            <input
-                                className={cx(control)}
-                                value={settings.format === "mp4" ? "H.264" : "VP9"}
-                                readOnly
-                            />
+                            <select className={cx(control)} value={settings.codec} onChange={(e) => change("codec", e.target.value)}>
+                                <option value="auto">Automatic (Recommended)</option>
+                                <option value="explicit">{formats[settings.format].video}</option>
+                            </select>
                         </Field>
                         <Field label="Frame Rate">
                             <select
@@ -411,7 +441,7 @@ export default function VideoConverter() {
                         <Field label="Audio Codec">
                             <input
                                 className={cx(control)}
-                                value={settings.format === "mp4" ? "AAC" : "Opus"}
+                                value={formats[settings.format].audio}
                                 readOnly
                             />
                         </Field>
@@ -482,6 +512,7 @@ export default function VideoConverter() {
                         disabled={busy || !files.length}
                         onClick={() => {
                             setFiles([]);
+                            removed.current.clear();
                             setOverall(null);
                         }}
                     >
@@ -503,6 +534,12 @@ export default function VideoConverter() {
                                             : ""}
                                         {f.file.name.split(".").pop().toUpperCase()} • {size(f.file.size)} · {f.status}
                                     </p>
+                                    {((f.width >= 3840 && f.height >= 2160) || (f.width >= 2160 && f.height >= 3840)) && (
+                                        <p className={cx("mt-2 text-xs text-muted-foreground")}><strong>High-resolution video detected.</strong> 4K conversion can use significant CPU and memory and may take longer on some devices.</p>
+                                    )}
+                                    {(f.file.size >= 1024 ** 3 || f.duration >= 1800) && (
+                                        <p className={cx("mt-2 text-xs text-muted-foreground")}>This video may require substantial memory to convert in your browser.</p>
+                                    )}
                                     {f.error && (
                                         <p role="alert" className={cx("mt-1 text-xs text-destructive")}>
                                             {f.error}

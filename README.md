@@ -8,7 +8,7 @@ IssueDesk เป็นเว็บแอป IT Help Desk สำหรับร�
 - **จัดการ Ticket:** Admin ดู Dashboard ค้นหาและกรองรายการ ดูไฟล์แนบ และเปลี่ยนสถานะเป็น Open, In Progress หรือ Resolved
 - **Attendance:** สมาชิกเช็คอิน เช็คเอาต์ และดูประวัติของตนเอง; Admin ดูภาพรวมและรายการของทีม
 - **QR Studio:** สร้างและบันทึก QR จาก URL, ข้อความ หรือ Short Link ปรับสีและโลโก้ แล้ว export เป็น PNG หรือ SVG
-- **Video Converter:** แปลง MP4, MOV, WebM และ MKV เป็น MP4 (H.264/AAC) หรือ WebM (VP9/Opus) แบบทีละไฟล์ใน browser ด้วย FFmpeg WebAssembly; ไฟล์วิดีโอไม่ถูกอัปโหลด และไฟล์ขนาดใหญ่อาจเกินหน่วยความจำของอุปกรณ์
+- **Video Converter:** แปลง MP4, MOV, WebM และ MKV เป็น MP4 (H.264/AAC) แบบทีละไฟล์ใน browser ด้วย FFmpeg WebAssembly รองรับ preset ถึง 4K และไม่ขยายภาพต้นฉบับ; ไฟล์วิดีโอไม่ถูกอัปโหลด และไฟล์ขนาดใหญ่หรือ codec บางชนิดอาจเกินทรัพยากรของอุปกรณ์
 - **Image Converter:** แปลงและปรับขนาดภาพหลายไฟล์ใน browser พร้อม quality presets, สรุปขนาด และดาวน์โหลดผลเป็น ZIP
 - **PDF Studio:** รวม PDF หลายไฟล์ จัดเรียง เลือก หมุน ลบ แยกหน้า undo/redo และ export โดยประมวลผลใน browser เท่านั้น ไม่อัปโหลดเอกสารไปยัง server ต้องลงชื่อเข้าใช้ก่อนใช้งาน
 - **PDF visual editor:** เพิ่มข้อความภาษา Latin, ภาพ PNG/JPEG และ whiteout พร้อมย้าย ปรับขนาด ลบ และ undo/redo แล้ว export ลง PDF โดยคงหน้าต้นฉบับไว้ Whiteout เป็นการปิดทับภาพเท่านั้น ไม่ใช่การลบข้อมูลลับอย่างปลอดภัย ฟอนต์สำหรับข้อความที่เพิ่มยังไม่รองรับภาษาไทย
