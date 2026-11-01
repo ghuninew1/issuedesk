@@ -73,9 +73,9 @@ const Header = ({ isHeaderVisible = true, onOpenMobileSidebar }) => {
                 "glass-header sticky top-0 z-30",
                 "flex h-15 shrink-0 items-center justify-between gap-3",
                 "px-4 md:px-5 lg:px-6",
-                "transition-transform duration-300 ease-out",
+                "md:transition-transform md:duration-300 md:ease-out",
                 "motion-reduce:transition-none",
-                isHeaderVisible ? "translate-y-0" : "-translate-y-full",
+                isHeaderVisible ? "md:translate-y-0" : "md:-translate-y-full",
             )}
         >
             <div className="flex min-w-0 items-center gap-2">

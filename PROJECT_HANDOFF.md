@@ -7,6 +7,11 @@
 
 # IssueDesk — Project Handoff
 
+## Mobile header scroll — 1 พฤศจิกายน 2026
+
+- ให้ Header บนมือถืออยู่ติดขอบบนขณะเลื่อน โดยไม่ใช้แอนิเมชันซ่อน/แสดงตามทิศทางเลื่อน; desktop คงพฤติกรรมเดิม
+- ตรวจ `AGENTS.md` และ `README.md` แล้ว ยังคงตรงกับ source; `pnpm --config.verifyDepsBeforeRun=false lint` และ `git diff --check` ผ่าน; Browser plugin และ Playwright ไม่พร้อมใช้งาน จึงยังไม่ได้ตรวจ browser หรืออุปกรณ์มือถือจริง และไม่ได้ deploy
+
 ## Release notes v1.4.0 — 1 พฤศจิกายน 2026
 
 - อัปเดตเวอร์ชันใน `package.json` เป็น 1.4.0 และเพิ่ม `V1.4.0_RELEASE.md` โดยเทียบ source กับ Git tag `1.3.4`; เพิ่มเส้นทาง PDF Studio และลิงก์ release ใน README
