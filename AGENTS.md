@@ -45,6 +45,7 @@
 - Follow the existing dark theme conventions and preserve light/dark behavior.
 - Dark mode uses near-black blue-charcoal surfaces (`#090d12`) with a mint primary accent in `src/index.css`; keep Light mode tokens unchanged when adjusting the palette.
 - Sidebar NavLinks use the shared Liquid Glass hover treatment like the Collapse button while retaining a separate active state. Shared `GlassButton` controls use currentColor Liquid Glass hover treatments in Light mode; Dark mode keeps the shared `glassHover` behavior.
+- `AppShell` reserves desktop main-content space for the floating sidebar in its collapsed and expanded states. Avoid duplicate per-page offsets; the mobile drawer overlays content.
 - Keep class names statically discoverable by Tailwind where possible; do not construct utility class fragments dynamically.
 - Keep components readable and separated according to existing project patterns.
 - Prefer existing dependencies over adding new ones.
@@ -58,6 +59,7 @@
 - Attachments and managed files use the external Storage API; D1 stores metadata. Route browser calls through same-origin API helpers and keep Storage credentials and other server secrets out of browser code.
 - Google Sheets inventory is fetched by the browser. Treat `VITE_*` values as public because they are bundled into client code; do not place secrets or private data in them.
 - PDF Studio is session-protected and processes documents locally in the browser. Keep PDF.js rendering, pdf-lib export, and the compression worker dynamically loaded after the page; preserve document, render, worker and object URL cleanup, and do not send PDF contents to an API or persist them in browser storage. Compression rasterizes pages and must warn about lost text and interactive features; target size is best effort.
+- PDF Studio Edit stores text, whiteout and PNG/JPEG overlays with page history and applies them when exporting. Whiteout visually covers content; it is not secure redaction. The built-in PDF font does not support Thai. Preserve viewport/PDF coordinate conversion, page rotation behavior, and inclusion of overlays when compressing an edited workspace.
 - Ticket email delivery is best effort. Preserve successful ticket creation if email delivery fails unless the requested change explicitly alters this behavior.
 
 ## Authentication and Access

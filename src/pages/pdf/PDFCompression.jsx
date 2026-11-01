@@ -34,6 +34,7 @@ export default function PDFCompression({ pages, sources, busy, setBusy }) {
     const [result, setResult] = useState(null);
     const [error, setError] = useState("");
     const workerRef = useRef(null);
+    const editedLoadingRef = useRef(null);
     const renderRef = useRef(null);
     const cancelledRef = useRef(false);
     const urlsRef = useRef(new Map());
@@ -42,6 +43,7 @@ export default function PDFCompression({ pages, sources, busy, setBusy }) {
             cancelledRef.current = true;
             renderRef.current?.cancel();
             workerRef.current?.terminate();
+            editedLoadingRef.current?.destroy();
             urlsRef.current.forEach((timer, url) => {
                 window.clearTimeout(timer);
                 URL.revokeObjectURL(url);
@@ -66,16 +68,31 @@ export default function PDFCompression({ pages, sources, busy, setBusy }) {
         setError("");
         setBusy("Preparing compression…");
         let worker;
+        let editedLoading;
         try {
+            let compressionPages = pages;
+            let compressionSources = sources;
+            if (pages.some((page) => page.objects?.length)) {
+                const [{ createPdf }, { default: pdfjs }] = await Promise.all([import("./pdfExport"), import("./pdfRendering")]);
+                const bytes = await createPdf(pages, sources);
+                if (cancelledRef.current) return;
+                const file = new File([bytes], "workspace.pdf", { type: "application/pdf" });
+                editedLoading = pdfjs.getDocument({ data: bytes });
+                editedLoadingRef.current = editedLoading;
+                const document = await editedLoading.promise;
+                if (cancelledRef.current) return;
+                compressionPages = pages.map((page, index) => ({ ...page, sourceId: "edited-workspace", index, rotation: 0, objects: [] }));
+                compressionSources = new Map([["edited-workspace", { file, document }]]);
+            }
             const { default: CompressionWorker } = await import("./compression.worker.js?worker");
             if (cancelledRef.current) return;
             worker = new CompressionWorker();
             workerRef.current = worker;
-            const files = [...new Set(pages.map((page) => page.sourceId))].map((id) => ({
+            const files = [...new Set(compressionPages.map((page) => page.sourceId))].map((id) => ({
                 id,
-                file: sources.get(id).file,
+                file: compressionSources.get(id).file,
             }));
-            const { size: originalSize } = await send(worker, { type: "baseline", pages, files });
+            const { size: originalSize } = await send(worker, { type: "baseline", pages: compressionPages, files });
             const config = PRESETS[preset];
             const attempts = targetBytes
                 ? [
@@ -94,8 +111,8 @@ export default function PDFCompression({ pages, sources, busy, setBusy }) {
                     setBusy(
                         `Compressing page ${index + 1} of ${pages.length} · pass ${attempt + 1} of ${attempts.length}…`,
                     );
-                    const entry = pages[index];
-                    const pdfPage = await sources.get(entry.sourceId).document.getPage(entry.index + 1);
+                    const entry = compressionPages[index];
+                    const pdfPage = await compressionSources.get(entry.sourceId).document.getPage(entry.index + 1);
                     const rotation = (pdfPage.rotate + entry.rotation + 360) % 360;
                     const base = pdfPage.getViewport({ scale: 1, rotation });
                     const safeScale = Math.min(
@@ -143,6 +160,8 @@ export default function PDFCompression({ pages, sources, busy, setBusy }) {
                 );
         } finally {
             worker?.terminate();
+            editedLoading?.destroy();
+            editedLoadingRef.current = null;
             workerRef.current = null;
             renderRef.current = null;
             if (!cancelledRef.current) setBusy("");

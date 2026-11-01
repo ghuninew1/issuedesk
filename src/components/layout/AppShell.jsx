@@ -92,7 +92,15 @@ const AppShell = ({ children }) => {
                     onOpenMobileSidebar={() => setIsMobileSidebarOpen(true)}
                 />
 
-                <main className={cx("min-w-0 flex-1 bg-muted/30", "p-4 md:p-5 lg:p-6")}>{children}</main>
+                <main
+                    className={cx(
+                        "min-w-0 flex-1 bg-muted/30 p-4 md:p-5 lg:p-6",
+                        user && "transition-[padding] duration-200 motion-reduce:transition-none",
+                        user && (isSidebarCollapsed ? "md:pl-[88px] lg:pl-[88px]" : "md:pl-[268px] lg:pl-[268px]"),
+                    )}
+                >
+                    {children}
+                </main>
                 <footer className="mb-2 pt-4 text-muted-foreground text-xs text-center animate-fadeInUp">
                     IssueDesk | &copy; {new Date().getFullYear()} GhuniNew. All rights reserved.
                 </footer>

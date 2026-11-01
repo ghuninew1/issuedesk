@@ -13,12 +13,14 @@ import {
     UploadCloud,
     LayoutGrid,
     FileArchive,
+    Pencil,
 } from "lucide-react";
 import GlassButton from "../../components/GlassButton";
 import { cx } from "../../utils/cx";
 import { useDocumentTitle } from "../../hooks/useDocumentTitle";
 
 const PDFCompression = lazy(() => import("./PDFCompression"));
+const PDFEditor = lazy(() => import("./PDFEditor"));
 
 const initialHistory = { past: [], pages: [], future: [] };
 function historyReducer(state, action) {
@@ -256,8 +258,11 @@ function PDFStudio() {
                 urlsRef.current.delete(url);
             }, 1000);
             urlsRef.current.set(url, timer);
-        } catch {
-            if (mountedRef.current) setMessage("Unable to create the PDF. The file may be unsupported or protected.");
+        } catch (error) {
+            if (mountedRef.current) {
+                const detail = error.message === "Text does not fit the text box." ? "Enlarge the text box or reduce the font size." : "Check that text uses supported Latin characters and the document is not protected.";
+                setMessage(`Unable to create the PDF. ${detail}`);
+            }
         } finally {
             operationRef.current = false;
             if (mountedRef.current) setBusy("");
@@ -274,7 +279,7 @@ function PDFStudio() {
         setMessage("");
     };
     return (
-        <div className={cx("mx-auto max-w-7xl space-y-5 md:pl-16")}>
+        <div className={cx("mx-auto max-w-7xl space-y-5")}>
             <header className={cx("space-y-1")}>
                 <h1 className={cx("text-2xl font-semibold tracking-tight")}>PDF Studio</h1>
                 <p className={cx("text-sm text-muted-foreground")}>
@@ -337,9 +342,10 @@ function PDFStudio() {
                 <>
                     <div role="group" aria-label="PDF Studio mode" className={cx("inline-flex max-w-full gap-1 rounded-2xl border border-border bg-card/60 p-1")}>
                         <GlassButton className={cx(controlClass, "border-transparent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary", mode === "organize" ? "bg-primary/15 text-primary ring-1 ring-inset ring-primary/40" : "text-muted-foreground")} disabled={!!busy} aria-pressed={mode === "organize"} onClick={() => setMode("organize")}><LayoutGrid size={16} aria-hidden="true" />Organize</GlassButton>
+                        <GlassButton className={cx(controlClass, "border-transparent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary", mode === "edit" ? "bg-primary/15 text-primary ring-1 ring-inset ring-primary/40" : "text-muted-foreground")} disabled={!!busy} aria-pressed={mode === "edit"} onClick={() => setMode("edit")}><Pencil size={16} aria-hidden="true" />Edit</GlassButton>
                         <GlassButton className={cx(controlClass, "border-transparent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary", mode === "compress" ? "bg-primary/15 text-primary ring-1 ring-inset ring-primary/40" : "text-muted-foreground")} disabled={!!busy} aria-pressed={mode === "compress"} onClick={() => setMode("compress")}><FileArchive size={16} aria-hidden="true" />Compress</GlassButton>
                     </div>
-                    {mode === "compress" ? <Suspense fallback={<p role="status">Loading compression…</p>}><PDFCompression pages={pages} sources={sources} busy={busy} setBusy={setBusy} /></Suspense> : <>
+                    {mode === "edit" ? <Suspense fallback={<p role="status">Loading editor…</p>}><PDFEditor pages={pages} sources={sources} active={active} setActiveId={setActiveId} change={change} history={history} undo={() => dispatch({ type: "undo" })} redo={() => dispatch({ type: "redo" })} download={download} busy={busy} /></Suspense> : mode === "compress" ? <Suspense fallback={<p role="status">Loading compression…</p>}><PDFCompression pages={pages} sources={sources} busy={busy} setBusy={setBusy} /></Suspense> : <>
                     <div
                         className={cx(
                             "flex flex-wrap items-center gap-2 rounded-2xl border border-border bg-card/60 p-3",
