@@ -1,6 +1,12 @@
 import { PDFDocument, StandardFonts, degrees, rgb } from "pdf-lib";
 import { toPdfGeometry } from "./editorCoordinates";
 
+function parseColor(value) {
+    const hex = value.match(/^#([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i);
+    if (!hex) throw new Error("Invalid item color.");
+    return rgb(...hex.slice(1).map((component) => parseInt(component, 16) / 255));
+}
+
 export async function createPdf(pages, sources) {
     const output = await PDFDocument.create();
     const loaded = new Map();
@@ -20,22 +26,42 @@ export async function createPdf(pages, sources) {
         for (const item of page.objects) {
             const viewport = pdfPage.getViewport({ scale: 1, rotation: item.rotation });
             const box = toPdfGeometry(item, viewport);
-            if (!Number.isFinite(box.x + box.y + box.width + box.height) || box.width <= 0 || box.height <= 0) throw new Error("An editor item has invalid dimensions.");
+            if (!Number.isFinite(box.x + box.y + box.width + box.height) || box.width <= 0 || box.height <= 0)
+                throw new Error("An editor item has invalid dimensions.");
             const options = { x: box.x, y: box.y, width: box.width, height: box.height, rotate: degrees(box.angle) };
-            if (item.type === "whiteout") copy.drawRectangle({ ...options, color: rgb(1, 1, 1) });
-            else if (item.type === "image") {
+            if (item.type === "whiteout") {
+                const borderWidth = item.borderWidth ?? 0;
+                if (!Number.isFinite(borderWidth) || borderWidth < 0 || borderWidth > 20)
+                    throw new Error("Invalid border width.");
+                copy.drawRectangle({
+                    ...options,
+                    color: parseColor(item.fillColor || "#ffffff"),
+                    borderColor: parseColor(item.borderColor || "#000000"),
+                    borderWidth,
+                });
+            } else if (item.type === "image") {
                 const bytes = await item.file.arrayBuffer();
-                const image = item.file.type === "image/png" ? await output.embedPng(bytes) : await output.embedJpg(bytes);
+                const image =
+                    item.file.type === "image/png" ? await output.embedPng(bytes) : await output.embedJpg(bytes);
                 copy.drawImage(image, options);
             } else if (item.type === "text") {
                 if (!font) font = await output.embedFont(StandardFonts.Helvetica);
                 const hex = item.color.match(/^#([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i);
                 if (!hex || !Number.isFinite(item.fontSize)) throw new Error("Invalid text formatting.");
                 const color = rgb(...hex.slice(1).map((value) => parseInt(value, 16) / 255));
-                if (font.widthOfTextAtSize(item.text, item.fontSize) > box.width || item.fontSize > box.height) throw new Error("Text does not fit the text box.");
-                const radians = box.angle * Math.PI / 180;
+                if (font.widthOfTextAtSize(item.text, item.fontSize) > box.width || item.fontSize > box.height)
+                    throw new Error("Text does not fit the text box.");
+                const radians = (box.angle * Math.PI) / 180;
                 const offset = Math.max(0, box.height - item.fontSize * 0.8);
-                copy.drawText(item.text, { x: box.x - Math.sin(radians) * offset, y: box.y + Math.cos(radians) * offset, size: item.fontSize, font, color, rotate: degrees(box.angle), maxWidth: box.width });
+                copy.drawText(item.text, {
+                    x: box.x - Math.sin(radians) * offset,
+                    y: box.y + Math.cos(radians) * offset,
+                    size: item.fontSize,
+                    font,
+                    color,
+                    rotate: degrees(box.angle),
+                    maxWidth: box.width,
+                });
             } else throw new Error("Unsupported editor item.");
         }
     }

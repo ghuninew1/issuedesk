@@ -459,3 +459,8 @@ Storage API เคยคืน `SQLITE_READONLY: attempt to write a readonly dat
 - Added an explicit H.264 choice alongside Automatic; both use the existing H.264/AAC MP4 pipeline. H.265 / HEVC is displayed as unavailable and cannot be selected. Local Chrome testing showed the installed single-threaded FFmpeg core enters `libx265` initialization but hangs, including when disabling x265 thread pools and trying ultrafast/zerolatency. Exposing it as functional would leave the queue stuck. Enabling H.265 requires an encoder/core proven to finish in-browser and independent codec/audio/timing and 4K validation. No conversion architecture or dependencies were changed.
 - Local Chrome with mock session: explicit H.264 converted a synthetic H.264/AAC MP4 to 720p MP4, downloaded it and loaded its 1280×720 frame; FFmpeg reported AAC audio. H.265 initialization failed to complete and was stopped; no successful H.265 output or 4K H.265 validation. MOV, Mute, failure recovery and 4K H.264 were not retested in this task. Earlier results above are historical. Real user files, audio sync, other browsers and production remain unverified. README and AGENTS were synced.
 - Current task commands: `pnpm lint`, `pnpm build`, and `git diff --check` passed.
+
+
+## PDF Studio Whiteout formatting
+
+Whiteout overlays support fill color, border color, and border width in the editor and PDF export. Existing overlays default to white fill and no border. README.md was updated and AGENTS.md reviewed for accuracy. `pnpm lint` and `git diff --check` passed. Browser interaction and exported PDF visual QA remain pending.
