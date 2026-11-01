@@ -424,3 +424,9 @@ Storage API เคยคืน `SQLITE_READONLY: attempt to write a readonly dat
 - Added the existing `animate-fadeInUp` entrance to Login, Attendance, Network Monitor, PDF Studio, all three QR Studio routes through their shared workspace, and the not-found page. Pages that already used the animation retain their existing treatment. No routing, data, or authentication behavior changed.
 - Reviewed `AGENTS.md` and `README.md`; both remain accurate and need no changes for this presentation adjustment.
 - Current checks: `pnpm lint`, `pnpm build`, and `git diff --check` passed. Browser interaction, mobile and light/dark visual checks were not performed; deployment and production behavior are unverified.
+
+## 2026-11-01 — Video Converter
+
+- Added session-protected `/video-converter` and sidebar/converter navigation. The browser-only FFmpeg WebAssembly worker converts MP4/MOV/WebM/MKV to MP4 (H.264/AAC) or WebM (VP9/Opus), sequentially, with quality, resolution, frame rate and audio controls, per-file results and ZIP download. No video is sent to an API.
+- Added `@ffmpeg/ffmpeg` and `@ffmpeg/core`. Vite splits the approximately 32 MB WASM into two assets to fit the 25 MiB Pages asset limit; the browser joins them at load. Files, results and ZIPs can consume substantial memory. Metadata depends on browser support, and FPS/thumbnails are not displayed.
+- Local checks: `pnpm lint` and `pnpm build` passed during implementation. Actual browser conversion, formats/codecs, responsive behavior, Image Converter regression, deployment and Pages asset delivery were not verified. Next: test those flows with representative videos and authenticated session before deployment.

@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { ArrowDownToLine, Image as ImageIcon, Sparkles } from "lucide-react";
 import GlassButton from "../components/GlassButton";
 import DropZone from "../components/tools/DropZone";
@@ -325,7 +326,7 @@ function ImageConverter() {
 
             <nav aria-label="Converter tools" className={cx("mb-6 flex flex-wrap items-center gap-2")}>
                 <span aria-current="page" className={cx("rounded-xl border border-primary/40 bg-primary/10 px-4 py-2 text-sm font-semibold text-primary")}>Image Converter</span>
-                <span className={cx("rounded-xl border border-border/60 px-4 py-2 text-sm text-muted-foreground")}>Video Converter <span className={cx("text-xs")}>(coming soon)</span></span>
+                <Link to="/video-converter" className={cx("rounded-xl border border-border/60 px-4 py-2 text-sm text-muted-foreground hover:text-foreground")}>Video Converter</Link>
             </nav>
             <DropZone onFiles={handleFiles} />
 

@@ -158,3 +158,8 @@
 - Keep `/v2` responses and app/project/file scope compatible. Download streams with a bounded provider deadline (`STORAGE_PROVIDER_TIMEOUT_MS`, default 60000); upload still buffers multipart data. Never claim upload streaming.
 - `pnpm --dir garage/storage test` runs in-memory SQLite/fake-S3 tests and a loopback Node adapter disconnect test; it does not contact Garage or open the runtime database. Install service dependencies first. Historical S1 validation passed 12 tests in an isolated temporary workspace; production Node 22/Garage/Access are unverified.
 - `garage/storage/PHASE_S2.md` describes the internal `/v3` File Manager API and the required additive `pnpm migrate` step. S2 implementation is recorded as locally validated; the historical `pnpm --dir garage/storage test` result was 27/27, not a check of the current deployment. No migration/deployment/production data change was part of validation.
+
+## Video Converter
+
+- `/video-converter` is session-protected and processes MP4, MOV, WebM and MKV locally with lazy-loaded `@ffmpeg/ffmpeg` and `@ffmpeg/core`; never upload video data. The sequential queue cleans FFmpeg temporary files and terminates the worker on unmount. Outputs are MP4 (H.264/AAC) and WebM (VP9/Opus); large files and ZIP creation are limited by browser memory.
+- The Vite build splits the FFmpeg WASM into assets below the Pages 25 MiB asset limit and the browser rejoins them before loading the core. Verify production asset loading and actual conversion separately from build success.

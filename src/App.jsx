@@ -10,6 +10,7 @@ import { consumeSocialReturn, loginDestination, readSocialReturn } from "./auth/
 const QRCodeStudio = lazy(() => import("./pages/qr/QRCodeStudio"));
 const QRLinks = lazy(() => import("./pages/qr/QRLinks"));
 const SavedQRCodes = lazy(() => import("./pages/qr/SavedQRCodes"));
+const VideoConverter = lazy(() => import("./pages/VideoConverter"));
 const ImageConverter = lazy(() => import("./pages/ImageConverter"));
 const PDFStudio = lazy(() => import("./pages/pdf/PDFStudio"));
 
@@ -142,6 +143,7 @@ function App() {
                         </ProtectedRoute>
                     }
                 />
+                <Route path="/video-converter" element={<ProtectedRoute><VideoConverter /></ProtectedRoute>} />
                 <Route
                     path="/pdf-studio"
                     element={
