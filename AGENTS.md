@@ -57,7 +57,7 @@
 - Ticket numbers use `IT-YYYYMM-NNNN` based on `Asia/Bangkok` time. Ticket statuses are `Open`, `In Progress`, and `Resolved`.
 - Attachments and managed files use the external Storage API; D1 stores metadata. Route browser calls through same-origin API helpers and keep Storage credentials and other server secrets out of browser code.
 - Google Sheets inventory is fetched by the browser. Treat `VITE_*` values as public because they are bundled into client code; do not place secrets or private data in them.
-- PDF Studio is session-protected and processes documents locally in the browser. Keep PDF.js rendering and pdf-lib export dynamically loaded after the page, preserve document/render/object URL cleanup, and do not send PDF contents to an API or persist them in browser storage.
+- PDF Studio is session-protected and processes documents locally in the browser. Keep PDF.js rendering, pdf-lib export, and the compression worker dynamically loaded after the page; preserve document, render, worker and object URL cleanup, and do not send PDF contents to an API or persist them in browser storage. Compression rasterizes pages and must warn about lost text and interactive features; target size is best effort.
 - Ticket email delivery is best effort. Preserve successful ticket creation if email delivery fails unless the requested change explicitly alters this behavior.
 
 ## Authentication and Access

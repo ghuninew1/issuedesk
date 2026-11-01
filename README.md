@@ -10,6 +10,7 @@ IssueDesk เป็นเว็บแอป IT Help Desk สำหรับร�
 - **QR Studio:** สร้างและบันทึก QR จาก URL, ข้อความ หรือ Short Link ปรับสีและโลโก้ แล้ว export เป็น PNG หรือ SVG
 - **Image Converter:** แปลงและปรับขนาดภาพหลายไฟล์ใน browser พร้อมดาวน์โหลดผลเป็น ZIP
 - **PDF Studio:** รวม PDF หลายไฟล์ จัดเรียง เลือก หมุน ลบ แยกหน้า undo/redo และ export โดยประมวลผลใน browser เท่านั้น ไม่อัปโหลดเอกสารไปยัง server ต้องลงชื่อเข้าใช้ก่อนใช้งาน
+- **PDF compression:** เลือกระดับคุณภาพหรือระบุขนาดเป้าหมายแบบ best effort ได้ การบีบอัดแปลงหน้าเป็นภาพ จึงอาจสูญเสียข้อความที่เลือกได้ ลิงก์ ฟอร์ม และข้อมูลแบบโต้ตอบ โดยไม่แก้ไขไฟล์ต้นฉบับ
 - **Storage และ Sheet:** Admin จัดการภาพใน Storage; สมาชิกที่เข้าสู่ระบบดูทะเบียนอุปกรณ์จาก Google Sheets
 - **Network Monitor:** Admin ดู Router health, สถานะและ traffic ของ WAN, PPPoE IP/uptime, DHCP leases ล่าสุด (สูงสุด 100 รายการ), events และเรียกตรวจ ping ผ่าน agent ได้ตามข้อมูลที่ระบบรองรับ
 

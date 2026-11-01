@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useReducer, useRef, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useReducer, useRef, useState } from "react";
 import {
     ArrowDown,
     ArrowDownToLine,
@@ -15,6 +15,8 @@ import {
 import GlassButton from "../../components/GlassButton";
 import { cx } from "../../utils/cx";
 import { useDocumentTitle } from "../../hooks/useDocumentTitle";
+
+const PDFCompression = lazy(() => import("./PDFCompression"));
 
 const initialHistory = { past: [], pages: [], future: [] };
 function historyReducer(state, action) {
@@ -113,6 +115,7 @@ function PDFStudio() {
     const [sources, setSources] = useState(() => new Map());
     const [message, setMessage] = useState("");
     const [dragId, setDragId] = useState(null);
+    const [mode, setMode] = useState("organize");
     const inputRef = useRef(null);
     const sourcesRef = useRef(new Map());
     const pendingRef = useRef(new Set());
@@ -269,7 +272,7 @@ function PDFStudio() {
         setMessage("");
     };
     return (
-        <div className={cx("mx-auto max-w-7xl space-y-5")}>
+        <div className={cx("mx-auto max-w-7xl space-y-5 md:pl-16")}>
             <header className={cx("space-y-1")}>
                 <h1 className={cx("text-2xl font-semibold tracking-tight")}>PDF Studio</h1>
                 <p className={cx("text-sm text-muted-foreground")}>
@@ -330,6 +333,11 @@ function PDFStudio() {
                 </div>
             ) : (
                 <>
+                    <div role="group" aria-label="PDF Studio mode" className={cx("flex flex-wrap gap-2")}>
+                        <GlassButton className={cx(controlClass)} disabled={!!busy} aria-pressed={mode === "organize"} onClick={() => setMode("organize")}>Organize</GlassButton>
+                        <GlassButton className={cx(controlClass)} disabled={!!busy} aria-pressed={mode === "compress"} onClick={() => setMode("compress")}>Compress</GlassButton>
+                    </div>
+                    {mode === "compress" ? <Suspense fallback={<p role="status">Loading compression…</p>}><PDFCompression pages={pages} sources={sources} busy={busy} setBusy={setBusy} /></Suspense> : <>
                     <div
                         className={cx(
                             "flex flex-wrap items-center gap-2 rounded-2xl border border-border bg-card/60 p-3",
@@ -532,6 +540,7 @@ function PDFStudio() {
                             )}
                         </section>
                     </div>
+                    </>}
                 </>
             )}
         </div>
