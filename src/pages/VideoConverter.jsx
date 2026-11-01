@@ -101,7 +101,16 @@ export default function VideoConverter() {
                 ...(await metadata(file)),
             })),
         );
-        if (alive.current) setFiles((current) => [...current, ...entries]);
+        if (alive.current) {
+            setFiles((current) => [...current, ...entries]);
+            setSettings((current) => {
+                const minimum = Number(current.resolution);
+                if ((minimum === 2160 || minimum === 1440) && entries.some((entry) => !entry.width || !entry.height || Math.min(entry.width, entry.height) < minimum)) {
+                    return { ...current, resolution: "original" };
+                }
+                return current;
+            });
+        }
     };
     const update = (id, values) => {
         if (alive.current) setFiles((current) => current.map((f) => (f.id === id ? { ...f, ...values } : f)));
@@ -265,6 +274,9 @@ export default function VideoConverter() {
         }
         if (alive.current) setBusy(false);
     };
+    const supportsResolution = (minimum) => files.length > 0 && files.every((file) =>
+        file.width > 0 && file.height > 0 && Math.min(file.width, file.height) >= minimum,
+    );
     const completed = files.filter((f) => f.blob);
     const original = completed.reduce((n, f) => n + f.file.size, 0);
     const converted = completed.reduce((n, f) => n + f.blob.size, 0);
@@ -383,8 +395,8 @@ export default function VideoConverter() {
                             onChange={(e) => change("resolution", e.target.value)}
                         >
                             <option value="original">Original</option>
-                            <option value="2160">4K / 2160p</option>
-                            <option value="1440">1440p</option>
+                            <option value="2160" disabled={!supportsResolution(2160)}>4K / 2160p</option>
+                            <option value="1440" disabled={!supportsResolution(1440)}>1440p</option>
                             <option value="1080">1080p</option>
                             <option value="720">720p</option>
                             <option value="480">480p</option>
@@ -402,7 +414,7 @@ export default function VideoConverter() {
                         </select>
                     </Field>
                 </fieldset>
-                <p className={cx("mt-3 text-xs text-muted-foreground")}>Resolution presets and custom dimensions will not upscale the source.</p>
+                <p className={cx("mt-3 text-xs text-muted-foreground")}>4K and 1440p are available when all selected videos have sufficient readable resolution. Presets and custom dimensions will not upscale the source.</p>
                 <details className={cx("mt-5 border-t border-border pt-4")}>
                     <summary className={cx("cursor-pointer text-sm font-medium")}>Advanced Settings</summary>
                     <fieldset disabled={busy} className={cx("mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4")}>
@@ -512,6 +524,7 @@ export default function VideoConverter() {
                         disabled={busy || !files.length}
                         onClick={() => {
                             setFiles([]);
+                            setSettings((current) => ({ ...current, resolution: "original" }));
                             removed.current.clear();
                             setOverall(null);
                         }}
@@ -564,6 +577,7 @@ export default function VideoConverter() {
                                         onClick={() => {
                                             removed.current.add(f.id);
                                             setFiles((current) => current.filter((item) => item.id !== f.id));
+                                            if (files.length === 1) change("resolution", "original");
                                         }}
                                         aria-label={`Remove ${f.file.name}`}
                                     >

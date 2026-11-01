@@ -448,3 +448,8 @@ Storage API เคยคืน `SQLITE_READONLY: attempt to write a readonly dat
 
 - Removed WebM/VP9 output after the reported WebM audio encoder failure. Output is fixed to MP4/H.264/AAC, with Keep Audio and Mute still available. MP4, MOV, WebM and MKV remain accepted input extensions; MOV output was not added. Removed the WebM-specific encoding path and adjusted resource-error guidance.
 - Local Chrome against the Vite production preview with a mock session converted a synthetic H.264/AAC MP4 to 720p MP4 using Keep Audio, downloaded it, and loaded its video frame (1280 × 720); FFmpeg reported an AAC audio stream. Audio synchronization and the user's original file were not tested. The actual Cloudflare deployment remains unverified. `AGENTS.md` and `README.md` were synced. Current checks: `pnpm lint`, `pnpm build`, and `git diff --check` passed.
+
+## Video Converter resolution availability — 1 November 2026
+
+- Disabled 1440p and 4K presets until all selected videos report dimensions with a short edge at least 1440 or 2160 pixels respectively. Unknown metadata also disables these presets. Adding an incompatible or unreadable file resets a selected high-resolution preset to Original; clearing the list also resets it. No-upscale encoding remains in place.
+- Local Chrome with a mock session checked empty selection, a synthetic 4K video, a mixed 4K/1080p batch, Clear All and an unreadable MKV; option states and reset behaved as expected at 390px without horizontal overflow. The 1440p-only boundary, other browsers, real authentication and production remain unverified. `AGENTS.md` and `README.md` were updated. Current checks: `pnpm lint` and `git diff --check` passed; build was not run for this targeted UI change.
