@@ -1,16 +1,18 @@
 import { useEffect, useRef, useState } from "react";
-import { ArrowDownToLine, ArrowRight, Check, FileArchive, Info, LoaderCircle, Sparkles, Minimize2, ScanLine } from "lucide-react";
+import { ArrowDownToLine, ArrowRight, Check, FileArchive, Info, LoaderCircle, Sparkles, Minimize2, ScanLine, ShieldCheck } from "lucide-react";
 import GlassButton from "../../components/GlassButton";
 import { cx } from "../../utils/cx";
 
 const PRESETS = {
+    lossless: { label: "Lossless" },
     high: { label: "High Quality", scale: 2, quality: 0.9 },
     balanced: { label: "Balanced", scale: 1.5, quality: 0.76 },
     small: { label: "Small File", scale: 1, quality: 0.6 },
 };
 const button = "min-h-10 rounded-xl border border-border px-4 py-2 text-sm disabled:opacity-40";
-const field = "min-h-11 rounded-xl border border-border bg-background px-3 py-2 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary";
+const field = "min-h-11 rounded-xl border border-border bg-background px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary";
 const presetPresentation = {
+    lossless: { description: "No quality loss", icon: ShieldCheck, color: "text-violet-700 dark:text-violet-300", selected: "border-violet-500 bg-violet-500/10 ring-1 ring-violet-500/50" },
     high: { description: "Best quality · Less compression", icon: Sparkles, color: "text-emerald-700 dark:text-emerald-300", selected: "border-emerald-500 bg-emerald-500/10 ring-1 ring-emerald-500/50" },
     balanced: { description: "Good quality and file size", icon: ScanLine, color: "text-cyan-700 dark:text-cyan-300", selected: "border-cyan-500 bg-cyan-500/10 ring-1 ring-cyan-500/50" },
     small: { description: "Smallest file · More compression", icon: Minimize2, color: "text-amber-700 dark:text-amber-300", selected: "border-amber-500 bg-amber-500/10 ring-1 ring-amber-500/50" },
@@ -54,6 +56,23 @@ export default function PDFCompression({ pages, sources, busy, setBusy }) {
     );
     const start = async () => {
         if (!pages.length || busy) return;
+        if (preset === "lossless") {
+            const source = sources.get(pages[0].sourceId);
+            const unchanged = source && pages.length === source.document.numPages && pages.every((page, index) => page.sourceId === pages[0].sourceId && page.index === index && page.rotation === 0 && !page.objects?.length);
+            if (!unchanged) { setError("Lossless requires one original PDF with all pages in their original order, without rotations or edits. Exporting or merging pages may change document features."); return; }
+            cancelledRef.current = false; setResult(null); setError(""); setBusy("Optimizing PDF…");
+            let worker;
+            try {
+                const { default: LosslessWorker } = await import("./lossless.worker.js?worker");
+                if (cancelledRef.current) return;
+                worker = new LosslessWorker(); workerRef.current = worker;
+                const optimized = await send(worker, { file: source.file });
+                if (!cancelledRef.current) setResult({ ...optimized, mode: "lossless" });
+            } catch (cause) {
+                if (!cancelledRef.current) setError(`Unable to optimize this PDF. ${cause.message || "The file may be unsupported or encrypted."}`);
+            } finally { worker?.terminate(); workerRef.current = null; if (!cancelledRef.current) setBusy(""); }
+            return;
+        }
         const targetBytes = target ? Number(target) * (unit === "MB" ? 1048576 : 1024) : null;
         if (target && (!Number.isFinite(targetBytes) || targetBytes <= 0)) {
             setError("Enter a positive target size.");
@@ -191,13 +210,13 @@ export default function PDFCompression({ pages, sources, busy, setBusy }) {
 
             <fieldset disabled={!!busy} className={cx("space-y-3")}>
                 <legend className={cx("mb-3 text-sm font-semibold")}>Compression level</legend>
-                <div className={cx("grid gap-3 sm:grid-cols-3")}>
+                <div className={cx("grid gap-3 sm:grid-cols-2 xl:grid-cols-4")}>
                     {Object.entries(PRESETS).map(([key, value]) => {
                         const presentation = presetPresentation[key];
                         const Icon = presentation.icon;
                         return (
                             <label key={key} className={cx("relative flex min-h-28 cursor-pointer flex-col gap-2 rounded-2xl border bg-background/60 p-4 transition-colors focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-primary", preset === key ? presentation.selected : "border-border", busy && "cursor-not-allowed opacity-60")}>
-                                <input className={cx("sr-only")} type="radio" name="compression-level" value={key} checked={preset === key} onChange={() => setPreset(key)} />
+                                <input className={cx("sr-only")} type="radio" name="compression-level" value={key} checked={preset === key} onChange={() => { setPreset(key); setResult(null); setError(""); }} />
                                 <span className={cx("flex items-center gap-2", presentation.color)}><Icon className={cx("size-4 shrink-0")} aria-hidden="true" /><span className={cx("font-semibold")}>{value.label}</span>{preset === key && <Check className={cx("ml-auto size-4 shrink-0")} aria-hidden="true" />}</span>
                                 <span className={cx("text-xs text-muted-foreground")}>{presentation.description}</span>
                                 {key === "balanced" && <span className={cx("w-fit rounded-full bg-cyan-500/10 px-2 py-0.5 text-xs font-medium text-cyan-700 dark:text-cyan-300")}>Recommended</span>}
@@ -211,16 +230,16 @@ export default function PDFCompression({ pages, sources, busy, setBusy }) {
                 <div className={cx("flex items-center justify-between gap-3")}><h3 className={cx("text-sm font-semibold")}>Target file size</h3><span className={cx("text-xs text-muted-foreground")}>Optional</span></div>
                 <div className={cx("flex flex-wrap gap-2")}>
                     <label className={cx("sr-only")} htmlFor="pdf-compression-target">Target file size</label>
-                    <input id="pdf-compression-target" className={cx(field, "w-36 max-w-full")} type="number" min="0.01" step="any" value={target} onChange={(event) => setTarget(event.target.value)} placeholder="e.g. 2" disabled={!!busy} />
+                    <input id="pdf-compression-target" className={cx(field, "w-36 max-w-full")} type="number" min="0.01" step="any" value={target} onChange={(event) => setTarget(event.target.value)} placeholder="e.g. 2" disabled={!!busy || preset === "lossless"} />
                     <label className={cx("sr-only")} htmlFor="pdf-compression-unit">Target size unit</label>
-                    <select id="pdf-compression-unit" className={cx(field)} value={unit} onChange={(event) => setUnit(event.target.value)} disabled={!!busy}><option>MB</option><option>KB</option></select>
+                    <select id="pdf-compression-unit" className={cx(field)} value={unit} onChange={(event) => setUnit(event.target.value)} disabled={!!busy || preset === "lossless"}><option>MB</option><option>KB</option></select>
                 </div>
-                <p className={cx("text-xs text-muted-foreground")}>{target && Number(target) > 0 ? `Try to keep the compressed PDF at or below ${target} ${unit}.` : "No target set — compression uses the selected quality preset."} Best effort — some PDFs may not reach the requested size.</p>
+                <p className={cx("text-xs text-muted-foreground")}>{preset === "lossless" ? "Target size is unavailable in Lossless mode because document quality is preserved." : <>{target && Number(target) > 0 ? `Try to keep the compressed PDF at or below ${target} ${unit}.` : "No target set — compression uses the selected quality preset."} Best effort — some PDFs may not reach the requested size.</>}</p>
             </div>
 
             <div className={cx("flex gap-3 rounded-2xl border border-border bg-muted/40 p-4 text-sm")}>
                 <Info className={cx("mt-0.5 size-4 shrink-0 text-muted-foreground")} aria-hidden="true" />
-                <div className={cx("space-y-1")}><h3 className={cx("font-medium")}>About compression</h3><p className={cx("text-muted-foreground")}>Pages are flattened into images, so selectable text, links, forms, annotations and signatures may be lost. Your original PDF is never modified.</p></div>
+                <div className={cx("space-y-1")}><h3 className={cx("font-medium")}>About compression</h3><p className={cx("text-muted-foreground")}>{preset === "lossless" ? "Preserves original document quality and structure where possible. File size reduction may be small or zero when the PDF is already optimized. Requires one unchanged source PDF; signed PDFs are not rewritten." : "Pages are flattened into images, so selectable text, links, forms, annotations and signatures may be lost."} Your original PDF is never modified.</p></div>
             </div>
 
             {error && <p role="alert" className={cx("rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive")}>{error}</p>}
@@ -232,8 +251,9 @@ export default function PDFCompression({ pages, sources, busy, setBusy }) {
 
             {result && (
                 <div role="status" className={cx("space-y-4 rounded-2xl border p-4 sm:p-5", isSmaller ? "border-emerald-500/30 bg-emerald-500/5" : "border-border bg-background/60")}>
-                    <div className={cx("flex flex-wrap items-center justify-between gap-2")}><h3 className={cx("font-semibold")}>Compression result</h3>{isSmaller && <span className={cx("rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-700 dark:text-emerald-300")}>{Math.round((1 - result.bytes.byteLength / result.originalSize) * 100)}% smaller</span>}</div>
-                    <div className={cx("flex flex-wrap items-center gap-4 sm:gap-8")}><div className={cx("min-w-0")}><p className={cx("text-xs text-muted-foreground")}>Original workspace</p><p className={cx("break-words text-xl font-semibold sm:text-2xl")}>{formatSize(result.originalSize)}</p></div><ArrowRight className={cx("size-5 shrink-0 text-muted-foreground")} aria-hidden="true" /><div className={cx("min-w-0")}><p className={cx("text-xs text-muted-foreground")}>Compressed</p><p className={cx("break-words text-xl font-semibold sm:text-2xl")}>{formatSize(result.bytes.byteLength)}</p></div></div>
+                    <div className={cx("flex flex-wrap items-center justify-between gap-2")}><h3 className={cx("font-semibold")}>Compression result {result.mode === "lossless" && <span className={cx("rounded-full bg-violet-500/10 px-2 py-1 text-xs text-violet-700 dark:text-violet-300")}>Lossless</span>}</h3>{isSmaller && <span className={cx("rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-700 dark:text-emerald-300")}>{Math.round((1 - result.bytes.byteLength / result.originalSize) * 100)}% smaller</span>}</div>
+                    <div className={cx("flex flex-wrap items-center gap-4 sm:gap-8")}><div className={cx("min-w-0")}><p className={cx("text-xs text-muted-foreground")}>Original workspace</p><p className={cx("break-words text-xl font-semibold sm:text-2xl")}>{formatSize(result.originalSize)}</p></div><ArrowRight className={cx("size-5 shrink-0 text-muted-foreground")} aria-hidden="true" /><div className={cx("min-w-0")}><p className={cx("text-xs text-muted-foreground")}>{result.mode === "lossless" ? "Optimized" : "Compressed"}</p><p className={cx("break-words text-xl font-semibold sm:text-2xl")}>{formatSize(result.bytes.byteLength)}</p></div></div>
+                    {result.mode === "lossless" && <p className={cx("text-sm text-muted-foreground")}>{result.keptOriginal ? "No useful lossless reduction was possible; the original file is the preferred result." : `Reduced by ${Math.round((1 - result.bytes.byteLength / result.originalSize) * 100)}% without intentionally reducing document quality.`}</p>}
                     {isLarger && <p className={cx("text-sm text-muted-foreground")}>The compressed file is larger than the original. We recommend keeping the original.</p>}
                     {result.targetBytes && <p className={cx("text-sm", targetMet ? "text-emerald-700 dark:text-emerald-300" : "text-muted-foreground")}>{targetMet ? `Target reached: ≤ ${formatSize(result.targetBytes)}` : `Target not reached: ${formatSize(result.targetBytes)} could not be reached at the allowed quality.`}</p>}
                     <GlassButton className={cx(button, "inline-flex items-center justify-center gap-2 font-medium")} onClick={download}><ArrowDownToLine className={cx("size-4")} aria-hidden="true" />Download PDF</GlassButton>
