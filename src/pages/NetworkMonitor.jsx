@@ -499,7 +499,7 @@ function NetworkMonitor() {
     const latestRates = traffic[traffic.length - 1];
 
     return (
-        <div className="space-y-5 md:space-y-6 mx-auto max-w-7xl">
+        <div className={cx("space-y-5 md:space-y-6 mx-auto max-w-7xl animate-fadeInUp")}>
             <header className="flex sm:flex-row flex-col sm:justify-between sm:items-center gap-4 p-5 md:p-6 rounded-2xl glass-surface">
                 <div className="flex items-center gap-4">
                     <span className="bg-primary/10 shadow-[inset_0_1px_0_var(--glass-highlight)] p-3 border border-primary/20 rounded-2xl text-primary">

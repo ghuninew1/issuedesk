@@ -70,7 +70,7 @@ function DashboardPage() {
 
 function NotFoundPage() {
     return (
-        <div className="mx-auto max-w-7xl">
+        <div className={cx("mx-auto max-w-7xl animate-fadeInUp")}>
             <Loader className="animate-spin" />
             <h2 className="font-semibold text-2xl tracking-tight">Page not found</h2>
             <p className="mt-2 text-muted-foreground text-sm">The page you are looking for does not exist.</p>

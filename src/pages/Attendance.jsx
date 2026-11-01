@@ -141,7 +141,7 @@ export default function Attendance() {
     const userTotalSeconds = totalDurationSeconds + (working ? liveSeconds : 0);
     const adminTotalSeconds = summary.totalDurationSeconds + (durationAsOf ? liveSeconds : 0);
     return (
-        <div className="mx-auto max-w-7xl space-y-7 pb-8">
+        <div className={cx("mx-auto max-w-7xl space-y-7 pb-8 animate-fadeInUp")}>
             <section className="relative overflow-hidden rounded-[2rem] border border-white/70 bg-gradient-to-br from-cyan-50/90 via-white/70 to-indigo-100/80 p-6 shadow-[inset_0_1px_0_white,0_24px_70px_rgba(45,95,125,.1)] backdrop-blur-3xl dark:border-white/10 dark:from-slate-900/95 dark:via-slate-900/75 dark:to-indigo-950/75 md:p-9">
                 <div className="pointer-events-none absolute -right-16 -top-28 size-80 rounded-full bg-cyan-300/30 blur-3xl dark:bg-cyan-500/15" />
                 <div className="relative flex flex-col justify-between gap-7 md:flex-row md:items-end">

@@ -413,3 +413,9 @@ Storage API เคยคืน `SQLITE_READONLY: attempt to write a readonly dat
 - Protected routes retain the requested path, query and fragment for return after email/password sign-in. OAuth returns via the login route and retains the destination in per-tab session storage; unavailable storage falls back to the existing role-based destination. Only local paths are accepted, and route authorization remains in force. Direct login retains the role-based default.
 - Reviewed `AGENTS.md` and `README.md`; the rules remain accurate and the README now describes return-to-page behavior. No deployment or production changes. Real browser authentication and OAuth provider flows have not been verified.
 - Local checks: destination validation and session-storage helper assertions, `pnpm lint`, `pnpm build`, and `git diff --check`.
+
+## Page entrance animations — 1 November 2026
+
+- Added the existing `animate-fadeInUp` entrance to Login, Attendance, Network Monitor, PDF Studio, all three QR Studio routes through their shared workspace, and the not-found page. Pages that already used the animation retain their existing treatment. No routing, data, or authentication behavior changed.
+- Reviewed `AGENTS.md` and `README.md`; both remain accurate and need no changes for this presentation adjustment.
+- Current checks: `pnpm lint`, `pnpm build`, and `git diff --check` passed. Browser interaction, mobile and light/dark visual checks were not performed; deployment and production behavior are unverified.

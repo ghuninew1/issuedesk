@@ -142,7 +142,7 @@ export default function LoginRegister() {
             )}
 
             {/* Main Container Card */}
-            <div className="w-full max-w-md z-10">
+            <div className={cx("w-full max-w-md z-10 animate-fadeInUp")}>
                 {/* Decorative Top Badge */}
                 <div className="flex justify-center mb-6 animate-fadeInDown">
                     <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-800/80 border border-slate-700/60 text-xs font-medium text-slate-300 backdrop-blur-md shadow-inner">

@@ -279,7 +279,7 @@ function PDFStudio() {
         setMessage("");
     };
     return (
-        <div className={cx("mx-auto max-w-7xl space-y-5")}>
+        <div className={cx("mx-auto max-w-7xl space-y-5 animate-fadeInUp")}>
             <header className={cx("space-y-1")}>
                 <h1 className={cx("text-2xl font-semibold tracking-tight")}>PDF Studio</h1>
                 <p className={cx("text-sm text-muted-foreground")}>
