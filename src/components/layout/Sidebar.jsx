@@ -15,6 +15,7 @@ import {
     Network,
     QrCode,
     Image,
+    FileText,
     PanelLeftClose,
     PanelLeftOpen,
 } from "lucide-react";
@@ -44,6 +45,7 @@ const navGroups = [
         links: [
             { icon: QrCode, label: "QR Studio", to: "/qr-studio", requiresSession: true },
             { icon: Image, label: "Image Converter", to: "/image-converter", requiresSession: true },
+            { icon: FileText, label: "PDF Studio", to: "/pdf-studio", requiresSession: true },
         ],
     },
 ];

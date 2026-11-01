@@ -10,6 +10,7 @@ const QRCodeStudio = lazy(() => import("./pages/qr/QRCodeStudio"));
 const QRLinks = lazy(() => import("./pages/qr/QRLinks"));
 const SavedQRCodes = lazy(() => import("./pages/qr/SavedQRCodes"));
 const ImageConverter = lazy(() => import("./pages/ImageConverter"));
+const PDFStudio = lazy(() => import("./pages/pdf/PDFStudio"));
 
 const DashboardStats = lazy(() => import("./components/dashboard/DashboardStats"));
 const RecentIssues = lazy(() => import("./components/dashboard/RecentIssues"));
@@ -74,114 +75,136 @@ function NotFoundPage() {
 function AppLayout() {
     return (
         <AppShell>
-            <Suspense fallback={<PageLoading />}><Outlet /></Suspense>
+            <Suspense fallback={<PageLoading />}>
+                <Outlet />
+            </Suspense>
         </AppShell>
     );
 }
 
 function PageLoading() {
-    return <div role="status" className={cx("flex items-center gap-2 p-8 text-sm text-muted-foreground")}><Loader className={cx("size-4 animate-spin")} />Loading page…</div>;
+    return (
+        <div role="status" className={cx("flex items-center gap-2 p-8 text-sm text-muted-foreground")}>
+            <Loader className={cx("size-4 animate-spin")} />
+            Loading page…
+        </div>
+    );
 }
 
 function App() {
     return (
-            <Routes>
-                <Route path="/login" element={<Suspense fallback={<PageLoading />}><LoginRoute /></Suspense>} />
-                <Route element={<AppLayout />}>
-                    <Route path="/" element={<PortalHome />} />
-                    <Route
-                        path="/qr-studio"
-                        element={
-                            <ProtectedRoute>
-                                <QRCodeStudio />
-                            </ProtectedRoute>
-                        }
-                    />
-                    <Route
-                        path="/qr-studio/links"
-                        element={
-                            <ProtectedRoute>
-                                <QRLinks />
-                            </ProtectedRoute>
-                        }
-                    />
-                    <Route
-                        path="/qr-studio/saved"
-                        element={
-                            <ProtectedRoute>
-                                <SavedQRCodes />
-                            </ProtectedRoute>
-                        }
-                    />
-                    <Route
-                        path="/image-converter"
-                        element={
-                            <ProtectedRoute>
-                                <ImageConverter />
-                            </ProtectedRoute>
-                        }
-                    />
-                    <Route
-                        path="/attendance"
-                        element={
-                            <ProtectedRoute>
-                                <Attendance />
-                            </ProtectedRoute>
-                        }
-                    />
-                    <Route
-                        path="/dashboard"
-                        element={
-                            <ProtectedRoute requiredRole="admin">
-                                <DashboardPage />
-                            </ProtectedRoute>
-                        }
-                    />
-                    <Route
-                        path="/issues"
-                        element={
-                            <ProtectedRoute requiredRole="admin">
-                                <Issues />
-                            </ProtectedRoute>
-                        }
-                    />
-                    <Route
-                        path="/issues/:ticketNumber"
-                        element={
-                            <ProtectedRoute requiredRole="admin">
-                                <IssueDetail />
-                            </ProtectedRoute>
-                        }
-                    />
-                    <Route
-                        path="/storage/images"
-                        element={
-                            <ProtectedRoute requiredRole="admin">
-                                <StorageImages />
-                            </ProtectedRoute>
-                        }
-                    />
-                    <Route
-                        path="/network-monitor"
-                        element={
-                            <ProtectedRoute requiredRole="admin">
-                                <NetworkMonitor />
-                            </ProtectedRoute>
-                        }
-                    />
-                    <Route path="/track/:ticketNumber" element={<TrackTicket />} />
-                    <Route path="/report" element={<ReportIssue />} />
-                    <Route
-                        path="/sheet"
-                        element={
-                            <ProtectedRoute>
-                                <Sheet />
-                            </ProtectedRoute>
-                        }
-                    />
-                    <Route path="*" element={<NotFoundPage />} />
-                </Route>
-            </Routes>
+        <Routes>
+            <Route
+                path="/login"
+                element={
+                    <Suspense fallback={<PageLoading />}>
+                        <LoginRoute />
+                    </Suspense>
+                }
+            />
+            <Route element={<AppLayout />}>
+                <Route path="/" element={<PortalHome />} />
+                <Route
+                    path="/qr-studio"
+                    element={
+                        <ProtectedRoute>
+                            <QRCodeStudio />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/qr-studio/links"
+                    element={
+                        <ProtectedRoute>
+                            <QRLinks />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/qr-studio/saved"
+                    element={
+                        <ProtectedRoute>
+                            <SavedQRCodes />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/image-converter"
+                    element={
+                        <ProtectedRoute>
+                            <ImageConverter />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/pdf-studio"
+                    element={
+                        <ProtectedRoute>
+                            <PDFStudio />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/attendance"
+                    element={
+                        <ProtectedRoute>
+                            <Attendance />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/dashboard"
+                    element={
+                        <ProtectedRoute requiredRole="admin">
+                            <DashboardPage />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/issues"
+                    element={
+                        <ProtectedRoute requiredRole="admin">
+                            <Issues />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/issues/:ticketNumber"
+                    element={
+                        <ProtectedRoute requiredRole="admin">
+                            <IssueDetail />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/storage/images"
+                    element={
+                        <ProtectedRoute requiredRole="admin">
+                            <StorageImages />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/network-monitor"
+                    element={
+                        <ProtectedRoute requiredRole="admin">
+                            <NetworkMonitor />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route path="/track/:ticketNumber" element={<TrackTicket />} />
+                <Route path="/report" element={<ReportIssue />} />
+                <Route
+                    path="/sheet"
+                    element={
+                        <ProtectedRoute>
+                            <Sheet />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route path="*" element={<NotFoundPage />} />
+            </Route>
+        </Routes>
     );
 }
 
