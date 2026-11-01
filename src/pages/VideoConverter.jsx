@@ -7,7 +7,11 @@ import { cx } from "../utils/cx";
 import { useDocumentTitle } from "../hooks/useDocumentTitle";
 
 const formats = {
-    mp4: { video: "H.264", encoder: "libx264", audio: "AAC", audioEncoder: "aac", mime: "video/mp4" },
+    mp4: { audio: "AAC", audioEncoder: "aac", mime: "video/mp4" },
+};
+const codecs = {
+    auto: { encoder: "libx264", description: "Uses H.264 for the best compatibility." },
+    h264: { encoder: "libx264", description: "Best compatibility and faster conversion." },
 };
 const presets = { best: { mp4: 18 }, balanced: { mp4: 23 }, small: { mp4: 28 } };
 const control =
@@ -219,7 +223,7 @@ export default function VideoConverter() {
                 }
                 if (scale) args.push("-vf", scale);
                 if (settings.fps !== "original") args.push("-r", settings.fps);
-                args.push("-c:v", formats[settings.format].encoder, "-pix_fmt", "yuv420p");
+                args.push("-c:v", codecs[settings.codec].encoder, "-pix_fmt", "yuv420p");
                 if (settings.quality === "custom" && bitrate) args.push("-b:v", `${bitrate}k`);
                 else {
                     args.push("-crf", String((presets[settings.quality] || presets.balanced)[settings.format]));
@@ -419,10 +423,12 @@ export default function VideoConverter() {
                     <summary className={cx("cursor-pointer text-sm font-medium")}>Advanced Settings</summary>
                     <fieldset disabled={busy} className={cx("mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4")}>
                         <Field label="Video Codec">
-                            <select className={cx(control)} value={settings.codec} onChange={(e) => change("codec", e.target.value)}>
+                            <select className={cx(control)} value={settings.codec} onChange={(e) => change("codec", e.target.value)} aria-describedby="video-codec-description">
                                 <option value="auto">Automatic (Recommended)</option>
-                                <option value="explicit">{formats[settings.format].video}</option>
+                                <option value="h264">H.264</option>
+                                <option value="hevc" disabled>H.265 / HEVC (unavailable)</option>
                             </select>
+                            <span id="video-codec-description" className={cx("mt-2 block text-xs font-normal text-muted-foreground")}>{codecs[settings.codec].description}</span>
                         </Field>
                         <Field label="Frame Rate">
                             <select
@@ -470,7 +476,7 @@ export default function VideoConverter() {
                                 <option value="256">256 kbps</option>
                             </select>
                         </Field>
-                        {settings.resolution === "custom" && (
+                                        {settings.resolution === "custom" && (
                             <>
                                 <Field label="Width (px)">
                                     <input
@@ -503,6 +509,9 @@ export default function VideoConverter() {
                             </>
                         )}
                     </fieldset>
+                    <p className={cx("mt-4 rounded-xl border border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground")}>
+                        H.265 / HEVC is unavailable in the current browser converter. It can produce smaller files at similar quality, but is slower and more CPU intensive; 4K encoding may require substantial CPU and memory.
+                    </p>
                 </details>
                 {settings.resolution === "custom" && (
                     <p className={cx("mt-3 text-xs text-muted-foreground")}>
