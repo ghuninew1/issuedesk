@@ -1,5 +1,10 @@
 # IssueDesk — Project Handoff
 
+## Release notes v1.4.0 — 1 พฤศจิกายน 2026
+
+- อัปเดตเวอร์ชันใน `package.json` เป็น 1.4.0 และเพิ่ม `V1.4.0_RELEASE.md` โดยเทียบ source กับ Git tag `1.3.4`; เพิ่มเส้นทาง PDF Studio และลิงก์ release ใน README
+- ตรวจ `AGENTS.md` แล้ว กฎยังตรงกับ source; `git diff --check` ผ่าน ไม่ได้รัน lint/build หรือทดสอบ browser, production, migration หรือ deployment. จุดเริ่มถัดไป: ตรวจสถานะ migration และทดสอบ deployment เป้าหมายก่อน rollout ที่ได้รับอนุญาต
+
 ## Sidebar Liquid Glass hover — 1 พฤศจิกายน 2026
 
 - คืน hover แบบ Liquid Glass ให้ NavLink แต่ละรายการเหมือนปุ่ม Collapse รวมแสงตามเมาส์ ขอบและเงา พร้อมคง active และ focus state เดิม
@@ -110,7 +115,7 @@ IssueDesk เป็นระบบ IT Help Desk ภายในองค์ก�
 | Asset inventory | Google Sheets API โดยตรงจาก browser |
 | Package manager | pnpm |
 
-Version ใน `package.json` ปัจจุบันคือ `1.3.4`.
+Version ใน `package.json` ปัจจุบันคือ `1.4.0`.
 
 ## เส้นทางหน้าเว็บ
 

@@ -26,6 +26,7 @@ IssueDesk เป็นเว็บแอป IT Help Desk สำหรับร�
 | `/dashboard`, `/issues`, `/issues/:ticketNumber` | Admin | Dashboard และจัดการ Ticket |
 | `/storage/images`, `/network-monitor` | Admin | จัดการภาพและตรวจสอบเครือข่าย |
 | `/attendance`, `/sheet`, `/image-converter` | สมาชิก | ลงเวลา ดูทะเบียนอุปกรณ์ และแปลงภาพ |
+| `/pdf-studio` | สมาชิก | จัดการ แก้ไข และบีบอัด PDF ใน browser |
 | `/qr-studio`, `/qr-studio/links`, `/qr-studio/saved` | สมาชิก | สร้าง QR และจัดการ QR กับ Short Links ของตนเอง |
 | `/q/:slug` | สาธารณะ | เปิดปลายทางของ Short Link ที่ใช้งานอยู่ |
 
@@ -80,7 +81,7 @@ Secrets ของ Storage, OAuth และ Resend อยู่ฝั่ง serve
 
 ## เอกสาร
 
-- [Release notes v1.3.4](V1.3.4_RELEASE.md) — สรุปความสามารถและขอบเขตของเวอร์ชัน
+- [Release notes v1.4.0](V1.4.0_RELEASE.md) และ [v1.3.4](V1.3.4_RELEASE.md) — ความสามารถและขอบเขตของแต่ละเวอร์ชัน
 - [Project handoff](PROJECT_HANDOFF.md) — ประวัติการเปลี่ยนแปลง ผลตรวจ และงานที่ยังค้าง
 - [Storage guide](STORAGE_README.md) และ [Storage API documentation](STORAGE_DOCS_API_REFERENCE.md)
 - [Network Monitoring API](NETWORK_MONITORING_API.md) และ [agent guide](garage/network-monitor/README_NETWORK_MONITOR.md)
