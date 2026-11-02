@@ -146,7 +146,7 @@ function renderBbsContactEmail({ safeName, safeEmail, safeSubject, safeMessage, 
         <!--[if mso]><table role="presentation" width="640" cellspacing="0" cellpadding="0" border="0"><tr><td><![endif]-->
         <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="width:100%;max-width:640px;background-color:#ffffff;border:1px solid #e5e7eb;border-radius:16px;">
             <tr><td style="padding:28px 24px;">
-                <img src="${BBS_LOGO_URL}" width="150" alt="Big Brain Studio" style="display:block;width:150px;max-width:100%;height:auto;border:0;">
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"><tr><td align="center"><img src="${BBS_LOGO_URL}" width="150" alt="Big Brain Studio" style="display:block;width:150px;max-width:100%;height:auto;border:0;"></td></tr></table>
                 <h1 style="margin:24px 0 8px;font-size:24px;line-height:1.3;color:#111827;">Website contact form</h1>
                 <p style="margin:0 0 24px;font-size:14px;line-height:1.6;color:#6b7280;">New message received from the Big Brain Studio website.</p>
                 <h2 style="margin:0 0 8px;font-size:16px;color:#111827;">Contact information</h2>

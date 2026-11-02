@@ -1,3 +1,13 @@
+## Email logo alignment — 2026-11-02
+
+- จัดโลโก้ Big Brain Studio และโลโก้พร้อมชื่อ IssueDesk ให้อยู่กึ่งกลางในการ์ดอีเมลด้วย table alignment; เนื้อหาและการส่งคงเดิม
+- `pnpm lint`, `node --test scripts/resend-checks.mjs` (6 tests) และ `git diff --check` ผ่าน; ทบทวน `AGENTS.md` และ `README.md` แล้วข้อมูลยังถูกต้อง ยังไม่ได้ deploy หรือทดสอบการแสดงผลใน email clients จริง
+
+## IssueDesk ticket notification presentation — 2026-11-02
+
+- ปรับ HTML อีเมลแจ้ง ticket เป็น card แบบตารางพร้อมโลโก้ IssueDesk จาก `https://issuedesk.bigbrain-studio.com/favicon.png`, ticket details และกล่อง description; escape ข้อมูลและรักษาการขึ้นบรรทัดใหม่ โดยคง sender, recipient, subject, plain text และการส่งแบบ best effort เดิม
+- `pnpm lint`, `node --test scripts/resend-checks.mjs` (6 tests) และ `git diff --check` ผ่านแบบ local; ตรวจ `AGENTS.md` และ `README.md` แล้วข้อมูลยังถูกต้อง ไม่ต้องแก้ ยังไม่ได้ deploy, ยืนยันการโหลดโลโก้จาก production หรือทดสอบอีเมลจริงใน email clients; ตรวจสิ่งเหล่านี้หลัง deployment ที่ได้รับอนุญาต
+
 ## Big Brain Studio contact timestamp — 2026-11-02
 
 - แสดง timestamp ที่ server สร้างใน HTML และ plain text ของ Big Brain Studio เป็นภาษาไทยด้วย `Intl.DateTimeFormat` และ timezone `Asia/Bangkok` พร้อมระบุ timezone; ไม่เปลี่ยน routing หรือ contact email ของ Origin อื่น

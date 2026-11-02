@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { onRequestOptions, onRequestPost } from '../functions/api/resend.js';
 import { onRequestPost as createIssue } from '../functions/api/issues.js';
+import { sendIssueNotification } from '../functions/api/resend/_utils.js';
 
 const bbs = 'https://www.bigbrain-studio.com';
 const legacy = 'https://example.com';
@@ -107,5 +108,26 @@ test('BBS template escapes fields and metadata and preserves message line breaks
         assert.match(payload.html, /&quot;City&quot;/);
         assert.doesNotMatch(payload.html, /href="javascript:/);
         assert.match(payload.text, /First\n<script>alert\(1\)<\/script>/);
+    } finally { globalThis.fetch = originalFetch; }
+});
+
+test('IssueDesk notification renders escaped ticket details with its own logo', async () => {
+    const originalFetch = globalThis.fetch;
+    let payload;
+    globalThis.fetch = async (_url, options) => { payload = JSON.parse(options.body); return Response.json({ id: 'sent' }); };
+    const issue = { ticket_number: 'IT-202611-0001', reporter_name: '<Reporter>', title: 'Broken & <device>', category: 'Other', priority: 'Medium', status: 'Open', created_at: '2026-11-02T14:35:22Z', description: 'First line\n<script>alert(1)</script>' };
+    try {
+        await sendIssueNotification(issue, env);
+        assert.equal(payload.from, env.RESEND_FROM_EMAIL);
+        assert.deepEqual(payload.to, [env.ISSUE_NOTIFICATION_EMAIL]);
+        assert.equal(payload.subject, '[IssueDesk] New Issue IT-202611-0001');
+        assert.match(payload.html, /https:\/\/issuedesk\.bigbrain-studio\.com\/favicon\.png/);
+        assert.match(payload.html, /alt="IssueDesk"/);
+        assert.match(payload.html, /&lt;Reporter&gt;/);
+        assert.match(payload.html, /Broken &amp; &lt;device&gt;/);
+        assert.match(payload.html, /First line<br>&lt;script&gt;alert\(1\)&lt;\/script&gt;/);
+        assert.doesNotMatch(payload.html, /<script>/);
+        assert.match(payload.text, /First line\n<script>alert\(1\)<\/script>/);
+        assert.match(payload.text, /Submitted: 2026-11-02T14:35:22Z/);
     } finally { globalThis.fetch = originalFetch; }
 });
