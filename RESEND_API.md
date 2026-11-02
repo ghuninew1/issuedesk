@@ -19,6 +19,8 @@
 
 สำหรับ Origin นี้ subject เป็น `[Big Brain Studio Website] <subject>` และอีเมลมี Country/City จาก Cloudflare เมื่อมี, Referer, Browser/Device ที่อนุมานแบบจำกัดจาก User-Agent และ timestamp ที่ server สร้างและแสดงเป็นเวลา `Asia/Bangkok` ด้วยภาษาไทย ทั้งใน HTML และ plain text ข้อมูลเหล่านี้อาจขาดหรือถูกปลอมได้ ไม่ใช่ข้อมูลยืนยันตัวตน และข้อมูลที่ใส่ HTML ถูก escape แล้ว พิจารณานโยบายเก็บรักษาข้อมูลของกล่องเมลด้วย
 
+Origin `https://ghuninew1.github.io` ใช้ HTML template ของ GhuniNew Portfolio ทั้งหน้า root และ `/portfolio` ซึ่งมี Origin เดียวกัน โดยยังใช้ sender `RESEND_FROM_EMAIL`, recipient `RESEND_TO_EMAIL` (หรือ fallback เดิม) และ subject `[Website]` เช่นเดิม ต้องเพิ่ม Origin นี้ใน allowlist หากยังไม่ได้ตั้งไว้
+
 ค่า Origin ต้องมีเฉพาะ scheme, host และ port (ถ้ามี) ไม่ใส่ path หรือ slash ท้าย เช่น:
 
 ```text

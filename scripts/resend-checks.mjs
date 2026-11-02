@@ -131,3 +131,26 @@ test('IssueDesk notification renders escaped ticket details with its own logo', 
         assert.match(payload.text, /Submitted: 2026-11-02T14:35:22Z/);
     } finally { globalThis.fetch = originalFetch; }
 });
+
+test('GitHub Pages portfolio gets a branded template without changing its mail routing', async () => {
+    const originalFetch = globalThis.fetch;
+    let payload;
+    globalThis.fetch = async (_url, options) => { payload = JSON.parse(options.body); return Response.json({ id: 'sent' }); };
+    const portfolio = 'https://ghuninew1.github.io';
+    try {
+        const req = request(portfolio, JSON.stringify({ ...form, subject: '<subject>', message: 'Hello\n<script>alert(1)</script>' }));
+        const response = await onRequestPost({ request: req, env: { ...env, RESEND_ALLOWED_ORIGINS: `${env.RESEND_ALLOWED_ORIGINS},${portfolio}` } });
+        assert.equal(response.status, 200);
+        assert.equal(payload.from, env.RESEND_FROM_EMAIL);
+        assert.deepEqual(payload.to, [env.RESEND_TO_EMAIL]);
+        assert.equal(payload.reply_to, form.email);
+        assert.equal(payload.subject, '[Website] <subject>');
+        assert.match(payload.html, /Portfolio contact form/);
+        assert.match(payload.html, /alt="GhuniNew"/);
+        assert.match(payload.html, /&lt;Name&gt;/);
+        assert.match(payload.html, /&lt;subject&gt;/);
+        assert.match(payload.html, /Hello<br>&lt;script&gt;alert\(1\)&lt;\/script&gt;/);
+        assert.doesNotMatch(payload.html, /<script>/);
+        assert.match(payload.text, /Hello\n<script>alert\(1\)<\/script>/);
+    } finally { globalThis.fetch = originalFetch; }
+});

@@ -2,6 +2,7 @@ import { sendResendEmail } from "./resend/_utils.js";
 
 const MAX_BODY_BYTES = 24_000;
 const BBS_ORIGIN = "https://www.bigbrain-studio.com";
+const PORTFOLIO_ORIGIN = "https://ghuninew1.github.io";
 const BBS_LOGO_URL = "https://www.bigbrain-studio.com/img/logo-375x375.png";
 
 function getAllowedOrigins(env) {
@@ -109,7 +110,7 @@ export async function onRequestPost({ request, env }) {
             to: [recipient],
             reply_to: email,
             subject: `${isBbs ? "[Big Brain Studio Website]" : "[Website]"} ${subject}`,
-            html: isBbs ? renderBbsContactEmail({ safeName, safeEmail, safeSubject, safeMessage, metadata }) : `
+            html: isBbs ? renderBbsContactEmail({ safeName, safeEmail, safeSubject, safeMessage, metadata }) : origin === PORTFOLIO_ORIGIN ? renderPortfolioContactEmail({ safeName, safeEmail, safeSubject, safeMessage }) : `
                 <div style="font-family:Arial,sans-serif;line-height:1.6;color:#111827;">
                     <h2>Website contact form</h2>
                     <p><strong>Name:</strong> ${safeName}</p>
@@ -164,6 +165,34 @@ function renderBbsContactEmail({ safeName, safeEmail, safeSubject, safeMessage, 
                 <p style="margin:28px 0 0;padding-top:16px;border-top:1px solid #e5e7eb;font-size:12px;color:#6b7280;">Big Brain Studio</p>
             </td></tr>
         </table>
+        <!--[if mso]></td></tr></table><![endif]-->
+    </td></tr></table>
+</body></html>`;
+}
+
+function renderPortfolioContactEmail({ safeName, safeEmail, safeSubject, safeMessage }) {
+    const rows = [["Name", safeName], ["Email", safeEmail], ["Subject", safeSubject]].map(([label, value]) => `
+        <tr><td style="padding:6px 12px 6px 0;vertical-align:top;color:#6b7280;font-size:14px;">${label}</td>
+        <td style="padding:6px 0;vertical-align:top;color:#1f2937;font-size:14px;word-break:break-all;overflow-wrap:anywhere;">${value}</td></tr>`).join("");
+    const message = safeMessage.replace(/\r\n|\r|\n/g, "<br>");
+    return `<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+<body style="margin:0;padding:0;background-color:#f3f4f6;font-family:Arial,Helvetica,sans-serif;color:#1f2937;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color:#f3f4f6;"><tr><td align="center" style="padding:16px 12px;">
+        <!--[if mso]><table role="presentation" width="640" cellspacing="0" cellpadding="0" border="0"><tr><td><![endif]-->
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="width:100%;max-width:640px;background-color:#ffffff;border:1px solid #e5e7eb;border-radius:16px;"><tr><td style="padding:28px 24px;">
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                <tr><td align="center"><img src="https://issuedesk.bigbrain-studio.com/favicon.png" width="56" height="56" alt="GhuniNew" style="display:block;width:56px;height:56px;border:0;"></td></tr>
+                <tr><td align="center" style="padding-top:8px;font-size:20px;font-weight:bold;color:#111827;">GhuniNew</td></tr>
+            </table>
+            <h1 style="margin:24px 0 8px;font-size:24px;line-height:1.3;color:#111827;">Portfolio contact form</h1>
+            <p style="margin:0 0 24px;font-size:14px;line-height:1.6;color:#6b7280;">New message received from the GhuniNew portfolio.</p>
+            <h2 style="margin:0 0 8px;font-size:16px;color:#111827;">Contact information</h2>
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="table-layout:fixed;line-height:1.5;">${rows}</table>
+            <h2 style="margin:24px 0 10px;font-size:16px;color:#111827;">Message</h2>
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="table-layout:fixed;background-color:#f8faf8;border:1px solid #e1e9e2;border-left:3px solid #45845c;"><tr><td style="padding:16px;font-size:15px;line-height:1.6;color:#1f2937;word-break:break-all;overflow-wrap:anywhere;">${message}</td></tr></table>
+            <p style="margin:28px 0 0;padding-top:16px;border-top:1px solid #e5e7eb;font-size:12px;color:#6b7280;">GhuniNew Portfolio</p>
+        </td></tr></table>
         <!--[if mso]></td></tr></table><![endif]-->
     </td></tr></table>
 </body></html>`;

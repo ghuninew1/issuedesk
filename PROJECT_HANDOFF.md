@@ -1,3 +1,8 @@
+## Portfolio contact email presentation — 2026-11-02
+
+- เพิ่ม HTML template สำหรับ Origin `https://ghuninew1.github.io` ซึ่งครอบคลุม root และ `/portfolio` ตามข้อมูลผู้ใช้ ใช้โลโก้ GhuniNew ซึ่ง public favicon ของ Portfolio และ IssueDesk เป็นไฟล์เดียวกัน โดยอ้าง IssueDesk HTTPS asset; เก็บ default sender, recipient, subject, plain text และ Origin อื่นตามเดิม
+- `pnpm lint`, `node --test scripts/resend-checks.mjs` (7 tests) และ `git diff --check` ผ่านแบบ local; ทบทวน `AGENTS.md`, `README.md` และ `RESEND_API.md` โดยอัปเดตสองไฟล์ที่ต้องระบุการเปลี่ยนแปลง README ยังถูกต้อง ไม่ได้ deploy หรือทดสอบอีเมลและการโหลดโลโก้จริง ให้ตรวจ Origin allowlist และ email clients หลัง deployment ที่ได้รับอนุญาต
+
 ## Email logo alignment — 2026-11-02
 
 - จัดโลโก้ Big Brain Studio และโลโก้พร้อมชื่อ IssueDesk ให้อยู่กึ่งกลางในการ์ดอีเมลด้วย table alignment; เนื้อหาและการส่งคงเดิม
