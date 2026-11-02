@@ -1,6 +1,7 @@
 import { sendResendEmail } from "./resend/_utils.js";
 
 const MAX_BODY_BYTES = 24_000;
+const BBS_ORIGIN = "https://www.bigbrain-studio.com";
 
 function getAllowedOrigins(env) {
     return (env.RESEND_ALLOWED_ORIGINS ?? "")
@@ -86,9 +87,10 @@ export async function onRequestPost({ request, env }) {
         return response({ success: false, message: "Invalid contact form data" }, 400, origin);
     }
 
-    const recipient = env.RESEND_TO_EMAIL || env.ISSUE_NOTIFICATION_EMAIL;
-    if (!recipient) {
-        console.error("RESEND_TO_EMAIL is not configured");
+    const isBbs = origin === BBS_ORIGIN;
+    const recipient = isBbs ? env.BBS_CONTACT_TO_EMAIL : env.RESEND_TO_EMAIL || env.ISSUE_NOTIFICATION_EMAIL;
+    if (!recipient || (isBbs && !env.BBS_CONTACT_FROM_EMAIL)) {
+        console.error("Contact email configuration is incomplete");
         return response({ success: false, message: "Email service is not configured" }, 503, origin);
     }
 
@@ -96,12 +98,16 @@ export async function onRequestPost({ request, env }) {
     const safeEmail = escapeHtml(email);
     const safeSubject = escapeHtml(subject);
     const safeMessage = escapeHtml(message);
+    const metadata = isBbs ? getMetadata(request) : null;
+    const metadataHtml = metadata ? `<h3>Submission details</h3>${Object.entries(metadata).map(([key, value]) => `<p><strong>${key}:</strong> ${escapeHtml(value)}</p>`).join("")}` : "";
+    const metadataText = metadata ? ["", "Submission details:", ...Object.entries(metadata).map(([key, value]) => `${key}: ${value}`)] : [];
 
     try {
-        const result = await sendResendEmail(env, {
+        const mailEnv = isBbs ? { ...env, RESEND_FROM_EMAIL: env.BBS_CONTACT_FROM_EMAIL } : env;
+        const result = await sendResendEmail(mailEnv, {
             to: [recipient],
             reply_to: email,
-            subject: `[Website] ${subject}`,
+            subject: `${isBbs ? "[Big Brain Studio Website]" : "[Website]"} ${subject}`,
             html: `
                 <div style="font-family:Arial,sans-serif;line-height:1.6;color:#111827;">
                     <h2>Website contact form</h2>
@@ -110,9 +116,10 @@ export async function onRequestPost({ request, env }) {
                     <p><strong>Subject:</strong> ${safeSubject}</p>
                     <p><strong>Message:</strong></p>
                     <div style="white-space:pre-wrap;overflow-wrap:anywhere;">${safeMessage}</div>
+                    ${metadataHtml}
                 </div>
             `,
-            text: [`Name: ${name}`, `Email: ${email}`, `Subject: ${subject}`, "", message].join("\n"),
+            text: [`Name: ${name}`, `Email: ${email}`, `Subject: ${subject}`, "", message, ...metadataText].join("\n"),
         });
 
         return response({ success: true, id: result.id }, 200, origin);
@@ -120,6 +127,21 @@ export async function onRequestPost({ request, env }) {
         console.error("Failed to send website contact email:", sendError);
         return response({ success: false, message: "Failed to send email" }, 502, origin);
     }
+}
+
+function getMetadata(request) {
+    const bounded = (value) => typeof value === "string" && value.trim() ? value.trim().slice(0, 500) : "Not available";
+    const ua = request.headers.get("User-Agent") || "";
+    const browser = /Edg\//i.test(ua) ? "Edge" : /OPR\//i.test(ua) ? "Opera" : /Firefox\//i.test(ua) ? "Firefox" : /Chrome\//i.test(ua) ? "Chrome" : /Safari\//i.test(ua) ? "Safari" : "Unknown";
+    const device = /iPad|Tablet/i.test(ua) ? "Tablet" : /Mobile|iPhone|Android/i.test(ua) ? "Mobile" : ua ? "Unknown" : "Not available";
+    return {
+        Country: bounded(request.cf?.country),
+        City: bounded(request.cf?.city),
+        Referrer: bounded(request.headers.get("Referer")),
+        Browser: browser,
+        Device: device,
+        Timestamp: new Date().toISOString(),
+    };
 }
 
 function escapeHtml(value) {

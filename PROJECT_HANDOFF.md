@@ -1,3 +1,9 @@
+## Big Brain Studio contact routing — 2026-11-02
+
+- `/api/resend` routes the exact Big Brain Studio Origin to required `BBS_CONTACT_FROM_EMAIL` and `BBS_CONTACT_TO_EMAIL`, adds its own subject prefix and best-effort escaped request metadata. The existing allowlist must include that Origin. Legacy routing and ticket notification remain unchanged; see `RESEND_API.md` for setup and security boundaries.
+- `node --test scripts/resend-checks.mjs` passed 3 mock tests including ticket success when mail fails; `pnpm lint` passed. Cloudflare WAF rate limiting is not implemented or verified: configure and test it separately before use. No deployment, real email, DNS, Resend verification or production configuration was performed. Next: configure Pages variables, verify sender and WAF, deploy when authorized, and test the actual cross-origin form.
+- Reviewed and updated `AGENTS.md`, `README.md`, and `RESEND_API.md` to reflect the source and outstanding operational steps.
+
 ## Image Converter UI refresh — 2026-11-01
 
 - ปรับ header navigation placeholder, drop zone, quality presets (100/85/60 และ custom), advanced dimensions, รายการไฟล์แบบกระชับ และสรุปขนาดไฟล์ที่แปลงสำเร็จ โดยใช้ settings และข้อมูลผลลัพธ์เดิม

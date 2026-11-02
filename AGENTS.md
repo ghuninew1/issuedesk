@@ -68,6 +68,7 @@
 - Keep same-origin checks on browser mutation endpoints and retain authentication rate limits. Agent endpoints use their separate bearer-token contract rather than browser sessions.
 - Registration creates ordinary `user` accounts. Do not accept a client-supplied admin role or bypass inactive-user checks.
 - `POST /api/resend` uses an exact Origin allowlist and server-configured recipient. CORS is not authentication or abuse prevention; preserve validation and keep Resend credentials server-side.
+- The exact `https://www.bigbrain-studio.com` Origin uses required `BBS_CONTACT_FROM_EMAIL` and `BBS_CONTACT_TO_EMAIL`, a separate subject and best-effort request metadata; other Origins and ticket notifications retain their existing routing. No application rate limit is implemented; configure and verify Cloudflare WAF separately as described in `RESEND_API.md`.
 - Google and Facebook OAuth require provider configuration. Preserve OAuth state-cookie validation and existing account-linking checks; do not imply that providers work merely because their routes exist.
 
 ## Network Monitoring

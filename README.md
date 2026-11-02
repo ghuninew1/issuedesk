@@ -18,6 +18,8 @@ IssueDesk เป็นเว็บแอป IT Help Desk สำหรับร�
 
 แอปรองรับธีม Light, Dark และ System รวมถึงหน้าจอมือถือ การส่งอีเมลแจ้ง Ticket ใช้ Resend แบบ best effort และขึ้นอยู่กับการตั้งค่าบริการ
 
+External contact form ใช้ `POST /api/resend` พร้อม Origin allowlist; เว็บไซต์ Big Brain Studio มี sender/recipient แยกและ metadata ของคำขอ ดูการตั้งค่าและข้อจำกัด anti-spam ใน [Resend API](RESEND_API.md)
+
 ## หน้าใช้งาน
 
 | เส้นทาง | สิทธิ์ | การใช้งาน |
