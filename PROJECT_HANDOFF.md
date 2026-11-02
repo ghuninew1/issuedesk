@@ -1,3 +1,15 @@
+## Big Brain Studio contact timestamp — 2026-11-02
+
+- แสดง timestamp ที่ server สร้างใน HTML และ plain text ของ Big Brain Studio เป็นภาษาไทยด้วย `Intl.DateTimeFormat` และ timezone `Asia/Bangkok` พร้อมระบุ timezone; ไม่เปลี่ยน routing หรือ contact email ของ Origin อื่น
+- `pnpm lint`, `node --test scripts/resend-checks.mjs` (5 tests รวมเวลาทดสอบที่กำหนดแน่นอน) และ `git diff --check` ผ่านแบบ local; ยังไม่ได้ deploy หรือส่งอีเมลจริง ตรวจ `AGENTS.md` และ `README.md` แล้วเนื้อหายังถูกต้อง และอัปเดต `RESEND_API.md` ให้ตรงกับ source
+
+## Big Brain Studio contact email presentation — 2026-11-02
+
+- ปรับ HTML เฉพาะ contact email จาก Big Brain Studio เป็น card แบบ table พร้อมโลโก้, contact rows, message และ submission details; plain text และ routing เดิมยังคงอยู่ Timestamp ยังคง ISO UTC และ referrer แสดงเป็นข้อความ ไม่สร้างลิงก์จากข้อมูล request
+- Logo URL `https://www.bigbrain-studio.com/img/logo-375x375.png` มาจาก public asset และ metadata ของเว็บไซต์ แต่การเปิด URL ผ่านเครื่องมือตรวจครั้งนี้ไม่สำเร็จ จึงยังไม่ได้ยืนยันว่า email client โหลดภาพจาก production ได้
+- `pnpm lint`, `node --test scripts/resend-checks.mjs` (4 tests) และ `git diff --check` ผ่าน; เป็นการทดสอบแบบ mock ไม่ได้ deploy ส่งอีเมลจริง หรือทดสอบการแสดงผล Gmail, Apple Mail, Outlook และมือถือ ให้ตรวจหลัง deployment ที่ได้รับอนุญาต
+- ทบทวน `AGENTS.md` และ `README.md` แล้ว กฎและข้อมูลการใช้งานยังตรงกับ source ไม่จำเป็นต้องเปลี่ยน
+
 ## Big Brain Studio contact routing — 2026-11-02
 
 - `/api/resend` routes the exact Big Brain Studio Origin to required `BBS_CONTACT_FROM_EMAIL` and `BBS_CONTACT_TO_EMAIL`, adds its own subject prefix and best-effort escaped request metadata. The existing allowlist must include that Origin. Legacy routing and ticket notification remain unchanged; see `RESEND_API.md` for setup and security boundaries.

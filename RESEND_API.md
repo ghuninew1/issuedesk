@@ -17,7 +17,7 @@
 
 เพิ่ม `https://www.bigbrain-studio.com` ใน `RESEND_ALLOWED_ORIGINS` โดยคง Origin เดิมไว้ ค่า BBS ทั้งสองจำเป็นสำหรับ Origin นี้และไม่มี fallback ไปยังผู้รับหรือ sender อื่น หากขาดจะตอบ 503 ทั้งสองค่ากำหนดฝั่ง server เท่านั้น Origin อื่นยังใช้ sender, recipient และ subject เดิม และ ticket ยังคงใช้ `RESEND_FROM_EMAIL` และ `ISSUE_NOTIFICATION_EMAIL`
 
-สำหรับ Origin นี้ subject เป็น `[Big Brain Studio Website] <subject>` และอีเมลมี Country/City จาก Cloudflare เมื่อมี, Referer, Browser/Device ที่อนุมานแบบจำกัดจาก User-Agent และ timestamp UTC จาก server ข้อมูลเหล่านี้อาจขาดหรือถูกปลอมได้ ไม่ใช่ข้อมูลยืนยันตัวตน และข้อมูลที่ใส่ HTML ถูก escape แล้ว พิจารณานโยบายเก็บรักษาข้อมูลของกล่องเมลด้วย
+สำหรับ Origin นี้ subject เป็น `[Big Brain Studio Website] <subject>` และอีเมลมี Country/City จาก Cloudflare เมื่อมี, Referer, Browser/Device ที่อนุมานแบบจำกัดจาก User-Agent และ timestamp ที่ server สร้างและแสดงเป็นเวลา `Asia/Bangkok` ด้วยภาษาไทย ทั้งใน HTML และ plain text ข้อมูลเหล่านี้อาจขาดหรือถูกปลอมได้ ไม่ใช่ข้อมูลยืนยันตัวตน และข้อมูลที่ใส่ HTML ถูก escape แล้ว พิจารณานโยบายเก็บรักษาข้อมูลของกล่องเมลด้วย
 
 ค่า Origin ต้องมีเฉพาะ scheme, host และ port (ถ้ามี) ไม่ใส่ path หรือ slash ท้าย เช่น:
 
