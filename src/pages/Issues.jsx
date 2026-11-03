@@ -1,6 +1,6 @@
 import GlassButton from "../components/GlassButton";
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router'
 import { getIssues } from '../services/issues'
 import { cx } from '../utils/cx'
 import { RefreshCw, Loader } from "lucide-react";

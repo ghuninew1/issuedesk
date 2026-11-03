@@ -1,4 +1,4 @@
-import { NavLink } from "react-router-dom";
+import { NavLink } from "react-router";
 import useDocumentTitle from "../../hooks/useDocumentTitle";
 import { QrCode } from "lucide-react";
 import { cx } from "../../utils/cx";

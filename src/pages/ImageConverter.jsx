@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 import { ArrowDownToLine, Image as ImageIcon, Sparkles } from "lucide-react";
 import GlassButton from "../components/GlassButton";
 import DropZone from "../components/tools/DropZone";

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 import QRWorkspace from "../../components/qr/QRWorkspace";
 import GlassButton from "../../components/GlassButton";
 import { qrRequest } from "../../services/qr";

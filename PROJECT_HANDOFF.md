@@ -152,7 +152,7 @@ IssueDesk เป็นระบบ IT Help Desk ภายในองค์ก�
 
 | ส่วน | เทคโนโลยี/แหล่งข้อมูล |
 | --- | --- |
-| Frontend | React 19, React Router 7, Vite 8, Tailwind CSS v4, Lucide |
+| Frontend | React 19, React Router 8, Vite 8, Tailwind CSS v4, Lucide |
 | Backend | Cloudflare Pages Functions ใน `functions/api/` |
 | Database | Cloudflare D1 / SQLite ผ่าน binding `DB` |
 | File storage | Storage API ภายนอก (Garage ตามเอกสาร Storage) ผ่าน Cloudflare Access |
@@ -497,3 +497,9 @@ Storage API เคยคืน `SQLITE_READONLY: attempt to write a readonly dat
 ## PDF Studio Whiteout formatting
 
 Whiteout overlays support fill color, border color, and border width in the editor and PDF export. Existing overlays default to white fill and no border. README.md was updated and AGENTS.md reviewed for accuracy. `pnpm lint` and `git diff --check` passed. Browser interaction and exported PDF visual QA remain pending.
+
+## React Router 8 migration (2026-11-03)
+
+- Replaced `react-router-dom` with `react-router` 8.5.1 and updated imports; declarative routes and authentication logic remain unchanged. Node 22.22+ and React/React DOM 19.2.7+ are required.
+- Current checks: `pnpm lint`, `pnpm build`, and `git diff --check` passed. No root `test` script. Browser, authentication, deployment, and production routing remain unverified.
+- Reviewed `AGENTS.md` and `README.md`; the README remains accurate without a version-specific edit. Next: verify navigation, auth redirects, direct URLs, refresh, and browser history in a running deployment.

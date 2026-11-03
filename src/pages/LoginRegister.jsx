@@ -1,7 +1,7 @@
 import { cx } from "../utils/cx";
 import GlassButton from "../components/GlassButton";
 import { useCallback, useEffect, useState } from "react";
-import { useNavigate, useLocation, Link } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router";
 import { User, Mail, Lock, Eye, EyeOff, ArrowRight, ShieldCheck, Sparkles, ArrowLeft } from "lucide-react";
 import ElectricBorder from "../components/ElectricBorder";
 import { api } from "../utils/api";

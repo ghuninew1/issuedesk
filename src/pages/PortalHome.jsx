@@ -1,6 +1,6 @@
 import GlassButton from "../components/GlassButton";
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router";
 import { ArrowRight, ClipboardCheck, LifeBuoy, Search, TicketPlus, ClipboardPaste } from "lucide-react";
 import { cx } from "../utils/cx";
 import ElectricBorder from "../components/ElectricBorder";

@@ -7,7 +7,7 @@
 
 ## Project Overview
 - IssueDesk is an IT support and issue-tracking application.
-- Preserve the existing React 19, React Router 7, Vite, Tailwind CSS v4, and Cloudflare Pages architecture.
+- Preserve the existing React 19, React Router 8, Vite, Tailwind CSS v4, and Cloudflare Pages architecture.
 - The browser application is in `src/`; API routes are Cloudflare Pages Functions in `functions/api/`.
 - Cloudflare D1 is used for application data. Ordered SQLite migrations live in `migrations/`.
 - `garage/` contains supporting Storage and Network Monitor services and their operational documentation. Treat these as part of the project when a task touches them.

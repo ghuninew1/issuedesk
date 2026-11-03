@@ -4,7 +4,7 @@ import { createIssue, uploadIssueAttachment } from "../../services/issues";
 import { cx } from "../../utils/cx";
 import ImageUploader from "./ImageUploader";
 import { FileQuestionMark, ChevronDown, ArrowLeft, Copy, CopyCheck } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 
 const INITIAL_FORM = {
     reporter: "",

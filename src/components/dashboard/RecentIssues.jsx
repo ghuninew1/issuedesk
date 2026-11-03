@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { cx } from '../../utils/cx'
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router'
 import { useDocumentTitle } from "../../hooks/useDocumentTitle";
 
 const priorityStyles = {

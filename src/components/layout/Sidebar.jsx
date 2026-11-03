@@ -1,5 +1,5 @@
 import GlassButton from "../GlassButton";
-import { NavLink } from "react-router-dom";
+import { NavLink } from "react-router";
 import { useAuth } from "../../auth/useAuth";
 import { cx } from "../../utils/cx";
 import { glassHover } from "../../utils/utils";

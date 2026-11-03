@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 import { Video, Sparkles, Settings2, Trash2, Download } from "lucide-react";
 import GlassButton from "../components/GlassButton";
 import { createZip } from "../utils/createZip";

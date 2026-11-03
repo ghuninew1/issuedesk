@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useSearchParams, Link } from "react-router-dom";
+import { useSearchParams, Link } from "react-router";
 import QRWorkspace from "../../components/qr/QRWorkspace";
 import QRContentForm from "../../components/qr/QRContentForm";
 import QRDesignPanel from "../../components/qr/QRDesignPanel";

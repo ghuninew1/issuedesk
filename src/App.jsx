@@ -1,4 +1,4 @@
-import { Navigate, Outlet, Route, Routes, useLocation } from "react-router-dom";
+import { Navigate, Outlet, Route, Routes, useLocation } from "react-router";
 import { lazy, Suspense, useEffect } from "react";
 import { Loader } from "lucide-react";
 import { useAuth } from "./auth/useAuth";
