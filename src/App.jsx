@@ -25,6 +25,7 @@ const TrackTicket = lazy(() => import("./pages/TrackTicket"));
 const Sheet = lazy(() => import("./pages/Sheet"));
 const StorageImages = lazy(() => import("./pages/StorageImages"));
 const Attendance = lazy(() => import("./pages/Attendance"));
+const Documentation = lazy(() => import("./pages/Documentation"));
 const NetworkMonitor = lazy(() => import("./pages/NetworkMonitor"));
 
 function LoginRoute() {
@@ -200,6 +201,7 @@ function App() {
                         </ProtectedRoute>
                     }
                 />
+                <Route path="/documentation" element={<ProtectedRoute requiredRole="admin"><Documentation /></ProtectedRoute>} />
                 <Route path="/track/:ticketNumber" element={<TrackTicket />} />
                 <Route path="/report" element={<ReportIssue />} />
                 <Route

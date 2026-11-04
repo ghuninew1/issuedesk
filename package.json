@@ -19,12 +19,15 @@
         "@ffmpeg/core": "^0.12.10",
         "@ffmpeg/ffmpeg": "^0.12.15",
         "lucide-react": "^1.66.0",
+        "mermaid": "^12.3.0",
         "pdf-lib": "^1.17.1",
         "pdfjs-dist": "^6.5.438",
         "qr-code-styling": "^1.9.2",
         "react": "^19.3.1",
         "react-dom": "^19.3.1",
-        "react-router": "^8.5.1"
+        "react-markdown": "^10.1.0",
+        "react-router": "^8.5.1",
+        "remark-gfm": "^4.0.1"
     },
     "devDependencies": {
         "@base-ui/react": "^1.9.0",

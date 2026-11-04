@@ -4,6 +4,7 @@ import { useAuth } from "../../auth/useAuth";
 import { cx } from "../../utils/cx";
 import { glassHover } from "../../utils/utils";
 import {
+    BookOpen,
     LayoutDashboard,
     ClipboardList,
     ClipboardPlus,
@@ -36,6 +37,7 @@ const navGroups = [
             { icon: LayoutDashboard, label: "Dashboard", to: "/dashboard", requiredRole: "admin" },
             { icon: ClipboardList, label: "Issues", to: "/issues", requiredRole: "admin" },
             { icon: Images, label: "Storage", to: "/storage/images", requiredRole: "admin" },
+            { icon: BookOpen, label: "Documentation", to: "/documentation", requiredRole: "admin" },
             { icon: Network, label: "Network Monitor", to: "/network-monitor", requiredRole: "admin" },
         ],
     },
