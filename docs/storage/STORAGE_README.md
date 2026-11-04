@@ -67,7 +67,7 @@ curl -i http://192.168.11.32:3000/health
 - `/v2/projects/:projectId/files` — project-scoped file operations
 - `/api/*` — legacy routes, disabled by default
 
-See `docs/api-reference.md` for endpoint details.
+See `STORAGE_DOCS_API_REFERENCE.md` for endpoint details.
 
 ## Security
 
@@ -81,7 +81,7 @@ Do not expose any of the following in browser code:
 - App credential secrets
 - Garage S3 credentials
 
-See `docs/security.md`.
+See `STORAGE_DOCS_SECURITY.md`.
 
 ## Persistence and Backups
 
@@ -99,21 +99,21 @@ Back up both object data and metadata. SQLite uses WAL mode, so use a
 WAL-aware backup procedure. Do not delete `storage.db-wal` or
 `storage.db-shm` while the API is running.
 
-See `docs/operations.md`.
+See `STORAGE_DOCS_OPERATIOINS.md`.
 
 ## Documentation
 
-- `docs/architecture.md`
-- `docs/api-reference.md`
-- `docs/security.md`
-- `docs/operations.md`
+- `STORAGE_DOCS_ARCHITECTURE.md`
+- `STORAGE_DOCS_API_REFERENCE.md`
+- `STORAGE_DOCS_SECURITY.md`
+- `STORAGE_DOCS_OPERATIOINS.md`
 ## Upload returns 502 with SQLITE_READONLY
 
 If `storage-api` logs `Upload project file failed: SqliteError: attempt to write a readonly database`, the upload handler cannot insert file metadata into its own SQLite database. This database is separate from Cloudflare D1. Both Storage Images and QR logo saves can fail because they share this upload service.
 
 The image runs as `node`; Compose bind-mounts `./storage/data` over `/app/data`. Image-build ownership does not set ownership on the host bind mount. Verify the actual runtime UID/GID, mount write mode, host permissions/ACLs, and access to the database directory, DB, and existing WAL/SHM files. Do not reset the database or broaden permissions on Garage object data.
 
-See [QR Studio Storage documentation](QR_STUDIO_STORAGE_DOCS.md) for integration details, permission checks, and recovery steps. The user confirmed that correcting the Storage data ownership restored uploads in both Storage Images and QR Studio; this documentation update did not repeat host operations.
+See [QR Studio Storage documentation](../features/QR_STUDIO_STORAGE_DOCS.md) for integration details, permission checks, and recovery steps. The user confirmed that correcting the Storage data ownership restored uploads in both Storage Images and QR Studio; this documentation update did not repeat host operations.
 
 ### Confirmed bind-mount permission mismatch (2026-10-26)
 

@@ -155,11 +155,11 @@ Do not delete data directories as a routine troubleshooting step.
 
 ## Storage API Documentation
 
-See `storage/README.md` for Storage API usage.
+See `docs/storage/STORAGE_README.md` for Storage API usage.
 
 Additional documentation:
 
-- `storage/docs/architecture.md`
-- `storage/docs/api-reference.md`
-- `storage/docs/security.md`
-- `storage/docs/operations.md`
+- `docs/storage/STORAGE_DOCS_ARCHITECTURE.md`
+- `docs/storage/STORAGE_DOCS_API_REFERENCE.md`
+- `docs/storage/STORAGE_DOCS_SECURITY.md`
+- `docs/storage/STORAGE_DOCS_OPERATIOINS.md`

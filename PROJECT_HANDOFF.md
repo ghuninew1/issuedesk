@@ -1,7 +1,13 @@
 ## Portfolio contact email presentation — 2026-11-02
 
+## 2026-11-04 — Documentation organization
+
+- Moved 11 root-level detailed Markdown documents into `docs/api/`, `docs/storage/`, `docs/network/`, `docs/features/`, and `docs/releases/`; root orientation files and LICENSE remain in place. Updated repository references, relative links, and previously outdated Storage guide paths. Service-specific guides remain in `garage/`. No application behavior or configuration was changed.
+- Existing external links or bookmarks to the old root paths may break on branches containing this move; repository-wide external consumers cannot be inventoried locally. No redirect was added. The private IT documentation viewer reads a separate repository.
+- Validation results and remaining limitations are recorded after the checks below.
+
 - เพิ่ม HTML template สำหรับ Origin `https://ghuninew1.github.io` ซึ่งครอบคลุม root และ `/portfolio` ตามข้อมูลผู้ใช้ ใช้โลโก้ GhuniNew ซึ่ง public favicon ของ Portfolio และ IssueDesk เป็นไฟล์เดียวกัน โดยอ้าง IssueDesk HTTPS asset; เก็บ default sender, recipient, subject, plain text และ Origin อื่นตามเดิม
-- `pnpm lint`, `node --test scripts/resend-checks.mjs` (7 tests) และ `git diff --check` ผ่านแบบ local; ทบทวน `AGENTS.md`, `README.md` และ `RESEND_API.md` โดยอัปเดตสองไฟล์ที่ต้องระบุการเปลี่ยนแปลง README ยังถูกต้อง ไม่ได้ deploy หรือทดสอบอีเมลและการโหลดโลโก้จริง ให้ตรวจ Origin allowlist และ email clients หลัง deployment ที่ได้รับอนุญาต
+- `pnpm lint`, `node --test scripts/resend-checks.mjs` (7 tests) และ `git diff --check` ผ่านแบบ local; ทบทวน `AGENTS.md`, `README.md` และ `docs/api/RESEND_API.md` โดยอัปเดตสองไฟล์ที่ต้องระบุการเปลี่ยนแปลง README ยังถูกต้อง ไม่ได้ deploy หรือทดสอบอีเมลและการโหลดโลโก้จริง ให้ตรวจ Origin allowlist และ email clients หลัง deployment ที่ได้รับอนุญาต
 
 ## Email logo alignment — 2026-11-02
 
@@ -16,7 +22,7 @@
 ## Big Brain Studio contact timestamp — 2026-11-02
 
 - แสดง timestamp ที่ server สร้างใน HTML และ plain text ของ Big Brain Studio เป็นภาษาไทยด้วย `Intl.DateTimeFormat` และ timezone `Asia/Bangkok` พร้อมระบุ timezone; ไม่เปลี่ยน routing หรือ contact email ของ Origin อื่น
-- `pnpm lint`, `node --test scripts/resend-checks.mjs` (5 tests รวมเวลาทดสอบที่กำหนดแน่นอน) และ `git diff --check` ผ่านแบบ local; ยังไม่ได้ deploy หรือส่งอีเมลจริง ตรวจ `AGENTS.md` และ `README.md` แล้วเนื้อหายังถูกต้อง และอัปเดต `RESEND_API.md` ให้ตรงกับ source
+- `pnpm lint`, `node --test scripts/resend-checks.mjs` (5 tests รวมเวลาทดสอบที่กำหนดแน่นอน) และ `git diff --check` ผ่านแบบ local; ยังไม่ได้ deploy หรือส่งอีเมลจริง ตรวจ `AGENTS.md` และ `README.md` แล้วเนื้อหายังถูกต้อง และอัปเดต `docs/api/RESEND_API.md` ให้ตรงกับ source
 
 ## Big Brain Studio contact email presentation — 2026-11-02
 
@@ -27,9 +33,9 @@
 
 ## Big Brain Studio contact routing — 2026-11-02
 
-- `/api/resend` routes the exact Big Brain Studio Origin to required `BBS_CONTACT_FROM_EMAIL` and `BBS_CONTACT_TO_EMAIL`, adds its own subject prefix and best-effort escaped request metadata. The existing allowlist must include that Origin. Legacy routing and ticket notification remain unchanged; see `RESEND_API.md` for setup and security boundaries.
+- `/api/resend` routes the exact Big Brain Studio Origin to required `BBS_CONTACT_FROM_EMAIL` and `BBS_CONTACT_TO_EMAIL`, adds its own subject prefix and best-effort escaped request metadata. The existing allowlist must include that Origin. Legacy routing and ticket notification remain unchanged; see `docs/api/RESEND_API.md` for setup and security boundaries.
 - `node --test scripts/resend-checks.mjs` passed 3 mock tests including ticket success when mail fails; `pnpm lint` passed. Cloudflare WAF rate limiting is not implemented or verified: configure and test it separately before use. No deployment, real email, DNS, Resend verification or production configuration was performed. Next: configure Pages variables, verify sender and WAF, deploy when authorized, and test the actual cross-origin form.
-- Reviewed and updated `AGENTS.md`, `README.md`, and `RESEND_API.md` to reflect the source and outstanding operational steps.
+- Reviewed and updated `AGENTS.md`, `README.md`, and `docs/api/RESEND_API.md` to reflect the source and outstanding operational steps.
 
 ## Image Converter UI refresh — 2026-11-01
 
@@ -47,7 +53,7 @@
 
 ## Release notes v1.4.0 — 1 พฤศจิกายน 2026
 
-- อัปเดตเวอร์ชันใน `package.json` เป็น 1.4.0 และเพิ่ม `V1.4.0_RELEASE.md` โดยเทียบ source กับ Git tag `1.3.4`; เพิ่มเส้นทาง PDF Studio และลิงก์ release ใน README
+- อัปเดตเวอร์ชันใน `package.json` เป็น 1.4.0 และเพิ่ม `docs/releases/V1.4.0_RELEASE.md` โดยเทียบ source กับ Git tag `1.3.4`; เพิ่มเส้นทาง PDF Studio และลิงก์ release ใน README
 - ตรวจ `AGENTS.md` แล้ว กฎยังตรงกับ source; `git diff --check` ผ่าน ไม่ได้รัน lint/build หรือทดสอบ browser, production, migration หรือ deployment. จุดเริ่มถัดไป: ตรวจสถานะ migration และทดสอบ deployment เป้าหมายก่อน rollout ที่ได้รับอนุญาต
 
 ## Sidebar Liquid Glass hover — 1 พฤศจิกายน 2026
@@ -217,7 +223,7 @@ Schema รองรับหนึ่ง record ต่อ user ต่อวั�
 | Method / route | สิทธิ์ / พฤติกรรม |
 | --- | --- |
 | `POST /api/issues` | สาธารณะ; ตรวจข้อมูล, ออก Ticket `IT-YYYYMM-NNNN` ตามเวลา Bangkok, บันทึก D1 และพยายามส่งอีเมล Resend |
-| `POST /api/resend` | contact form จาก Origin ที่อนุญาต; ส่งอีเมลถึงผู้รับที่กำหนดใน server environment เท่านั้น ดู `RESEND_API.md` |
+| `POST /api/resend` | contact form จาก Origin ที่อนุญาต; ส่งอีเมลถึงผู้รับที่กำหนดใน server environment เท่านั้น ดู `docs/api/RESEND_API.md` |
 | `GET /api/issues` | Admin; รายการล่าสุด, `limit` default 20/max 100; ไม่มี server-side search/status filter |
 | `GET /api/issues/stats` | Admin; สถิติ Dashboard |
 | `GET /api/issues/:ticketNumber` | Admin; รายละเอียด Ticket |
@@ -284,7 +290,7 @@ D1 migrations ใน source มี `0001`–`0011`. เอกสารเดิ�
 | ชื่อ | ใช้กับ |
 | --- | --- |
 | `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `ISSUE_NOTIFICATION_EMAIL` | อีเมล Ticket ใหม่ |
-| `RESEND_ALLOWED_ORIGINS`, `RESEND_TO_EMAIL` | external contact form `/api/resend`; recipient fallback ไป `ISSUE_NOTIFICATION_EMAIL`; ดู `RESEND_API.md` |
+| `RESEND_ALLOWED_ORIGINS`, `RESEND_TO_EMAIL` | external contact form `/api/resend`; recipient fallback ไป `ISSUE_NOTIFICATION_EMAIL`; ดู `docs/api/RESEND_API.md` |
 | `NETWORK_AGENT_TOKEN` | bearer token ของ Network Monitor agent; แยกจาก session/Access credentials |
 | `STORAGE_API_URL`, `STORAGE_APP_SECRET`, `CF_ACCESS_CLIENT_ID`, `CF_ACCESS_CLIENT_SECRET` | ไฟล์แนบและหน้า Storage |
 | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | Google OAuth |
@@ -344,11 +350,11 @@ pnpm dev
 | Network Monitor UI/API/agent | `src/pages/NetworkMonitor.jsx`, `functions/api/network/`, `garage/network-monitor/`, `migrations/0007_create_network_monitoring.sql`–`0009_create_network_ping_checks.sql` |
 | QR Studio, short links, logo upload | `src/pages/qr/`, `src/components/qr/`, `functions/api/qr-codes/`, `functions/api/short-links/`, `functions/api/qr-logos/`, `shared/qr.js`, `migrations/0010_create_qr_studio_tables.sql`, `migrations/0011_create_qr_logo_ownership.sql` |
 | Image Converter | `src/pages/ImageConverter.jsx`, `src/components/tools/`, `src/utils/imageConverter.js`, `src/utils/createZip.js`, `src/utils/imageDimensions.js`, `src/workers/image.worker.js` |
-| Storage UI/API | `src/pages/StorageImages.jsx`, `src/services/storage.js`, `functions/api/storage/`, `STORAGE_DOCS_API_REFERENCE.md` |
+| Storage UI/API | `src/pages/StorageImages.jsx`, `src/services/storage.js`, `functions/api/storage/`, `docs/storage/STORAGE_DOCS_API_REFERENCE.md` |
 | Google Sheet inventory | `src/pages/Sheet.jsx`, `src/hooks/useGoogleSheet.js` |
 | D1 setup/Admin bootstrap | `migrations/`, `wrangler.jsonc`, `scripts/bootstrap-admin.py` |
 
-ดู [README.md](README.md) สำหรับเอกสารติดตั้งและรายละเอียดผู้ใช้ และดู `STORAGE_DOCS_*.md` สำหรับเอกสารระบบ Storage API
+ดู [README.md](README.md) สำหรับเอกสารติดตั้งและรายละเอียดผู้ใช้ และดู `docs/storage/STORAGE_DOCS_*.md` สำหรับเอกสารระบบ Storage API
 
 ## QR Code Studio V1 (2026-10-26)
 
@@ -378,7 +384,7 @@ pnpm dev
 
 Regression suite ครอบคลุมกรณี failure และตรวจว่าไม่เขียน ownership metadata หรือเปิดเผยข้อความลับจาก upstream ผ่าน response/logs ส่วนสาเหตุ Storage ที่พบได้รับการแก้ไขแล้วตามผลที่ผู้ใช้ยืนยันด้านล่าง
 
-ดูรายละเอียด integration และสิทธิ์ของ `StorageImages.jsx` กับ QR Studio, error codes, คำสั่งตรวจสิทธิ์ และแนวทางดูแลระบบใน [QR Studio Storage documentation](QR_STUDIO_STORAGE_DOCS.md)
+ดูรายละเอียด integration และสิทธิ์ของ `StorageImages.jsx` กับ QR Studio, error codes, คำสั่งตรวจสิทธิ์ และแนวทางดูแลระบบใน [QR Studio Storage documentation](docs/features/QR_STUDIO_STORAGE_DOCS.md)
 
 ### ปัญหา upload 502 ที่แก้ไขแล้ว
 
@@ -393,7 +399,7 @@ Storage API เคยคืน `SQLITE_READONLY: attempt to write a readonly dat
 
 ## Release notes v1.3.4 — 30 ตุลาคม 2026
 
-- เพิ่ม V1.3.4_RELEASE.md เป็น release notes ฉบับแรก สรุป source baseline และข้อจำกัดโดยไม่อ้างว่าเป็น diff จาก release ก่อนหน้า
+- เพิ่ม docs/releases/V1.3.4_RELEASE.md เป็น release notes ฉบับแรก สรุป source baseline และข้อจำกัดโดยไม่อ้างว่าเป็น diff จาก release ก่อนหน้า
 - ตรวจ source, routes, package version และ migrations สำหรับเอกสาร; ตรวจ whitespace ด้วย git diff --check ไม่ได้รัน lint/build/tests/browser QA หรือเปลี่ยน production
 # 2026-11-01 — Route loading audit (in progress)
 
@@ -531,3 +537,9 @@ Whiteout overlays support fill color, border color, and border width in the edit
 
 - Added an accessible Library toggle on `/documentation`. The existing navigation remains available when expanded; collapsing frees the desktop reading area and reduces the mobile Library panel. State is page-local and defaults to expanded on remount. The main IssueDesk sidebar, API and authentication are unchanged. Updated README and AGENTS to describe the behavior and boundary.
 - In an isolated workspace copy, `pnpm lint` passed (pnpm warned that its pre-script dependency verification could not write a shim to the linked original node_modules), and `node --test scripts/docs-api-checks.mjs scripts/docs-viewer-checks.mjs` passed 10 tests. Browser interaction, keyboard focus, responsive light/dark appearance, real sessions and production are not verified. No deployment was performed. Next: verify collapse, expand and navigation in a browser on desktop and mobile.
+
+
+## Documentation Library animation — 4 November 2026
+
+- Added coordinated Library content scale/opacity and responsive layout transitions to the page-local toggle. Collapsed navigation is inert immediately, and reduced-motion preferences disable the transitions. Updated README and AGENTS.
+- In a workspace copy, `pnpm --config.verify-deps-before-run=false lint` and `node --test scripts/docs-api-checks.mjs scripts/docs-viewer-checks.mjs` passed (10 tests). Browser visual, keyboard and mobile/light/dark QA and production remain unverified; no deployment performed.

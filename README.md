@@ -18,7 +18,7 @@ IssueDesk เป็นเว็บแอป IT Help Desk สำหรับร�
 
 แอปรองรับธีม Light, Dark และ System รวมถึงหน้าจอมือถือ การส่งอีเมลแจ้ง Ticket ใช้ Resend แบบ best effort และขึ้นอยู่กับการตั้งค่าบริการ
 
-External contact form ใช้ `POST /api/resend` พร้อม Origin allowlist; เว็บไซต์ Big Brain Studio มี sender/recipient แยกและ metadata ของคำขอ ดูการตั้งค่าและข้อจำกัด anti-spam ใน [Resend API](RESEND_API.md)
+External contact form ใช้ `POST /api/resend` พร้อม Origin allowlist; เว็บไซต์ Big Brain Studio มี sender/recipient แยกและ metadata ของคำขอ ดูการตั้งค่าและข้อจำกัด anti-spam ใน [Resend API](docs/api/RESEND_API.md)
 
 ## หน้าใช้งาน
 
@@ -86,11 +86,13 @@ Secrets ของ Storage, OAuth และ Resend อยู่ฝั่ง serve
 
 ## เอกสาร
 
-- [Release notes v1.4.0](V1.4.0_RELEASE.md) และ [v1.3.4](V1.3.4_RELEASE.md) — ความสามารถและขอบเขตของแต่ละเวอร์ชัน
+รายละเอียดเอกสารจัดไว้ใน `docs/api/`, `docs/storage/`, `docs/network/`, `docs/features/` และ `docs/releases/`; เอกสารบริการเฉพาะยังอยู่ใน `garage/`
+
+- [Release notes v1.4.0](docs/releases/V1.4.0_RELEASE.md) และ [v1.3.4](docs/releases/V1.3.4_RELEASE.md) — ความสามารถและขอบเขตของแต่ละเวอร์ชัน
 - [Project handoff](PROJECT_HANDOFF.md) — ประวัติการเปลี่ยนแปลง ผลตรวจ และงานที่ยังค้าง
-- [Storage guide](STORAGE_README.md) และ [Storage API documentation](STORAGE_DOCS_API_REFERENCE.md)
-- [Network Monitoring API](NETWORK_MONITORING_API.md) และ [agent guide](garage/network-monitor/README_NETWORK_MONITOR.md)
-- [QR Studio Storage documentation](QR_STUDIO_STORAGE_DOCS.md)
+- [Storage guide](docs/storage/STORAGE_README.md) และ [Storage API documentation](docs/storage/STORAGE_DOCS_API_REFERENCE.md)
+- [Network Monitoring API](docs/network/NETWORK_MONITORING_API.md) และ [agent guide](garage/network-monitor/README_NETWORK_MONITOR.md)
+- [QR Studio Storage documentation](docs/features/QR_STUDIO_STORAGE_DOCS.md)
 - [AGENTS.md](AGENTS.md) — แนวทางทำงานใน repository
 
 การมี source หรือ configuration ใน repository ไม่ได้ยืนยันสถานะ deployment, credentials หรือ migrations บน production
@@ -100,7 +102,7 @@ Page routes are loaded on demand. The application shell and route guard load wit
 
 ### Private IT documentation API
 
-Administrators can access the read-only Pages Functions `GET /api/docs/tree`, `GET /api/docs/content?path=...` and `GET /api/docs/asset?path=...`. They read the fixed `main` branch of `ghuninew1/IT-System-Documentation`; the admin-only `/documentation` viewer provides a collapsible navigation library, Markdown and Mermaid diagrams. Use the Library button to collapse or expand the navigation on desktop and mobile; its state resets when the page is reopened. The allowlist covers the root README and Markdown files under `00-Overview` through `05-Operations`, plus PNG and SVG assets under those directories. PNG images load through the authenticated proxy; SVG is offered as a sandboxed download. Relative Markdown and supported asset links resolve against the current document. Heading fragments are not currently navigable; unsupported asset formats and remote images are not embedded. Responses include the source commit and are not cached. Files above 5 MiB and symlinks are excluded.
+Administrators can access the read-only Pages Functions `GET /api/docs/tree`, `GET /api/docs/content?path=...` and `GET /api/docs/asset?path=...`. They read the fixed `main` branch of `ghuninew1/IT-System-Documentation`; the admin-only `/documentation` viewer provides a collapsible navigation library, Markdown and Mermaid diagrams. Use the Library button to collapse or expand the navigation on desktop and mobile; its state resets when the page is reopened. The transition respects reduced-motion preferences. The allowlist covers the root README and Markdown files under `00-Overview` through `05-Operations`, plus PNG and SVG assets under those directories. PNG images load through the authenticated proxy; SVG is offered as a sandboxed download. Relative Markdown and supported asset links resolve against the current document. Heading fragments are not currently navigable; unsupported asset formats and remote images are not embedded. Responses include the source commit and are not cached. Files above 5 MiB and symlinks are excluded.
 
 Configure `GITHUB_DOCS_TOKEN` as a Cloudflare Pages server-side secret for the applicable environment. Use a fine-grained GitHub token restricted to this repository with Contents read-only permission and an expiration; never use a `VITE_` variable. The token and live integration must be configured and verified separately. Run `node --test scripts/docs-api-checks.mjs` for local mocked security tests.
 

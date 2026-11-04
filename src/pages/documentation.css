@@ -12,3 +12,19 @@ main:has(> [aria-label="Breadcrumb"]) pre { border-radius: .8rem; background: rg
 main:has(> [aria-label="Breadcrumb"]) :is(th,td) { border: 1px solid var(--border); padding: .5rem .75rem; text-align: left; }
 main:has(> [aria-label="Breadcrumb"]) img { max-width: 100%; height: auto; border-radius: .75rem; }
 main:has(> [aria-label="Breadcrumb"]) blockquote { border-left: 3px solid var(--primary); padding-left: 1rem; }
+
+/* Library transitions keep layout changes and the content scale in sync. */
+.documentation-layout { --library-duration: 280ms; }
+.documentation-library-header { transition: margin-bottom var(--library-duration) ease; }
+.documentation-library-header-expanded { margin-bottom: 1rem; }
+.documentation-library-content { display: grid; grid-template-rows: 0fr; transition: grid-template-rows var(--library-duration) cubic-bezier(.2, .8, .2, 1); }
+.documentation-library-content-expanded { grid-template-rows: 1fr; }
+.documentation-library-nav { opacity: 0; transform: scale(.96); transform-origin: top left; transition: opacity 200ms ease, transform var(--library-duration) cubic-bezier(.2, .8, .2, 1); }
+.documentation-library-content-expanded .documentation-library-nav { opacity: 1; transform: scale(1); }
+@media (min-width: 1024px) {
+  .documentation-layout { grid-template-columns: 260px minmax(0, 1fr); transition: grid-template-columns var(--library-duration) cubic-bezier(.2, .8, .2, 1); }
+  .documentation-layout-collapsed { grid-template-columns: 104px minmax(0, 1fr); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .documentation-layout, .documentation-library-header, .documentation-library-content, .documentation-library-nav { transition: none; }
+}

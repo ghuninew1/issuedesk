@@ -15,6 +15,7 @@
 - Inspect the existing implementation and relevant documentation before making changes. Do not assume undocumented behavior.
 
 ## Project Map
+- Detailed repository documentation is organized under `docs/api/`, `docs/storage/`, `docs/network/`, `docs/features/`, and `docs/releases/`; service-specific guides remain in `garage/`.
 - `src/App.jsx` defines routes and lazy-loaded pages; `src/auth/` owns browser session state and route guards.
 - `src/components/`, `src/pages/`, `src/hooks/`, and `src/theme/` contain the UI; shared styles and Tailwind theme tokens are in `src/index.css`.
 - `functions/api/` contains ticket, auth/OAuth, attendance, storage proxy, network, QR/Short Link/logo, and external Resend contact-form endpoints. These run in the Cloudflare runtime, not a Node.js server.
@@ -22,7 +23,7 @@
 - `garage/storage/` is a separate Node.js/Hono service using `better-sqlite3` for its own metadata and Garage's S3-compatible API for objects. Its SQLite database is separate from Cloudflare D1.
 - `garage/network-monitor/` is the Python agent for MikroTik RouterOS monitoring and requested LAN ping checks; its tests are in `garage/network-monitor/tests/`.
 - `garage/docker-compose.yml` defines the supporting containers. `scripts/bootstrap-admin.py` is an operational admin-creation tool, not a routine validation command.
-- Consult `README.md` and `PROJECT_HANDOFF.md` for orientation, `STORAGE_README.md` and `STORAGE_DOCS_*.md` for Storage, and `NETWORK_MONITORING_API.md` plus `garage/network-monitor/README_NETWORK_MONITOR.md` for networking. Verify operational details against code.
+- Consult `README.md` and `PROJECT_HANDOFF.md` for orientation, `docs/storage/STORAGE_README.md` and `docs/storage/STORAGE_DOCS_*.md` for Storage, and `docs/network/NETWORK_MONITORING_API.md` plus `garage/network-monitor/README_NETWORK_MONITOR.md` for networking. Verify operational details against code.
 
 ## Working Principles
 - Preserve the existing project structure, UI, and behavior unless the task requires a change.
@@ -68,7 +69,7 @@
 - Keep same-origin checks on browser mutation endpoints and retain authentication rate limits. Agent endpoints use their separate bearer-token contract rather than browser sessions.
 - Registration creates ordinary `user` accounts. Do not accept a client-supplied admin role or bypass inactive-user checks.
 - `POST /api/resend` uses an exact Origin allowlist and server-configured recipient. CORS is not authentication or abuse prevention; preserve validation and keep Resend credentials server-side.
-- The exact `https://www.bigbrain-studio.com` Origin uses required `BBS_CONTACT_FROM_EMAIL` and `BBS_CONTACT_TO_EMAIL`, a separate subject and best-effort request metadata; other Origins and ticket notifications retain their existing routing. No application rate limit is implemented; configure and verify Cloudflare WAF separately as described in `RESEND_API.md`.
+- The exact `https://www.bigbrain-studio.com` Origin uses required `BBS_CONTACT_FROM_EMAIL` and `BBS_CONTACT_TO_EMAIL`, a separate subject and best-effort request metadata; other Origins and ticket notifications retain their existing routing. No application rate limit is implemented; configure and verify Cloudflare WAF separately as described in `docs/api/RESEND_API.md`.
 - The exact `https://ghuninew1.github.io` Origin uses the GhuniNew Portfolio HTML contact template while retaining the existing default sender, recipient, subject, plain text and allowlist checks.
 - Google and Facebook OAuth require provider configuration. Preserve OAuth state-cookie validation and existing account-linking checks; do not imply that providers work merely because their routes exist.
 
@@ -167,7 +168,7 @@
 - The Vite build splits the FFmpeg WASM into assets below the Pages 25 MiB asset limit and the browser rejoins them before loading the core. Verify production asset loading and actual conversion separately from build success.
 
 ## Private IT documentation proxy
-- `/api/docs/tree`, `/api/docs/content` and `/api/docs/asset` are read-only admin-only Pages Functions. Keep the fixed repository and `main` ref, explicit documentation path/type allowlist, regular-blob verification, bounded responses, no-store headers and server-only `GITHUB_DOCS_TOKEN`. Do not expose GitHub errors or follow redirects. SVG assets are sandboxed downloads. The admin-only `/documentation` viewer has a page-local collapsible Library independent of the main IssueDesk sidebar; preserve its keyboard-accessible toggle and responsive layout. It renders Markdown without raw HTML, uses strict Mermaid in a sandboxed frame, and routes supported private assets through the proxy. Preserve these boundaries.
+- `/api/docs/tree`, `/api/docs/content` and `/api/docs/asset` are read-only admin-only Pages Functions. Keep the fixed repository and `main` ref, explicit documentation path/type allowlist, regular-blob verification, bounded responses, no-store headers and server-only `GITHUB_DOCS_TOKEN`. Do not expose GitHub errors or follow redirects. SVG assets are sandboxed downloads. The admin-only `/documentation` viewer has a page-local collapsible Library independent of the main IssueDesk sidebar; preserve its keyboard-accessible toggle, responsive layout and reduced-motion support. It renders Markdown without raw HTML, uses strict Mermaid in a sandboxed frame, and routes supported private assets through the proxy. Preserve these boundaries.
 - Docs failure diagnostics may contain only a fixed error category and upstream HTTP status (or null); never log credentials, request data, upstream bodies or exception messages. A handled Function failure returns sanitized JSON, not an HTML error page.
 - GitHub fetches use `redirect: "manual"` for Workers compatibility and reject all non-2xx responses, including redirects, without forwarding credentials. Do not use `redirect: "error"` in Workers.
 - Run `node --test scripts/docs-api-checks.mjs scripts/docs-viewer-checks.mjs` for proxy and viewer path tests. These mocks do not verify GitHub, Cloudflare configuration or actual sessions.

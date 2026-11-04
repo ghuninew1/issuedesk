@@ -14,7 +14,7 @@ Use this skill for changes in the IssueDesk repository. First inspect the releva
 - `migrations/`: ordered SQLite migrations for Cloudflare D1.
 - `wrangler.jsonc`: Pages configuration and D1 binding (`DB`).
 - `src/services/` and `src/utils/api.js`: browser-side API helpers.
-- `PROJECT_HANDOFF.md`, `README.md`, and `STORAGE_DOCS_*.md`: useful orientation; confirm details in code when behavior matters.
+- `PROJECT_HANDOFF.md`, `README.md`, and `docs/storage/STORAGE_DOCS_*.md`: useful orientation; confirm details in code when behavior matters.
 
 Use `pnpm` for package commands. Available scripts include `pnpm dev`, `pnpm lint`, `pnpm build`, and `pnpm preview`. `pnpm dev` serves the Vite frontend; use the configured Pages/Wrangler workflow when a task needs Functions or D1 behavior.
 
