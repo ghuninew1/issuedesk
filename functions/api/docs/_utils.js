@@ -29,7 +29,7 @@ function allowed(path, kind) {
 async function github(env, path, accept = "application/vnd.github+json") {
     let response;
     try {
-        response = await fetch(BASE + path, { headers: { Authorization: `Bearer ${env.GITHUB_DOCS_TOKEN}`, Accept: accept, "X-GitHub-Api-Version": "2022-11-28", "User-Agent": "IssueDesk-Documentation" }, redirect: "error" });
+        response = await fetch(BASE + path, { headers: { Authorization: `Bearer ${env.GITHUB_DOCS_TOKEN}`, Accept: accept, "X-GitHub-Api-Version": "2022-11-28", "User-Agent": "IssueDesk-Documentation" }, redirect: "manual" });
     } catch {
         throw new DocsFailure("github_network");
     }

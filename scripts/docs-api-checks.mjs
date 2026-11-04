@@ -41,11 +41,29 @@ test("snapshot exposes only allowed regular files and pinned blobs", async () =>
     const result = await content(context("content?path=README.md"));
     assert.equal((await result.json()).content, "hello");
     assert.ok(calls.every(([url]) => url.startsWith("https://api.github.com/repos/ghuninew1/IT-System-Documentation/")));
-    assert.ok(calls.every(([, options]) => options.redirect === "error"));
+    assert.ok(calls.every(([, options]) => options.redirect === "manual"));
     assert.equal((await content(context("content?path=01-Network%2Flink.md"))).status, 404);
     const image = await asset(context("asset?path=01-Network%2Fimage.svg"));
     assert.equal(image.headers.get("content-disposition"), "attachment");
     assert.match(image.headers.get("content-security-policy"), /sandbox/);
+});
+
+test("redirects are rejected without forwarding credentials to their destination", async () => {
+    const originalError = console.error;
+    const logs = [];
+    const calls = [];
+    console.error = (...args) => logs.push(args);
+    try {
+        globalThis.fetch = async (url, options) => {
+            calls.push({ url, redirect: options.redirect });
+            return new Response(null, { status: 302, headers: { Location: "https://untrusted.example/" } });
+        };
+        const response = await tree(context("tree"));
+        assert.equal(response.status, 502);
+        assert.equal(calls.length, 1);
+        assert.equal(calls[0].redirect, "manual");
+        assert.deepEqual(logs.pop(), ["Documentation API failure", { category: "github_http", status: 302 }]);
+    } finally { console.error = originalError; }
 });
 test("rejects traversal, overrides, duplicate or disallowed paths", async () => {
     const calls = mock();
