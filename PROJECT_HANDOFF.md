@@ -503,3 +503,10 @@ Whiteout overlays support fill color, border color, and border width in the edit
 - Replaced `react-router-dom` with `react-router` 8.5.1 and updated imports; declarative routes and authentication logic remain unchanged. Node 22.22+ and React/React DOM 19.2.7+ are required.
 - Current checks: `pnpm lint`, `pnpm build`, and `git diff --check` passed. No root `test` script. Browser, authentication, deployment, and production routing remain unverified.
 - Reviewed `AGENTS.md` and `README.md`; the README remains accurate without a version-specific edit. Next: verify navigation, auth redirects, direct URLs, refresh, and browser history in a running deployment.
+
+## IT documentation Phase 1.1 — 4 November 2026
+
+- Added admin-session-protected, read-only tree, Markdown content and PNG/SVG asset endpoints. The repository and main ref are fixed; paths and extensions are allowlisted, symlinks and large files excluded, and blob reads pinned to a validated snapshot. SVG is an attachment with a restrictive sandbox CSP. Errors are sanitized and responses are non-cacheable. No frontend, auth, infrastructure or repository data changes.
+- Local mocked security tests cover session/role denial, traversal, ref override, symlinks, fixed upstream, headers and sanitized failures. Real Cloudflare Pages routing/session, GitHub API, token permissions, private assets and production remain unverified. Configure `GITHUB_DOCS_TOKEN` as an environment-specific server secret using a repository-restricted fine-grained Contents read-only token; then test with real admin and ordinary sessions and representative files before use. The future viewer must safely render Markdown and SVG; no public sharing is implemented.
+
+- Current validation: `node --test scripts/docs-api-checks.mjs` (4 tests), `pnpm lint`, `pnpm build`, and `git diff --check` passed. Build validates the frontend bundle, not deployed Functions.

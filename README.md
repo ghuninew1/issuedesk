@@ -97,3 +97,9 @@ Secrets ของ Storage, OAuth และ Resend อยู่ฝั่ง serve
 # Route loading
 
 Page routes are loaded on demand. The application shell and route guard load with the app; a shared loading state appears inside the shell while a page loads. The standalone login route has its own loading boundary.
+
+### Private IT documentation API
+
+Administrators can access the read-only Pages Functions `GET /api/docs/tree`, `GET /api/docs/content?path=...` and `GET /api/docs/asset?path=...`. They read the fixed `main` branch of `ghuninew1/IT-System-Documentation`; this phase does not provide a viewer. The allowlist covers the root README and Markdown files under `00-Overview` through `05-Operations`, plus PNG and SVG assets under those directories. SVG is returned as a sandboxed attachment. Responses include the source commit and are not cached. Files above 5 MiB and symlinks are excluded.
+
+Configure `GITHUB_DOCS_TOKEN` as a Cloudflare Pages server-side secret for the applicable environment. Use a fine-grained GitHub token restricted to this repository with Contents read-only permission and an expiration; never use a `VITE_` variable. The token and live integration must be configured and verified separately. Run `node --test scripts/docs-api-checks.mjs` for local mocked security tests.

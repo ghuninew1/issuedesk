@@ -165,3 +165,7 @@
 
 - `/video-converter` is session-protected and processes MP4, MOV, WebM and MKV locally with lazy-loaded `@ffmpeg/ffmpeg` and `@ffmpeg/core`; never upload video data. The sequential queue cleans FFmpeg temporary files and terminates the worker on unmount. Output is MP4 (H.264/AAC); H.265 is disabled because the current WebAssembly encoder hangs in local testing. preserve compatible codec mapping, the no-upscale behavior and the 4K resource notice. Enable 1440p/4K presets only when every selected video has readable dimensions with a short edge at least that large. WebM remains an input format, not an output option. Large files and ZIP creation are limited by browser memory.
 - The Vite build splits the FFmpeg WASM into assets below the Pages 25 MiB asset limit and the browser rejoins them before loading the core. Verify production asset loading and actual conversion separately from build success.
+
+## Private IT documentation proxy
+- `/api/docs/tree`, `/api/docs/content` and `/api/docs/asset` are read-only admin-only Pages Functions. Keep the fixed repository and `main` ref, explicit documentation path/type allowlist, regular-blob verification, bounded responses, no-store headers and server-only `GITHUB_DOCS_TOKEN`. Do not expose GitHub errors or follow redirects. SVG assets are sandboxed downloads; a future viewer must handle them safely.
+- Run `node --test scripts/docs-api-checks.mjs` for the proxy security tests. These mocks do not verify GitHub, Cloudflare configuration or actual sessions.
