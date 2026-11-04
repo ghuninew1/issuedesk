@@ -63,3 +63,54 @@ test("failures are non-cacheable and never expose upstream errors or token", asy
     assert.doesNotMatch(await response.text(), /secret-value/);
     assert.equal((await tree(context("tree", "admin", ""))).status, 503);
 });
+
+test("upstream status and network failures produce sanitized JSON and safe diagnostics", async () => {
+    const originalError = console.error;
+    const logs = [];
+    console.error = (...args) => logs.push(args);
+    try {
+        for (const status of [401, 403, 404, 429, 500]) {
+            globalThis.fetch = async () => new Response("secret-value upstream body", { status });
+            const response = await tree(context("tree"));
+            assert.equal(response.status, 502);
+            assert.match(response.headers.get("content-type"), /application\/json/);
+            assert.deepEqual(await response.json(), { success: false, message: "Documentation service unavailable" });
+            assert.deepEqual(logs.pop(), ["Documentation API failure", { category: "github_http", status }]);
+        }
+        globalThis.fetch = async () => { throw new Error("secret-value issuedesk_session=test Authorization"); };
+        for (const [fn, path] of [[tree, "tree"], [content, "content?path=README.md"], [asset, "asset?path=01-Network%2Fimage.svg"]]) {
+            const response = await fn(context(path));
+            assert.equal(response.status, 502);
+            assert.match(response.headers.get("content-type"), /application\/json/);
+            assert.doesNotMatch(await response.text(), /secret-value|issuedesk_session|Authorization/);
+            const log = logs.pop();
+            assert.deepEqual(log, ["Documentation API failure", { category: "github_network", status: null }]);
+            assert.doesNotMatch(JSON.stringify(log), /secret-value|issuedesk_session|Authorization/);
+        }
+        const missing = await tree(context("tree", "admin", ""));
+        assert.equal(missing.status, 503);
+        assert.deepEqual(logs.pop(), ["Documentation API failure", { category: "missing_configuration", status: null }]);
+    } finally { console.error = originalError; }
+});
+
+test("GitHub requests use JSON for snapshots and raw bytes for blobs", async () => {
+    const calls = mock();
+    await content(context("content?path=README.md"));
+    assert.deepEqual(calls.map(([, options]) => options.headers.Accept), ["application/vnd.github+json", "application/vnd.github+json", "application/vnd.github.raw+json"]);
+    assert.ok(calls.every(([, options]) => options.headers.Authorization === "Bearer secret-value"));
+    assert.ok(calls.every(([, options]) => options.headers["X-GitHub-Api-Version"] === "2022-11-28"));
+});
+
+test("invalid upstream snapshots and interrupted bodies are classified without their contents", async () => {
+    const originalError = console.error;
+    const logs = [];
+    console.error = (...args) => logs.push(args);
+    try {
+        globalThis.fetch = async () => new Response("secret-value invalid JSON");
+        assert.equal((await tree(context("tree"))).status, 502);
+        assert.deepEqual(logs.pop(), ["Documentation API failure", { category: "invalid_snapshot", status: null }]);
+        globalThis.fetch = async () => new Response(new ReadableStream({ start(controller) { controller.error(new Error("secret-value")); } }));
+        assert.equal((await tree(context("tree"))).status, 502);
+        assert.deepEqual(logs.pop(), ["Documentation API failure", { category: "github_body", status: null }]);
+    } finally { console.error = originalError; }
+});

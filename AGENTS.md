@@ -168,4 +168,5 @@
 
 ## Private IT documentation proxy
 - `/api/docs/tree`, `/api/docs/content` and `/api/docs/asset` are read-only admin-only Pages Functions. Keep the fixed repository and `main` ref, explicit documentation path/type allowlist, regular-blob verification, bounded responses, no-store headers and server-only `GITHUB_DOCS_TOKEN`. Do not expose GitHub errors or follow redirects. SVG assets are sandboxed downloads. The admin-only `/documentation` viewer renders Markdown without raw HTML, uses strict Mermaid in a sandboxed frame, and routes supported private assets through the proxy. Preserve these boundaries.
+- Docs failure diagnostics may contain only a fixed error category and upstream HTTP status (or null); never log credentials, request data, upstream bodies or exception messages. A handled Function failure returns sanitized JSON, not an HTML error page.
 - Run `node --test scripts/docs-api-checks.mjs scripts/docs-viewer-checks.mjs` for proxy and viewer path tests. These mocks do not verify GitHub, Cloudflare configuration or actual sessions.
