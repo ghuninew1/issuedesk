@@ -4,6 +4,12 @@
 
 ## Portfolio contact email presentation — 2026-11-02
 
+## IT documentation Phase 1.3 — 5 November 2026 (partial)
+
+- Prevented an old Mermaid result from appearing while a changed diagram source is rendering; invalid diagrams still show their current source. Added checks that unauthenticated and non-admin API responses use no-store. Reviewed AGENTS.md and README.md; neither needs a factual change for this fix.
+- Local workspace-copy checks: docs API/viewer tests 10/10, lint, and build with Vite config loader `runner` passed. The default build could not write its temporary config file through the read-only linked node_modules. These checks do not establish browser, Cloudflare, GitHub, real session or production behavior.
+- Still outstanding: heading fragment navigation, consistent tree/content/assets across commits, browser collapse/expand and responsive light/dark QA, Mermaid and private PNG/SVG integration, and actual admin/non-admin/expired-session verification. A client-supplied commit SHA must not permit arbitrary historical private content; design and test authorization before implementing snapshot pinning. No deployment or production changes.
+
 ## 2026-11-04 — Documentation organization
 
 - Moved 11 root-level detailed Markdown documents into `docs/api/`, `docs/storage/`, `docs/network/`, `docs/features/`, and `docs/releases/`; root orientation files and LICENSE remain in place. Updated repository references, relative links, and previously outdated Storage guide paths. Service-specific guides remain in `garage/`. No application behavior or configuration was changed.

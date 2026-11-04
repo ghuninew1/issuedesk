@@ -28,8 +28,11 @@ function mock() {
 test("all endpoints enforce session and admin before upstream access", async () => {
     const calls = mock();
     for (const [fn, path] of [[tree, "tree"], [content, "content?path=README.md"], [asset, "asset?path=01-Network%2Fimage.svg"]]) {
-        assert.equal((await fn(context(path, null))).status, 401);
-        assert.equal((await fn(context(path, "user"))).status, 403);
+        for (const [role, status] of [[null, 401], ["user", 403]]) {
+            const response = await fn(context(path, role));
+            assert.equal(response.status, status);
+            assert.match(response.headers.get("cache-control"), /no-store/);
+        }
     }
     assert.equal(calls.length, 0);
 });
