@@ -82,6 +82,12 @@
 - The dashboard snapshot includes Router identity/uptime/CPU/RAM/nullable temperature and AIS/True WAN interface state, nullable IP and PPPoE uptime, and byte counters. The latest DHCP lease list is limited to 100 entries and its total is reported separately. It does not include RouterOS version, all interface/error counters, ARP devices, or historical CPU/RAM/latency/packet-loss samples; do not add UI sections for those fields until a real data source exists. Historical events currently cover WAN transitions and agent heartbeat/offline state.
 
 ## Frontend
+- Extract UI into focused components when it is reused or when separation improves readability and maintenance. Do not declare React components inside a render function; define them at module scope to keep their identity stable across renders.
+- Extract stateful logic into custom hooks when it is reused or has a clear responsibility that benefits from separation from UI. Use ordinary utilities for pure functions and calculations as appropriate; do not create hooks solely to shorten a file.
+- Keep a component or logic in its existing file when it is only used there and remains readable.
+- Consider appropriately scoped data, constants, or configuration modules for reused or frequently changing menu items, cards, options, labels, and static datasets. Render uniform collections with `.map()` and stable keys; keep runtime-derived values close to the logic that produces them.
+- Do not force forms, interactive controls, or responsive layouts with different behavior or semantics into a common schema, component, or `.map()`. Preserve existing UI, behavior, ordering, API contracts, authorization, accessibility, state, and resource cleanup.
+- Apply these conventions incrementally when changing related code. Do not refactor working code solely to satisfy a pattern or refactor the whole project without a reason.
 - Follow a mobile-first responsive design approach.
 - Use `src/components/GlassButton.jsx` for UI buttons so hover and active feedback comes from `glassHover` in `src/utils/utils.js`. Keep native buttons for non-visual click targets such as full-screen backdrops.
 - Preserve existing routing, authentication, and authorization behavior.

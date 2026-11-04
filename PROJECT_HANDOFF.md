@@ -1,3 +1,7 @@
+## 2026-11-04 — Frontend code organization conventions
+
+- Updated `AGENTS.md` with incremental component, hook, and data organization conventions; existing `cx()` requirements remain in place. No application code or behavior changed. Reviewed `README.md`; its project overview and usage remain accurate.
+
 ## Portfolio contact email presentation — 2026-11-02
 
 ## 2026-11-04 — Documentation organization
