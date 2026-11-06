@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { ArrowDownToLine, ArrowRight, Check, FileArchive, Info, LoaderCircle, Sparkles, Minimize2, ScanLine, ShieldCheck } from "lucide-react";
 import GlassButton from "../../components/GlassButton";
+import ToolSelect from "../../components/tools/ToolSelect";
 import { cx } from "../../utils/cx";
 
 const PRESETS = {
@@ -232,7 +233,7 @@ export default function PDFCompression({ pages, sources, busy, setBusy }) {
                     <label className={cx("sr-only")} htmlFor="pdf-compression-target">Target file size</label>
                     <input id="pdf-compression-target" className={cx(field, "w-36 max-w-full")} type="number" min="0.01" step="any" value={target} onChange={(event) => setTarget(event.target.value)} placeholder="e.g. 2" disabled={!!busy || preset === "lossless"} />
                     <label className={cx("sr-only")} htmlFor="pdf-compression-unit">Target size unit</label>
-                    <select id="pdf-compression-unit" className={cx(field)} value={unit} onChange={(event) => setUnit(event.target.value)} disabled={!!busy || preset === "lossless"}><option>MB</option><option>KB</option></select>
+                    <ToolSelect id="pdf-compression-unit" className={cx("shrink-0")} value={unit} onChange={(event) => setUnit(event.target.value)} disabled={!!busy || preset === "lossless"}><option>MB</option><option>KB</option></ToolSelect>
                 </div>
                 <p className={cx("text-xs text-muted-foreground")}>{preset === "lossless" ? "Target size is unavailable in Lossless mode because document quality is preserved." : <>{target && Number(target) > 0 ? `Try to keep the compressed PDF at or below ${target} ${unit}.` : "No target set — compression uses the selected quality preset."} Best effort — some PDFs may not reach the requested size.</>}</p>
             </div>

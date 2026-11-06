@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Info, Type, Square, ImagePlus, MousePointer2, Trash2, Undo2, Redo2, Download } from "lucide-react";
 import GlassButton from "../../components/GlassButton";
+import ToolSelect from "../../components/tools/ToolSelect";
 import { cx } from "../../utils/cx";
 import { mapRectangle } from "./editorCoordinates";
 
@@ -257,8 +258,8 @@ export default function PDFEditor({
                 <div className={cx("space-y-3 rounded-2xl border border-border bg-card/60 p-4")}>
                     <label className={cx("flex flex-wrap items-center gap-2 text-sm")}>
                         Page
-                        <select
-                            className={cx(field)}
+                        <ToolSelect
+                            className={cx("min-w-0 max-w-full")}
                             value={page.id}
                             onChange={(event) => {
                                 setActiveId(event.target.value);
@@ -270,7 +271,7 @@ export default function PDFEditor({
                                     Page {index + 1} · {sources.get(item.sourceId)?.file.name}
                                 </option>
                             ))}
-                        </select>
+                        </ToolSelect>
                     </label>
                     <div
                         ref={surfaceRef}

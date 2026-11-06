@@ -1,3 +1,9 @@
+## 2026-11-07 — PDF Studio dropdown styling
+
+- PDF Studio Edit (Page) and Compress (MB/KB) now share the Image Converter's native select styling through `src/components/tools/ToolSelect.jsx`. Options, handlers, and Lossless disabling are unchanged.
+- `pnpm lint`, `pnpm build`, and `git diff --check` passed. Local Chrome via Playwright (Browser plugin unavailable), with mocked auth and a generated two-page PDF, matched the Image Converter control styles at 1440×1000 Light and 390×844 Dark. Verified selecting page 2, changing to KB, and disabling the unit in Lossless; no page or console errors in the passing runs. Native popup appearance on physical mobile devices and production were not verified.
+- Reviewed `AGENTS.md` and `README.md`; no factual updates needed. No deployment.
+
 ## 2026-11-04 — Frontend code organization conventions
 
 - Updated `AGENTS.md` with incremental component, hook, and data organization conventions; existing `cx()` requirements remain in place. No application code or behavior changed. Reviewed `README.md`; its project overview and usage remain accurate.

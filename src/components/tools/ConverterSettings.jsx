@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { cx } from "../../utils/cx";
 import { Settings2 } from "lucide-react";
+import ToolSelect from "./ToolSelect";
 
 function ConverterSettings({ settings, onChange }) {
     const [preset, setPreset] = useState("balanced");
@@ -32,32 +33,32 @@ function ConverterSettings({ settings, onChange }) {
                         Output Format
                     </label>
 
-                    <select
+                    <ToolSelect
                         id="format"
                         name="format"
                         value={settings.format}
                         onChange={handleChange}
-                        className={cx("w-full rounded-xl border border-input bg-background/60 px-3 py-2.5 text-sm text-foreground outline-none transition focus-visible:ring-2 focus-visible:ring-ring/30")}
+                        className={cx("w-full")}
                     >
                         <option value="webp">WebP</option>
                         <option value="avif">AVIF</option>
                         <option value="jpeg">JPG</option>
                         <option value="png">PNG</option>
-                    </select>
+                    </ToolSelect>
                 </div>
 
                 <div>
                     <label htmlFor="preset" className={cx("mb-2 block font-medium text-sm")}>Quality Preset</label>
-                    <select id="preset" value={preset} onChange={(event) => {
+                    <ToolSelect id="preset" value={preset} onChange={(event) => {
                         const nextPreset = event.target.value;
                         setPreset(nextPreset);
                         if (nextPreset !== "custom") onChange({ quality: presets[nextPreset] });
-                    }} className={cx("w-full rounded-xl border border-input bg-background/60 px-3 py-2.5 text-sm text-foreground focus-visible:ring-2 focus-visible:ring-ring/30")}>
+                    }} className={cx("w-full")}>
                         <option value="best">Best Quality</option>
                         <option value="balanced">Balanced — Recommended</option>
                         <option value="small">Small File</option>
                         <option value="custom">Custom</option>
-                    </select>
+                    </ToolSelect>
                     <p className={cx("mt-2 text-xs text-muted-foreground")}>{isPng ? "PNG is lossless; quality does not apply." : `Quality: ${settings.quality}%`}</p>
                 </div>
 
