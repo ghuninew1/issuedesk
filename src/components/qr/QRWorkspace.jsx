@@ -1,9 +1,7 @@
 import { NavLink } from "react-router";
-import useDocumentTitle from "../../hooks/useDocumentTitle";
 import { QrCode } from "lucide-react";
 import { cx } from "../../utils/cx";
 export default function QRWorkspace({ children }) {
-    useDocumentTitle("QR Code Studio");
     return (
         <div className={cx("mx-auto max-w-7xl animate-fadeInUp")}>
             <header className={cx("mb-6")}>

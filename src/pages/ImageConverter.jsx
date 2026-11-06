@@ -16,7 +16,6 @@ import { createZip } from "../utils/createZip";
 import { getImageDimensions } from "../utils/imageDimensions";
 import ConversionLog from "../components/tools/ConversionLog";
 import { cx } from "../utils/cx";
-import { useDocumentTitle } from "../hooks/useDocumentTitle";
 
 function formatFileSize(bytes) {
     if (bytes === 0) {
@@ -39,7 +38,6 @@ function calculateSizeReduction(originalSize, outputSize) {
 }
 
 function ImageConverter() {
-    useDocumentTitle("Image Converter");
     const [files, setFiles] = useState([]);
     const [logs, setLogs] = useState([]);
     const [settings, setSettings] = useState({

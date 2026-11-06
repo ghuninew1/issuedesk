@@ -13,7 +13,6 @@ import {
 } from "lucide-react";
 import { api } from "../utils/api";
 import { cx } from "../utils/cx";
-import { useDocumentTitle } from "../hooks/useDocumentTitle";
 
 const STATUS_LABELS = {
     Open: "รับเรื่องแล้ว",
@@ -51,7 +50,6 @@ export default function TrackTicket() {
     const { ticketNumber } = useParams();
     const [lookup, setLookup] = useState(null);
 
-    useDocumentTitle(ticketNumber ? `Track ${ticketNumber}` : "Issue Tracking");
 
     useEffect(() => {
         const controller = new AbortController();

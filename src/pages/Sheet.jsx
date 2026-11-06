@@ -19,7 +19,6 @@ import {
 } from "lucide-react";
 import { useGoogleSheet } from "../hooks/useGoogleSheet";
 import { cx } from "../utils/cx";
-import { useDocumentTitle } from "../hooks/useDocumentTitle";
 
 const imageFields = [
     { key: "computerImage", label: "Computer" },
@@ -80,7 +79,6 @@ export default function Sheet() {
     const [statusFilter, setStatusFilter] = useState("All status");
     const [currentPage, setCurrentPage] = useState(1);
     const [selectedAsset, setSelectedAsset] = useState(null);
-    useDocumentTitle("Asset inventory");
 
     const statuses = useMemo(() => ["All status", ...new Set(data.map((asset) => asset.status).filter(Boolean))], [data]);
     const filteredAssets = useMemo(() => {

@@ -1,10 +1,11 @@
-import { Navigate, Outlet, Route, Routes, useLocation } from "react-router";
-import { lazy, Suspense, useEffect } from "react";
+import { Navigate, Outlet, Route, Routes, useLocation, matchPath } from "react-router";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { Loader } from "lucide-react";
 import { useAuth } from "./auth/useAuth";
 import AppShell from "./components/layout/AppShell";
 import ProtectedRoute from "./auth/ProtectedRoute";
 import { cx } from "./utils/cx";
+import { useDocumentTitle } from "./hooks/useDocumentTitle";
 import { consumeSocialReturn, loginDestination, readSocialReturn } from "./auth/loginDestination";
 
 const QRCodeStudio = lazy(() => import("./pages/qr/QRCodeStudio"));
@@ -28,7 +29,7 @@ const Attendance = lazy(() => import("./pages/Attendance"));
 const Documentation = lazy(() => import("./pages/Documentation"));
 const NetworkMonitor = lazy(() => import("./pages/NetworkMonitor"));
 
-function LoginRoute() {
+function LoginRoute({ page, setPage }) {
     const { user, isLoading } = useAuth();
     const location = useLocation();
     const socialReturn = readSocialReturn();
@@ -49,7 +50,7 @@ function LoginRoute() {
         return <Navigate to={loginDestination(location.state?.from || socialReturn, user)} replace />;
     }
 
-    return <LoginRegister />;
+    return <LoginRegister page={page} setPage={setPage} />;
 }
 
 function DashboardPage() {
@@ -99,14 +100,37 @@ function PageLoading() {
     );
 }
 
+const pageTitles = {
+    "/": "Home", "/login": "Login", "/dashboard": "Dashboard", "/report": "Report Issue",
+    "/issues": "Issues", "/attendance": "Attendance", "/sheet": "Asset inventory",
+    "/storage/images": "Image Storage", "/network-monitor": "Network Monitoring",
+    "/documentation": "Documentation", "/image-converter": "Image Converter",
+    "/video-converter": "Video Converter", "/pdf-studio": "PDF Studio",
+    "/qr-studio": "QR Code Studio", "/qr-studio/links": "QR Code Studio",
+    "/qr-studio/saved": "QR Code Studio",
+};
+
 function App() {
+    const { pathname, key } = useLocation();
+    const [loginState, setLoginState] = useState({ key, page: "login" });
+    const loginPage = loginState.key === key ? loginState.page : "login";
+    const setLoginPage = (page) => setLoginState({ key, page });
+    const issue = matchPath("/issues/:ticketNumber", pathname);
+    const track = matchPath("/track/:ticketNumber", pathname);
+    const routeTitle = Object.entries(pageTitles).find(([path]) => matchPath({ path, end: true }, pathname))?.[1];
+    const title = issue ? `Issue #${issue.params.ticketNumber}`
+        : track ? `Track ${track.params.ticketNumber}`
+        : routeTitle === "Login" && loginPage === "register" ? "Register"
+        : routeTitle || "Page not found";
+    useDocumentTitle(title);
+
     return (
         <Routes>
             <Route
                 path="/login"
                 element={
                     <Suspense fallback={<PageLoading />}>
-                        <LoginRoute />
+                        <LoginRoute page={loginPage} setPage={setLoginPage} />
                     </Suspense>
                 }
             />

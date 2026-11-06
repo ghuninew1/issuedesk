@@ -4,13 +4,11 @@ import { Link, useNavigate } from "react-router";
 import { ArrowRight, ClipboardCheck, LifeBuoy, Search, TicketPlus, ClipboardPaste } from "lucide-react";
 import { cx } from "../utils/cx";
 import ElectricBorder from "../components/ElectricBorder";
-import { useDocumentTitle } from "../hooks/useDocumentTitle";
 
 const PortalHome = () => {
     const [ticketNumber, setTicketNumber] = useState("");
     const navigate = useNavigate();
 
-    useDocumentTitle("Home");
 
     const handleTrackTicket = (event) => {
         event.preventDefault();

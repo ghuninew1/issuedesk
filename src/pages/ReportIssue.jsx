@@ -1,9 +1,7 @@
 import ReportForm from "../components/report/ReportForm";
 import { cx } from "../utils/cx";
-import { useDocumentTitle } from "../hooks/useDocumentTitle";
 
 const ReportIssue = () => {
-    useDocumentTitle("Report Issue");
     return (
         <div className="relative mx-auto max-w-6xl animate-fadeInUp">
             <div className="pointer-events-none absolute -right-20 -top-16 -z-10 size-80 rounded-full bg-cyan-400/10 blur-[100px] dark:bg-cyan-400/5" />

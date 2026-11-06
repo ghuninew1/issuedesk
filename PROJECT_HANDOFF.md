@@ -553,3 +553,13 @@ Whiteout overlays support fill color, border color, and border width in the edit
 
 - Added coordinated Library content scale/opacity and responsive layout transitions to the page-local toggle. Collapsed navigation is inert immediately, and reduced-motion preferences disable the transitions. Updated README and AGENTS.
 - In a workspace copy, `pnpm --config.verify-deps-before-run=false lint` and `node --test scripts/docs-api-checks.mjs scripts/docs-viewer-checks.mjs` passed (10 tests). Browser visual, keyboard and mobile/light/dark QA and production remain unverified; no deployment performed.
+
+## Page titles and Header — 6 November 2026
+
+- Added document titles for Attendance, Network Monitoring, Documentation and the not-found page; Dashboard now sets its title at page level. QR Studio routes continue to share their existing title. Updated the shared Header labels and descriptions for application routes, including dynamic issue details and ticket tracking.
+- Reviewed `AGENTS.md` and `README.md`; both remain accurate without changes. `pnpm lint` passed. Browser navigation, responsive appearance and production remain unverified. Next: check tab and Header titles while navigating routes with appropriate sessions.
+
+## Centralized page titles — 6 November 2026
+
+- Centralized `useDocumentTitle` in `App.jsx` using route matching, including ticket numbers and the Login/Register form mode. Removed calls from individual pages and QR workspace. Header labels remain managed by the shared Header.
+- Reviewed `AGENTS.md` and `README.md`; no factual changes were needed. `pnpm lint` passed after correcting an initial lint failure; browser navigation, login mode transitions and production remain unverified. Next: verify tab and Header titles during navigation, including login/register and ticket routes.

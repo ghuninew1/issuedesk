@@ -6,16 +6,12 @@ import { User, Mail, Lock, Eye, EyeOff, ArrowRight, ShieldCheck, Sparkles, Arrow
 import ElectricBorder from "../components/ElectricBorder";
 import { api } from "../utils/api";
 import { useAuth } from "../auth/useAuth";
-import { useDocumentTitle } from "../hooks/useDocumentTitle";
 import { consumeSocialReturn, loginDestination, readSocialReturn, saveSocialReturn } from "../auth/loginDestination";
 
-export default function LoginRegister() {
+export default function LoginRegister({ page, setPage }) {
     const navigate = useNavigate();
     const location = useLocation();
     const { setUser } = useAuth();
-
-    // Page mode: 'login' | 'register'
-    const [page, setPage] = useState("login");
 
     // Form states - Login
     const [loginEmail, setLoginEmail] = useState("");
@@ -37,7 +33,6 @@ export default function LoginRegister() {
         setToastMessage(msg);
         window.setTimeout(() => setToastMessage(""), 3000);
     }, []);
-    useDocumentTitle(page === "login" ? "Login" : "Register");
 
     useEffect(() => {
         const params = new URLSearchParams(window.location.search);

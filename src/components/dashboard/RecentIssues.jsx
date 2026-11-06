@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { cx } from '../../utils/cx'
 import { Link } from 'react-router'
-import { useDocumentTitle } from "../../hooks/useDocumentTitle";
 
 const priorityStyles = {
     High: 'bg-red-500/10 text-red-600 dark:text-red-400',
@@ -64,7 +63,6 @@ const RecentIssues = () => {
     const [isLoading, setIsLoading] = useState(true)
     const [error, setError] = useState('')
 
-    useDocumentTitle('Dashboard');
 
     useEffect(() => {
         const controller = new AbortController()

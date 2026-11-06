@@ -17,7 +17,6 @@ import {
 } from "lucide-react";
 import GlassButton from "../../components/GlassButton";
 import { cx } from "../../utils/cx";
-import { useDocumentTitle } from "../../hooks/useDocumentTitle";
 
 const PDFCompression = lazy(() => import("./PDFCompression"));
 const PDFEditor = lazy(() => import("./PDFEditor"));
@@ -111,7 +110,6 @@ function PageCanvas({ page, source, preview = false }) {
 const controlClass =
     "inline-flex min-h-10 items-center justify-center gap-2 rounded-xl border border-border px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-40";
 function PDFStudio() {
-    useDocumentTitle("PDF Studio");
     const [history, dispatch] = useReducer(historyReducer, initialHistory);
     const [selection, setSelection] = useState([]);
     const [activeId, setActiveId] = useState(null);

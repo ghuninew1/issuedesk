@@ -4,7 +4,6 @@ import { Video, Sparkles, Settings2, Trash2, Download } from "lucide-react";
 import GlassButton from "../components/GlassButton";
 import { createZip } from "../utils/createZip";
 import { cx } from "../utils/cx";
-import { useDocumentTitle } from "../hooks/useDocumentTitle";
 
 const formats = {
     mp4: { audio: "AAC", audioEncoder: "aac", mime: "video/mp4" },
@@ -59,7 +58,6 @@ function Field({ label, children }) {
 }
 
 export default function VideoConverter() {
-    useDocumentTitle("Video Converter");
     const [files, setFiles] = useState([]);
     const [settings, setSettings] = useState({
         format: "mp4",

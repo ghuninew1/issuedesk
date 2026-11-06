@@ -1,7 +1,6 @@
 import GlassButton from "../components/GlassButton";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Check, ChevronLeft, ChevronRight, Copy, Download, Eye, File as FileIcon, ImagePlus,Image, LoaderCircle, RefreshCw, Search, Trash2, Upload, X } from "lucide-react";
-import { useDocumentTitle } from "../hooks/useDocumentTitle";
 import { deleteStorageImage, getStorageImageUrl, getStorageImages, uploadStorageFiles } from "../services/storage";
 import { cx } from "../utils/cx";
 
@@ -75,7 +74,6 @@ export default function StorageImages() {
     const [notice, setNotice] = useState("");
     const [selectedImage, setSelectedImage] = useState(null);
 
-    useDocumentTitle("Image Storage");
 
     const loadImages = useCallback(async (signal) => {
         setIsLoading(true);

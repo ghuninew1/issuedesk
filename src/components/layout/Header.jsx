@@ -13,6 +13,7 @@ const Header = ({ isHeaderVisible = true, onOpenMobileSidebar }) => {
     const { pathname } = useLocation();
     const navigate = useNavigate();
     const trackMatch = useMatch("/track/:ticketNumber");
+    const issueMatch = useMatch("/issues/:ticketNumber");
     const { setUser, user } = useAuth();
 
     const handleLogout = async () => {
@@ -27,6 +28,16 @@ const Header = ({ isHeaderVisible = true, onOpenMobileSidebar }) => {
     };
 
     const pageInfo = {
+        "/": { title: "Home", description: "Internal IT Support" },
+        "/attendance": { title: "Attendance", description: "View and manage your attendance" },
+        "/network-monitor": { title: "Network Monitoring", description: "Monitor network health and activity" },
+        "/documentation": { title: "Documentation", description: "Browse your team’s IT knowledge" },
+        "/qr-studio": { title: "QR Code Studio", description: "Create and manage QR codes" },
+        "/qr-studio/links": { title: "Short Links", description: "Create and manage short links" },
+        "/qr-studio/saved": { title: "Saved QR Codes", description: "View and manage saved QR codes" },
+        "/image-converter": { title: "Image Converter", description: "Convert images in your browser" },
+        "/video-converter": { title: "Video Converter", description: "Convert videos in your browser" },
+        "/pdf-studio": { title: "PDF Studio", description: "Work with PDF documents in your browser" },
         "/dashboard": {
             title: "Dashboard",
             description: "Monitor and manage office issues",
@@ -48,11 +59,11 @@ const Header = ({ isHeaderVisible = true, onOpenMobileSidebar }) => {
             description: "Sign in to your account",
         },
         "/sheet": {
-            title: "Sheet",
-            description: "View and manage office issues",
+            title: "Asset Inventory",
+            description: "View office asset inventory",
         },
         "/storage/images": {
-            title: "Storage",
+            title: "Image Storage",
             description: "Add and manage office images",
         },
     };
@@ -62,10 +73,12 @@ const Header = ({ isHeaderVisible = true, onOpenMobileSidebar }) => {
               title: "Issue Tracking",
               description: `Track the progress of an issue: ${trackMatch.params.ticketNumber}`,
           }
-        : (pageInfo[pathname] ?? {
-              title: "IssueDesk",
-              description: "Internal IT Support",
-          });
+        : issueMatch
+          ? { title: `Issue #${issueMatch.params.ticketNumber}`, description: "View and manage issue details" }
+          : (pageInfo[pathname] ?? {
+                title: "Page not found",
+                description: "The requested page does not exist",
+            });
 
     return (
         <header
