@@ -1,3 +1,9 @@
+
+## 2026-11-07 — Documentation mobile reading
+
+- Constrained the Library and reader grid to the available width. On mobile, long text, code blocks (including Mermaid fallback source), and table cells wrap, with tighter reader padding and headings. Desktop code blocks retain their internal scroll when needed. Updated AGENTS.md and README.md.
+- `pnpm lint`, `pnpm build`, docs API/viewer checks (10/10), and `git diff --check` passed. Chrome via Playwright (Browser plugin unavailable) tested mocked admin/docs responses at 320 px Light, 390 px Dark, and 1440 px Light. Verified page and reader widths, no horizontal scroll inside mobile tables/code blocks, Mermaid frame/fallback presence, Library collapse/keyboard expand, and document selection. No browser console errors or warnings. Physical phones, real private documents/sessions and production were not tested. No deployment.
+
 ## 2026-11-07 — PDF Studio drop zone
 
 - Updated the empty PDF workspace drop zone to use GlassButton and the Image Converter drop zone styling and drag feedback. Clicking the entire area opens the PDF picker. Reviewed AGENTS.md and README.md, which remain accurate.
