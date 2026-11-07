@@ -1,3 +1,4 @@
+import { createMultipartProvider } from '../multipart-provider.js'
 import { createHash } from 'node:crypto'
 import { Readable } from 'node:stream'
 import { DeleteObjectCommand, GetObjectCommand, HeadObjectCommand, ListObjectsV2Command, PutObjectCommand } from '@aws-sdk/client-s3'
@@ -133,6 +134,7 @@ export function createGarageProvider({ s3, s3Copy = s3, timeoutMs = 60000 }) {
   }
 
   return {
+    multipart: createMultipartProvider(s3Copy),
     getCapabilities: () => ({ ...GARAGE_CAPABILITIES, copy: true }),
     async list(input) {
       const result = await request(ListObjectsV2Command, input, { Bucket: input.mount.bucket, MaxKeys: 100 })

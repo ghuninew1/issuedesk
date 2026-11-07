@@ -1,3 +1,4 @@
+import { resumableCapabilities } from './upload-routes.js'
 import { appAuth } from '../app-auth.js'
 import { StorageError } from './errors.js'
 import { createFileManager } from './file-manager.js'
@@ -45,7 +46,7 @@ async function bodyJson(c) {
   }
 }
 
-export function registerFileManagerRoutes(app, { db, storage, maxFileSize, logger = console }) {
+export function registerFileManagerRoutes(app, { db, storage, maxFileSize, resumableUploads = false, logger = console }) {
   const manager = createFileManager({ db, storage, logger })
   app.use('/v3/*', async (c, next) => { c.set('db', db); c.header('Cache-Control', 'no-store'); await next() })
 
@@ -60,7 +61,7 @@ export function registerFileManagerRoutes(app, { db, storage, maxFileSize, logge
     const project = db.prepare("SELECT bucket FROM projects WHERE id = ? AND app_id = ? AND status = 'active'").get(projectId, appId)
     if (!project) throw new StorageError('NOT_FOUND')
     const capabilities = storage.getCapabilities({ mount: { provider: 'garage', bucket: project.bucket } })
-    return { capabilities: { ...capabilities, createFolder: true, rename: true, move: true, trash: true, restore: true } }
+    return { capabilities: { ...capabilities, transfers: resumableCapabilities(resumableUploads), createFolder: true, rename: true, move: true, trash: true, restore: true } }
   }))
 
   app.get('/v3/projects/:projectId/objects', appAuth, (c) => run(c, () => manager.list({

@@ -178,3 +178,11 @@
 - Docs failure diagnostics may contain only a fixed error category and upstream HTTP status (or null); never log credentials, request data, upstream bodies or exception messages. A handled Function failure returns sanitized JSON, not an HTML error page.
 - GitHub fetches use `redirect: "manual"` for Workers compatibility and reject all non-2xx responses, including redirects, without forwarding credentials. Do not use `redirect: "error"` in Workers.
 - Run `node --test scripts/docs-api-checks.mjs scripts/docs-viewer-checks.mjs` for proxy and viewer path tests. These mocks do not verify GitHub, Cloudflare configuration or actual sessions.
+
+## Shared Storage resumable multipart backend
+
+`garage/storage/MULTIPART_UPLOADS.md` documents the disabled-by-default backend and additive migration0002. Legacy file upload routes still buffer full files; the opt-in raw-part routes buffer at most8 MiB/part, enforce app/project ownership, and persist logical sessions, immutable digests, leases and final receipts. Preserve Nexora’s same-origin user/assignment authorization boundary. No browser provider credentials or references. Startup/hourly cleanup aborts expired/unpublished uploads using durable journals; it is not a production recovery proof. Do not enable, migrate, deploy or run cleanup against production without explicit authorization.
+
+## Shared Storage Phase 3A acceptance boundary
+
+The separate Nexora checkout owns the opt-in acceptance runner; see `garage/storage/MULTIPART_UPLOADS.md` and Nexora `docs/LARGE_FILE_TRANSFER_ACCEPTANCE.md`. Acceptance must use fresh private SQLite fixtures, a confirmed empty disposable test bucket and dedicated credentials. Never infer real Garage PASS from mock/unit tests. Do not use existing user data or production buckets, log private cleanup journals, alter feature defaults, run remote migrations or change infrastructure for acceptance without separately authorized targets. Phase3A changes here are documentation-only; preserve the existing multipart implementation and uncommitted work.

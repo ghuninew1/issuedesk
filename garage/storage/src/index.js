@@ -1,3 +1,4 @@
+import { createUploads } from './storage/uploads.js'
 import { db } from './db.js'
 import { serve } from '@hono/node-server'
 import { S3Client } from '@aws-sdk/client-s3'
@@ -57,6 +58,23 @@ const s3Copy = new S3Client({ ...s3Config, requestChecksumCalculation: 'WHEN_REQ
 
 const timeoutMs = Number(process.env.STORAGE_PROVIDER_TIMEOUT_MS || 60000)
 const storage = createStorageManager(createProviderRegistry(createGarageProvider({ s3, s3Copy, timeoutMs })))
-const app = createApp({ db, storage, bucket, apiToken, enableLegacyApi, maxFileSize })
+const resumableUploads = process.env.STORAGE_RESUMABLE_UPLOADS_ENABLED === 'true'
+const app = createApp({ db, storage, bucket, apiToken, enableLegacyApi, maxFileSize, resumableUploads })
+// Bounded, durable-journal cleanup. No bytes or provider identifiers in diagnostics.
+if (db.prepare('SELECT 1 FROM storage_schema_migrations WHERE version = 2').get()) {
+  const uploads = createUploads({ db, provider: storage.multipart })
+  let sweeping = false
+  const sweep = async () => {
+    if (sweeping) return
+    sweeping = true
+    try {
+      const { cleaned, pending } = await uploads.sweep(20)
+      console.log(`[upload-cleanup] cleaned=${cleaned} pending=${pending}`)
+    } catch { console.warn('[upload-cleanup] result=failed') }
+    finally { sweeping = false }
+  }
+  void sweep()
+  setInterval(() => { void sweep() }, 60 * 60 * 1000).unref()
+}
 serve({ fetch: app.fetch, port, hostname: '0.0.0.0' })
 console.log(`Storage API listening on port ${port}`)

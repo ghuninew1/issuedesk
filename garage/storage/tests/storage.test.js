@@ -139,7 +139,7 @@ test('registry, capabilities and normalized provider mapping fail closed', async
   const result = await storage.list({ mount })
   assert.equal(result.items[0].providerRef, providerRef)
   assert.equal(result.nextCursor, 'cursor')
-  assert.equal(ERROR_CODES.length, 9)
+  assert.ok(ERROR_CODES.includes('UPLOAD_CONFLICT'))
 })
 
 test('legacy default gate and opt-in list/download remain compatible', async () => {

@@ -1,3 +1,4 @@
+import { registerUploadRoutes } from './storage/upload-routes.js'
 import { registerAdminRoutes } from './admin.js'
 import { appAuth } from './app-auth.js'
 import { randomUUID } from 'node:crypto'
@@ -7,7 +8,7 @@ import { safeContentType, attachmentName } from './storage/validation.js'
 import { legacyNameKey } from './storage/names.js'
 import { registerFileManagerRoutes } from './storage/file-manager-routes.js'
 
-export function createApp({ db, storage, bucket, apiToken, enableLegacyApi = false, maxFileSize, logger = console }) {
+export function createApp({ db, storage, bucket, apiToken, enableLegacyApi = false, maxFileSize, resumableUploads = false, logger = console }) {
   const app = new Hono()
 
   const maxRequestSize = maxFileSize + 1024 * 1024
@@ -655,7 +656,8 @@ export function createApp({ db, storage, bucket, apiToken, enableLegacyApi = fal
     },
   )
 
-  registerFileManagerRoutes(app, { db, storage, maxFileSize, logger })
+  registerFileManagerRoutes(app, { db, storage, maxFileSize, resumableUploads, logger })
+  registerUploadRoutes(app, { db, storage, enabled: resumableUploads })
 
   app.onError((error, c) => {
     console.error('Unhandled API error:', error)

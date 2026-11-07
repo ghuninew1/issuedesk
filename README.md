@@ -107,3 +107,7 @@ Administrators can access the read-only Pages Functions `GET /api/docs/tree`, `G
 Configure `GITHUB_DOCS_TOKEN` as a Cloudflare Pages server-side secret for the applicable environment. Use a fine-grained GitHub token restricted to this repository with Contents read-only permission and an expiration; never use a `VITE_` variable. The token and live integration must be configured and verified separately. Run `node --test scripts/docs-api-checks.mjs` for local mocked security tests.
 
 The Docs API returns sanitized JSON for handled failures. Server diagnostics record a fixed failure category and, for a GitHub HTTP error, its status only. A missing secret reports 503; upstream and other handled failures report 502. GitHub redirects are rejected rather than followed. An HTML error response may originate outside this handler and requires investigation of the deployed routing and response headers. Do not copy tokens, cookies, authorization headers, or private document contents into logs or support reports.
+
+Shared Storage has an opt-in resumable multipart backend for Nexora; see [multipart setup and limits](garage/storage/MULTIPART_UPLOADS.md). Existing IssueDesk uploads are unchanged. This source does not establish live10 GiB support.
+
+For Shared Storage isolated acceptance, the multipart guide above also describes Nexora’s opt-in acceptance runner and readiness gates. Real-provider acceptance remains blocked until dedicated isolated resources are supplied.

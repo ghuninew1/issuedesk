@@ -14,6 +14,11 @@ export function createStorageManager(registry) {
       }
     }
   }
+  manager.multipart = Object.fromEntries(['create','discover','part','parts','complete','abort','head','delete'].map(operation => [operation, input => {
+    const provider = registry.getProvider(input?.mount?.provider)
+    if (!provider.getCapabilities().upload || !provider.multipart?.[operation]) throw new StorageError('CAPABILITY_UNAVAILABLE')
+    return provider.multipart[operation](input)
+  }]))
   manager.getCapabilities = ({ mount }) => registry.getProvider(mount.provider).getCapabilities()
   return manager
 }
