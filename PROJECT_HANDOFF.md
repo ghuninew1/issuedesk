@@ -1,3 +1,8 @@
+## 2026-11-07 — PDF Studio drop zone
+
+- Updated the empty PDF workspace drop zone to use GlassButton and the Image Converter drop zone styling and drag feedback. Clicking the entire area opens the PDF picker. Reviewed AGENTS.md and README.md, which remain accurate.
+- Current checks: pnpm lint and git diff --check passed. Browser interaction, responsive and theme QA remain to be verified.
+
 ## 2026-11-07 — PDF Studio dropdown styling
 
 - PDF Studio Edit (Page) and Compress (MB/KB) now share the Image Converter's native select styling through `src/components/tools/ToolSelect.jsx`. Options, handlers, and Lossless disabling are unchanged.

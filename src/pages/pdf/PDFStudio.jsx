@@ -117,6 +117,7 @@ function PDFStudio() {
     const [sources, setSources] = useState(() => new Map());
     const [message, setMessage] = useState("");
     const [dragId, setDragId] = useState(null);
+    const [isDraggingFiles, setIsDraggingFiles] = useState(false);
     const [mode, setMode] = useState("organize");
     const inputRef = useRef(null);
     const sourcesRef = useRef(new Map());
@@ -309,33 +310,34 @@ function PDFStudio() {
                 </p>
             )}
             {!pages.length && !history.past.length ? (
-                <div
-                    onDragOver={(event) => event.preventDefault()}
+                <GlassButton
+                    type="button"
+                    aria-label="Choose PDFs to import"
+                    disabled={!!busy}
+                    onClick={() => inputRef.current?.click()}
+                    onDragEnter={(event) => { event.preventDefault(); setIsDraggingFiles(true); }}
+                    onDragOver={(event) => { event.preventDefault(); setIsDraggingFiles(true); }}
+                    onDragLeave={(event) => {
+                        if (!event.currentTarget.contains(event.relatedTarget)) setIsDraggingFiles(false);
+                    }}
                     onDrop={(event) => {
                         event.preventDefault();
+                        setIsDraggingFiles(false);
                         importFiles(event.dataTransfer.files);
                     }}
                     className={cx(
-                        "flex min-h-80 flex-col items-center justify-center gap-4 rounded-3xl border border-dashed border-border bg-card/60 p-8 text-center",
+                        "flex min-h-36 w-full flex-col items-center justify-center rounded-xl border-2 border-dashed p-6 text-center",
+                        "transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                        isDraggingFiles
+                            ? "border-primary bg-primary/15"
+                            : "border-white/70 bg-white/30 hover:border-primary/50 hover:bg-white/55 dark:border-white/10 dark:bg-white/[.02] dark:hover:bg-white/5",
                     )}
                 >
-                    <UploadCloud className={cx("size-10 text-primary")} aria-hidden="true" />
-                    <div>
-                        <h2 className={cx("text-lg font-semibold")}>Drop your PDFs here</h2>
-                        <p className={cx("mt-1 text-sm text-muted-foreground")}>
-                            Choose one or more PDF files to get started.
-                        </p>
-                    </div>
-                    <GlassButton
-                        type="button"
-                        className={cx(controlClass)}
-                        disabled={!!busy}
-                        onClick={() => inputRef.current?.click()}
-                    >
-                        Choose Files
-                    </GlassButton>
-                    <p className={cx("text-xs text-muted-foreground")}>Merge · Extract · Organize · Rotate · Delete</p>
-                </div>
+                    <UploadCloud className={cx("mb-3 size-10 text-muted-foreground")} aria-hidden="true" />
+                    <span className={cx("text-sm font-medium")}>Drop your PDFs here</span>
+                    <span className={cx("mt-1 text-sm text-muted-foreground")}>or click to browse</span>
+                    <span className={cx("mt-2 text-xs text-muted-foreground")}>PDF · Multiple files supported</span>
+                </GlassButton>
             ) : (
                 <>
                     <div role="group" aria-label="PDF Studio mode" className={cx("inline-flex max-w-full gap-1 rounded-2xl border border-border bg-card/60 p-1")}>
