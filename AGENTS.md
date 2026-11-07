@@ -186,3 +186,7 @@
 ## Shared Storage Phase 3A acceptance boundary
 
 The separate Nexora checkout owns the opt-in acceptance runner; see `garage/storage/MULTIPART_UPLOADS.md` and Nexora `docs/LARGE_FILE_TRANSFER_ACCEPTANCE.md`. Acceptance must use fresh private SQLite fixtures, a confirmed empty disposable test bucket and dedicated credentials. Never infer real Garage PASS from mock/unit tests. Do not use existing user data or production buckets, log private cleanup journals, alter feature defaults, run remote migrations or change infrastructure for acceptance without separately authorized targets. Phase3A changes here are documentation-only; preserve the existing multipart implementation and uncommitted work.
+
+## Shared Storage Phase 5.1 downloads
+
+See `garage/storage/RANGE_DOWNLOADS.md`. v3 GET/HEAD download uses authoritative HEAD + conditional S3 GET, opaque identity validators, strict206/416 geometry/length checks, streaming byte counts and connection/inactivity deadlines. Preserve app/project/logical ownership, no-store and safe errors/filenames. Range capability is explicit; upload flags unchanged. Do not infer real Garage acceptance from mock S3/loopback tests. v2 remains legacy. No deploy/migration/production changes authorized by validation.

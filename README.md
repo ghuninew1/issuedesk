@@ -111,3 +111,5 @@ The Docs API returns sanitized JSON for handled failures. Server diagnostics rec
 Shared Storage has an opt-in resumable multipart backend for Nexora; see [multipart setup and limits](garage/storage/MULTIPART_UPLOADS.md). Existing IssueDesk uploads are unchanged. This source does not establish live10 GiB support.
 
 For Shared Storage isolated acceptance, the multipart guide above also describes Nexora’s opt-in acceptance runner and readiness gates. Real-provider acceptance remains blocked until dedicated isolated resources are supplied.
+
+Shared Storage v3 source supports authenticated streaming single-range GET/HEAD downloads with conditional provider reads; v2 remains compatible. See [Range download contract](garage/storage/RANGE_DOWNLOADS.md). Real Garage/platform acceptance and deployment are separate.

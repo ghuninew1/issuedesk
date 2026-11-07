@@ -5,7 +5,7 @@ import { request } from 'node:http'
 import { serve } from '@hono/node-server'
 import { createGarageProvider } from '../src/storage/providers/garage.js'
 
-test('real Hono Node response disconnect cancels the Garage stream', { timeout: 3000 }, async () => {
+for (const httpDownload of [false, true]) test(`real Hono Node response disconnect cancels Garage (${httpDownload ? 'HTTP Range' : 'legacy'})`, { timeout: 3000 }, async () => {
   let upstreamSignal
   let destroyed
   let timer
@@ -16,12 +16,13 @@ test('real Hono Node response disconnect cancels the Garage stream', { timeout: 
     destroy(error, callback) { destroyed(); callback(error) },
   })
   const provider = createGarageProvider({ timeoutMs: 2000, s3: { async send(command, { abortSignal }) {
+    if (command.constructor.name === 'HeadObjectCommand') return { ContentLength: 10, ETag: '"fixture"' }
     upstreamSignal = abortSignal
-    return { Body: source, ContentLength: 10 }
+    return { Body: source, ContentLength: httpDownload ? 9 : 10, ETag: '"fixture"', ContentRange: httpDownload ? 'bytes 1-9/10' : undefined, $metadata: { httpStatusCode: httpDownload ? 206 : 200 } }
   } } })
   const server = serve({ hostname: '127.0.0.1', port: 0, fetch: async (req) => {
-    const result = await provider.download({ mount: { provider: 'garage', bucket: 'test' }, providerRef: '12345678-1234-1234-1234-123456789012', signal: req.signal })
-    return new Response(result.body, { headers: { 'Content-Length': '10' } })
+    const result = await provider.download({ mount: { provider: 'garage', bucket: 'test' }, providerRef: '12345678-1234-1234-1234-123456789012', signal: req.signal, httpDownload, range: httpDownload ? 'bytes=1-' : undefined })
+    return new Response(result.body, { status: result.status || 200, headers: result.headers || { 'Content-Length': '10' } })
   } })
   let client
   try {

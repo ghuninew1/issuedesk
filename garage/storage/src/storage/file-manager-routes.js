@@ -73,7 +73,7 @@ export function registerFileManagerRoutes(app, { db, storage, maxFileSize, resum
 
   app.get('/v3/projects/:projectId/objects/:objectId', appAuth, (c) => run(c, () => ({ object: manager.stat({ ...scope(c), objectId: c.req.param('objectId') }) })))
 
-  app.get('/v3/projects/:projectId/objects/:objectId/download', appAuth, async (c) => {
+  app.on(['GET', 'HEAD'], '/v3/projects/:projectId/objects/:objectId/download', appAuth, async (c) => {
     try {
       const args = { ...scope(c), objectId: c.req.param('objectId') }
       const metadata = manager.stat(args)
@@ -81,14 +81,15 @@ export function registerFileManagerRoutes(app, { db, storage, maxFileSize, resum
       const row = db.prepare('SELECT provider_reference FROM storage_objects WHERE project_id = ? AND object_id = ? AND deleted_at IS NULL').get(args.projectId, args.objectId)
       const project = db.prepare("SELECT bucket FROM projects WHERE id = ? AND app_id = ? AND status = 'active'").get(args.projectId, args.appId)
       if (!row || !project) throw new StorageError('NOT_FOUND')
-      const result = await storage.download({ mount: { provider: 'garage', bucket: project.bucket }, providerRef: row.provider_reference, signal: c.req.raw.signal })
-      if (!result.body) throw new StorageError('NOT_FOUND')
+      const result = await storage.download({ mount: { provider: 'garage', bucket: project.bucket }, providerRef: row.provider_reference, signal: c.req.raw.signal, httpDownload: true, head: c.req.method === 'HEAD', range: c.req.header('Range'), ifRange: c.req.header('If-Range') })
+      if (!result.status && !result.body) throw new StorageError('NOT_FOUND')
       c.header('Content-Type', safeContentType(metadata.mimeType))
-      c.header('Content-Length', String(Number.isSafeInteger(result.size) ? result.size : metadata.sizeBytes))
+      if (result.headers) for (const [name, value] of Object.entries(result.headers)) c.header(name, value)
+      else c.header('Content-Length', String(Number.isSafeInteger(result.size) ? result.size : metadata.sizeBytes))
       c.header('Content-Disposition', `attachment; filename*=UTF-8''${attachmentName(metadata.name)}`)
       c.header('Cache-Control', 'private, no-store')
       c.header('X-Content-Type-Options', 'nosniff')
-      return c.body(result.body)
+      return c.body(result.body, result.status || 200)
     } catch (error) { return sendError(c, error) }
   })
 

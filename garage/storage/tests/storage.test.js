@@ -129,8 +129,8 @@ test('provider failures retain v2 envelopes and hide details; missing object sta
 
 test('registry, capabilities and normalized provider mapping fail closed', async () => {
   const caps = storage.getCapabilities({ mount })
-  for (const name of ['upload','download','list','stat','permanentDelete']) assert.equal(caps[name], true)
-  for (const name of ['preview','rangeRead','share','trash','restore','rename','move','createFolder']) assert.equal(caps[name], false)
+  for (const name of ['upload','download','rangeRead','list','stat','permanentDelete']) assert.equal(caps[name], true)
+  for (const name of ['preview','share','trash','restore','rename','move','createFolder']) assert.equal(caps[name], false)
   assert.equal(caps.copy, true)
   for (const operation of ['createFolder','rename','move','restore']) await assert.rejects(storage[operation]({ mount }), { code: 'CAPABILITY_UNAVAILABLE' })
   await assert.rejects(storage.list({ mount: { provider: 'smb' } }), { code: 'CAPABILITY_UNAVAILABLE' })

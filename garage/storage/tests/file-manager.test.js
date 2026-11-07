@@ -54,12 +54,17 @@ const s3 = { async send(command) {
       if (failGet.has(Key)) throw new Error('secret source network failure')
       const item = objects.get(Key)
       if (!item) throw Object.assign(new Error('missing'), { name: 'NoSuchKey' })
-      return { Body: Readable.from([item.bytes]), ContentLength: item.bytes.length, ContentType: item.type }
+      const tag = `"${createHash('sha256').update(item.bytes).digest('hex')}"`
+      if (command.input.IfMatch && command.input.IfMatch !== tag) throw Object.assign(new Error('changed'), { $metadata: { httpStatusCode: 412 } })
+      const interval = command.input.Range && /^bytes=(\d+)-(\d+)$/.exec(command.input.Range)
+      const bytes = interval ? item.bytes.subarray(Number(interval[1]), Number(interval[2]) + 1) : item.bytes
+      return { Body: Readable.from([bytes]), ContentLength: bytes.length, ContentType: item.type, ETag: tag, LastModified: new Date('2026-01-01T00:00:00Z'),
+        $metadata: { httpStatusCode: interval ? 206 : 200 }, ...(interval ? { ContentRange: `bytes ${interval[1]}-${interval[2]}/${item.bytes.length}` } : {}) }
     }
     case 'HeadObjectCommand': {
       const item = objects.get(Key)
       if (!item) throw Object.assign(new Error('missing'), { name: 'NoSuchKey' })
-      return { ContentLength: item.bytes.length, ContentType: item.type }
+      return { ContentLength: item.bytes.length, ContentType: item.type, ETag: `"${createHash('sha256').update(item.bytes).digest('hex')}"`, LastModified: new Date('2026-01-01T00:00:00Z') }
     }
     case 'DeleteObjectCommand':
       if (failAnyDelete || failDelete.has(Key)) throw new Error('secret delete failure')
@@ -329,8 +334,8 @@ test('pagination is capped and opaque cursor stays scoped; foreign IDs remain 40
 test('capability endpoint advertises only implemented File Manager operations', async () => {
   const { response, data } = await json(`${filesUrl}/capabilities`)
   assert.equal(response.status, 200)
-  for (const name of ['list','stat','upload','download','createFolder','rename','move','copy','trash','restore','permanentDelete']) assert.equal(data.capabilities[name], true)
-  for (const name of ['preview','share','rangeRead','readOnly']) assert.equal(data.capabilities[name], false)
+  for (const name of ['list','stat','upload','download','rangeRead','createFolder','rename','move','copy','trash','restore','permanentDelete']) assert.equal(data.capabilities[name], true)
+  for (const name of ['preview','share','readOnly']) assert.equal(data.capabilities[name], false)
 })
 
 
@@ -398,4 +403,45 @@ test('uploads reserve sibling names across provider writes and clear expired res
   const recovered = await createFolder('Expired-name')
   assert.equal(typeof recovered.objectId, 'string')
   assert.equal(db.prepare('SELECT 1 FROM storage_name_reservations WHERE reservation_id=?').get(expiredId), undefined)
+})
+
+
+test('v3 authenticated range/HEAD contract, If-Range fallback, concurrent requests and revocation', async () => {
+  const file = await upload('range-fixture.txt', null, '0123456789')
+  const path = `${filesUrl}/objects/${file.objectId}/download`
+  const head = await api(path, { method: 'HEAD', headers: { Range: 'bytes=2-4' } })
+  assert.equal(head.status, 200)
+  assert.equal(head.headers.get('content-length'), '10')
+  assert.equal(await head.text(), '')
+  const etag = head.headers.get('etag')
+  assert.match(etag, /^"[a-f0-9]{64}"$/)
+  for (const [range, status, bytes, geometry] of [
+    ['bytes=0-2',206,'012','bytes 0-2/10'], ['bytes=3-5',206,'345','bytes 3-5/10'],
+    ['bytes=7-',206,'789','bytes 7-9/10'], ['bytes=-3',206,'789','bytes 7-9/10'],
+    ['bytes=9-99',206,'9','bytes 9-9/10'], ['bytes=10-',416,'','bytes */10'],
+    ['bytes=-0',416,'','bytes */10'], ['bytes=5-2',416,'','bytes */10'],
+    ['bytes=0-1,4-5',200,'0123456789',null], ['bytes=oops',200,'0123456789',null],
+  ]) {
+    const response = await api(path, { headers: { Range: range } })
+    assert.equal(response.status, status, range)
+    assert.equal(response.headers.get('content-range'), geometry)
+    assert.equal(response.headers.get('content-length'), String(bytes.length))
+    assert.equal(await response.text(), bytes)
+    assert.equal(response.headers.get('cache-control'), 'private, no-store')
+  }
+  for (const validator of [etag, '"old"', `W/${etag}`, head.headers.get('last-modified')]) {
+    const response = await api(path, { headers: { Range: 'bytes=5-', 'If-Range': validator } })
+    assert.equal(response.status, validator === etag ? 206 : 200)
+    assert.equal(await response.text(), validator === etag ? '56789' : '0123456789')
+  }
+  const parallel = await Promise.all(Array.from({length:8}, async (_, i) => {
+    const response = await api(path, { headers: { Range: `bytes=${i}-${i}` } })
+    assert.equal(response.status, 206); return response.text()
+  }))
+  assert.deepEqual(parallel, ['0','1','2','3','4','5','6','7'])
+  assert.equal((await app.request(path)).status, 401)
+  assert.equal((await api(`/v3/projects/${foreignProjectId}/objects/${file.objectId}/download`)).status, 404)
+  db.prepare("UPDATE projects SET status = 'disabled' WHERE id = ?").run(projectId)
+  assert.equal((await api(path, { headers: { Range: 'bytes=5-' } })).status, 404)
+  db.prepare("UPDATE projects SET status = 'active' WHERE id = ?").run(projectId)
 })

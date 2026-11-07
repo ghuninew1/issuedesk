@@ -1,3 +1,4 @@
+import { createHttpDownload } from '../range-download.js'
 import { createMultipartProvider } from '../multipart-provider.js'
 import { createHash } from 'node:crypto'
 import { Readable } from 'node:stream'
@@ -135,7 +136,7 @@ export function createGarageProvider({ s3, s3Copy = s3, timeoutMs = 60000 }) {
 
   return {
     multipart: createMultipartProvider(s3Copy),
-    getCapabilities: () => ({ ...GARAGE_CAPABILITIES, copy: true }),
+    getCapabilities: () => ({ ...GARAGE_CAPABILITIES, copy: true, rangeRead: true }),
     async list(input) {
       const result = await request(ListObjectsV2Command, input, { Bucket: input.mount.bucket, MaxKeys: 100 })
       return {
@@ -156,7 +157,7 @@ export function createGarageProvider({ s3, s3Copy = s3, timeoutMs = 60000 }) {
       return { size: input.size, mimeType: input.mimeType || 'application/octet-stream' }
     },
     download(input) {
-      if (input.range) throw new StorageError('CAPABILITY_UNAVAILABLE')
+      if (input.httpDownload || input.range || input.head) return createHttpDownload(s3, timeoutMs)(input)
       return request(GetObjectCommand, input, { Bucket: input.mount.bucket, Key: input.providerRef }, true)
     },
     copy,
