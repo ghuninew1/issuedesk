@@ -259,7 +259,10 @@ function PDFStudio() {
             urlsRef.current.set(url, timer);
         } catch (error) {
             if (mountedRef.current) {
-                const detail = error.message === "Text does not fit the text box." ? "Enlarge the text box or reduce the font size." : "Check that text uses supported Latin characters and the document is not protected.";
+                const detail =
+                    error.message === "Text does not fit the text box."
+                        ? "Enlarge the text box or reduce the font size."
+                        : "Check that text uses supported Latin characters and the document is not protected.";
                 setMessage(`Unable to create the PDF. ${detail}`);
             }
         } finally {
@@ -315,8 +318,14 @@ function PDFStudio() {
                     aria-label="Choose PDFs to import"
                     disabled={!!busy}
                     onClick={() => inputRef.current?.click()}
-                    onDragEnter={(event) => { event.preventDefault(); setIsDraggingFiles(true); }}
-                    onDragOver={(event) => { event.preventDefault(); setIsDraggingFiles(true); }}
+                    onDragEnter={(event) => {
+                        event.preventDefault();
+                        setIsDraggingFiles(true);
+                    }}
+                    onDragOver={(event) => {
+                        event.preventDefault();
+                        setIsDraggingFiles(true);
+                    }}
                     onDragLeave={(event) => {
                         if (!event.currentTarget.contains(event.relatedTarget)) setIsDraggingFiles(false);
                     }}
@@ -326,7 +335,7 @@ function PDFStudio() {
                         importFiles(event.dataTransfer.files);
                     }}
                     className={cx(
-                        "flex min-h-36 w-full flex-col items-center justify-center rounded-xl border-2 border-dashed p-6 text-center",
+                        "flex min-h-50 w-full flex-col items-center justify-center rounded-xl border-2 border-dashed p-6 text-center",
                         "transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                         isDraggingFiles
                             ? "border-primary bg-primary/15"
@@ -340,215 +349,283 @@ function PDFStudio() {
                 </GlassButton>
             ) : (
                 <>
-                    <div role="group" aria-label="PDF Studio mode" className={cx("inline-flex max-w-full gap-1 rounded-2xl border border-border bg-card/60 p-1")}>
-                        <GlassButton className={cx(controlClass, "border-transparent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary", mode === "organize" ? "bg-primary/15 text-primary ring-1 ring-inset ring-primary/40" : "text-muted-foreground")} disabled={!!busy} aria-pressed={mode === "organize"} onClick={() => setMode("organize")}><LayoutGrid size={16} aria-hidden="true" />Organize</GlassButton>
-                        <GlassButton className={cx(controlClass, "border-transparent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary", mode === "edit" ? "bg-primary/15 text-primary ring-1 ring-inset ring-primary/40" : "text-muted-foreground")} disabled={!!busy} aria-pressed={mode === "edit"} onClick={() => setMode("edit")}><Pencil size={16} aria-hidden="true" />Edit</GlassButton>
-                        <GlassButton className={cx(controlClass, "border-transparent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary", mode === "compress" ? "bg-primary/15 text-primary ring-1 ring-inset ring-primary/40" : "text-muted-foreground")} disabled={!!busy} aria-pressed={mode === "compress"} onClick={() => setMode("compress")}><FileArchive size={16} aria-hidden="true" />Compress</GlassButton>
-                    </div>
-                    {mode === "edit" ? <Suspense fallback={<p role="status">Loading editor…</p>}><PDFEditor pages={pages} sources={sources} active={active} setActiveId={setActiveId} change={change} history={history} undo={() => dispatch({ type: "undo" })} redo={() => dispatch({ type: "redo" })} download={download} busy={busy} /></Suspense> : mode === "compress" ? <Suspense fallback={<p role="status">Loading compression…</p>}><PDFCompression pages={pages} sources={sources} busy={busy} setBusy={setBusy} /></Suspense> : <>
                     <div
-                        className={cx(
-                            "flex flex-wrap items-center gap-2 rounded-2xl border border-border bg-card/60 p-3",
-                        )}
+                        role="group"
+                        aria-label="PDF Studio mode"
+                        className={cx("inline-flex max-w-full gap-1 rounded-2xl border border-border bg-card/60 p-1")}
                     >
                         <GlassButton
-                            className={cx(controlClass)}
+                            className={cx(
+                                controlClass,
+                                "border-transparent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
+                                mode === "organize"
+                                    ? "bg-primary/15 text-primary ring-1 ring-inset ring-primary/40"
+                                    : "text-muted-foreground",
+                            )}
                             disabled={!!busy}
-                            onClick={() => inputRef.current?.click()}
+                            aria-pressed={mode === "organize"}
+                            onClick={() => setMode("organize")}
                         >
-                            <FilePlus2 size={16} /> Add PDFs
+                            <LayoutGrid size={16} aria-hidden="true" />
+                            Organize
                         </GlassButton>
                         <GlassButton
-                            className={cx(controlClass)}
-                            disabled={!!busy || !history.past.length}
-                            onClick={() => dispatch({ type: "undo" })}
+                            className={cx(
+                                controlClass,
+                                "border-transparent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
+                                mode === "edit"
+                                    ? "bg-primary/15 text-primary ring-1 ring-inset ring-primary/40"
+                                    : "text-muted-foreground",
+                            )}
+                            disabled={!!busy}
+                            aria-pressed={mode === "edit"}
+                            onClick={() => setMode("edit")}
                         >
-                            <Undo2 size={16} /> Undo
+                            <Pencil size={16} aria-hidden="true" />
+                            Edit
                         </GlassButton>
                         <GlassButton
-                            className={cx(controlClass)}
-                            disabled={!!busy || !history.future.length}
-                            onClick={() => dispatch({ type: "redo" })}
+                            className={cx(
+                                controlClass,
+                                "border-transparent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
+                                mode === "compress"
+                                    ? "bg-primary/15 text-primary ring-1 ring-inset ring-primary/40"
+                                    : "text-muted-foreground",
+                            )}
+                            disabled={!!busy}
+                            aria-pressed={mode === "compress"}
+                            onClick={() => setMode("compress")}
                         >
-                            <Redo2 size={16} /> Redo
-                        </GlassButton>
-                        <GlassButton
-                            className={cx(controlClass)}
-                            disabled={!!busy || !selected.length}
-                            onClick={() => rotate(-90)}
-                        >
-                            <RotateCcw size={16} /> Left
-                        </GlassButton>
-                        <GlassButton
-                            className={cx(controlClass)}
-                            disabled={!!busy || !selected.length}
-                            onClick={() => rotate(90)}
-                        >
-                            <RotateCw size={16} /> Right
-                        </GlassButton>
-                        <GlassButton
-                            className={cx(controlClass)}
-                            disabled={!!busy || !selected.length}
-                            onClick={() => change(pages.filter((page) => !selection.includes(page.id)))}
-                        >
-                            <Trash2 size={16} /> Delete
-                        </GlassButton>
-                        <GlassButton
-                            className={cx(controlClass)}
-                            disabled={!!busy || !selected.length}
-                            onClick={() => download(selected, "extracted-pages.pdf")}
-                        >
-                            <ArrowDownToLine size={16} /> Extract
-                        </GlassButton>
-                        <GlassButton
-                            className={cx(controlClass, "ml-auto")}
-                            disabled={!!busy || !pages.length}
-                            onClick={() => download(pages, "issuedesk-document.pdf")}
-                        >
-                            <ArrowDownToLine size={16} /> Export PDF
-                        </GlassButton>
-                        <GlassButton className={cx(controlClass)} disabled={!!busy} onClick={reset}>
-                            Clear workspace
+                            <FileArchive size={16} aria-hidden="true" />
+                            Compress
                         </GlassButton>
                     </div>
-                    <div
-                        onDragOver={(event) => event.preventDefault()}
-                        onDrop={(event) => {
-                            if (event.dataTransfer.files.length) {
-                                event.preventDefault();
-                                importFiles(event.dataTransfer.files);
-                            }
-                        }}
-                        className={cx("grid gap-4 lg:grid-cols-[minmax(250px,340px)_1fr]")}
-                    >
-                        <section
-                            aria-label="PDF pages"
-                            className={cx("rounded-2xl border border-border bg-card/60 p-4")}
-                        >
-                            <div className={cx("mb-3 flex items-center justify-between")}>
-                                <h2 className={cx("font-semibold")}>
-                                    Pages <span className={cx("text-muted-foreground")}>({pages.length})</span>
-                                </h2>
-                                <GlassButton
-                                    className={cx(controlClass)}
-                                    disabled={!pages.length || !!busy}
-                                    onClick={() => setSelection(pages.map((page) => page.id))}
-                                >
-                                    Select all
-                                </GlassButton>
-                            </div>
-                            <p className={cx("mb-3 text-xs text-muted-foreground")}>
-                                Use Ctrl/⌘-click or Shift-click for multiple pages. Drag or use arrows to reorder.
-                            </p>
+                    {mode === "edit" ? (
+                        <Suspense fallback={<p role="status">Loading editor…</p>}>
+                            <PDFEditor
+                                pages={pages}
+                                sources={sources}
+                                active={active}
+                                setActiveId={setActiveId}
+                                change={change}
+                                history={history}
+                                undo={() => dispatch({ type: "undo" })}
+                                redo={() => dispatch({ type: "redo" })}
+                                download={download}
+                                busy={busy}
+                            />
+                        </Suspense>
+                    ) : mode === "compress" ? (
+                        <Suspense fallback={<p role="status">Loading compression…</p>}>
+                            <PDFCompression pages={pages} sources={sources} busy={busy} setBusy={setBusy} />
+                        </Suspense>
+                    ) : (
+                        <>
                             <div
                                 className={cx(
-                                    "grid max-h-[55vh] grid-cols-2 gap-3 overflow-y-auto sm:grid-cols-3 lg:grid-cols-2",
+                                    "flex flex-wrap items-center gap-2 rounded-2xl border border-border bg-card/60 p-3",
                                 )}
                             >
-                                {pages.map((page, index) => (
+                                <GlassButton
+                                    className={cx(controlClass)}
+                                    disabled={!!busy}
+                                    onClick={() => inputRef.current?.click()}
+                                >
+                                    <FilePlus2 size={16} /> Add PDFs
+                                </GlassButton>
+                                <GlassButton
+                                    className={cx(controlClass)}
+                                    disabled={!!busy || !history.past.length}
+                                    onClick={() => dispatch({ type: "undo" })}
+                                >
+                                    <Undo2 size={16} /> Undo
+                                </GlassButton>
+                                <GlassButton
+                                    className={cx(controlClass)}
+                                    disabled={!!busy || !history.future.length}
+                                    onClick={() => dispatch({ type: "redo" })}
+                                >
+                                    <Redo2 size={16} /> Redo
+                                </GlassButton>
+                                <GlassButton
+                                    className={cx(controlClass)}
+                                    disabled={!!busy || !selected.length}
+                                    onClick={() => rotate(-90)}
+                                >
+                                    <RotateCcw size={16} /> Left
+                                </GlassButton>
+                                <GlassButton
+                                    className={cx(controlClass)}
+                                    disabled={!!busy || !selected.length}
+                                    onClick={() => rotate(90)}
+                                >
+                                    <RotateCw size={16} /> Right
+                                </GlassButton>
+                                <GlassButton
+                                    className={cx(controlClass)}
+                                    disabled={!!busy || !selected.length}
+                                    onClick={() => change(pages.filter((page) => !selection.includes(page.id)))}
+                                >
+                                    <Trash2 size={16} /> Delete
+                                </GlassButton>
+                                <GlassButton
+                                    className={cx(controlClass)}
+                                    disabled={!!busy || !selected.length}
+                                    onClick={() => download(selected, "extracted-pages.pdf")}
+                                >
+                                    <ArrowDownToLine size={16} /> Extract
+                                </GlassButton>
+                                <GlassButton
+                                    className={cx(controlClass, "ml-auto")}
+                                    disabled={!!busy || !pages.length}
+                                    onClick={() => download(pages, "issuedesk-document.pdf")}
+                                >
+                                    <ArrowDownToLine size={16} /> Export PDF
+                                </GlassButton>
+                                <GlassButton className={cx(controlClass)} disabled={!!busy} onClick={reset}>
+                                    Clear workspace
+                                </GlassButton>
+                            </div>
+                            <div
+                                onDragOver={(event) => event.preventDefault()}
+                                onDrop={(event) => {
+                                    if (event.dataTransfer.files.length) {
+                                        event.preventDefault();
+                                        importFiles(event.dataTransfer.files);
+                                    }
+                                }}
+                                className={cx("grid gap-4 lg:grid-cols-[minmax(250px,340px)_1fr]")}
+                            >
+                                <section
+                                    aria-label="PDF pages"
+                                    className={cx("rounded-2xl border border-border bg-card/60 p-4")}
+                                >
+                                    <div className={cx("mb-3 flex items-center justify-between")}>
+                                        <h2 className={cx("font-semibold")}>
+                                            Pages <span className={cx("text-muted-foreground")}>({pages.length})</span>
+                                        </h2>
+                                        <GlassButton
+                                            className={cx(controlClass)}
+                                            disabled={!pages.length || !!busy}
+                                            onClick={() => setSelection(pages.map((page) => page.id))}
+                                        >
+                                            Select all
+                                        </GlassButton>
+                                    </div>
+                                    <p className={cx("mb-3 text-xs text-muted-foreground")}>
+                                        Use Ctrl/⌘-click or Shift-click for multiple pages. Drag or use arrows to
+                                        reorder.
+                                    </p>
                                     <div
-                                        key={page.id}
-                                        draggable={!busy}
-                                        onDragStart={() => setDragId(page.id)}
-                                        onDragEnd={() => setDragId(null)}
-                                        onDragOver={(event) => event.preventDefault()}
-                                        onDrop={(event) => {
-                                            if (dragId) {
-                                                event.preventDefault();
-                                                event.stopPropagation();
-                                                move(dragId, index);
-                                                setDragId(null);
-                                            }
-                                        }}
                                         className={cx(
-                                            "min-w-0 rounded-xl border p-2",
-                                            selection.includes(page.id)
-                                                ? "border-primary bg-primary/10"
-                                                : "border-border bg-background/60",
+                                            "grid max-h-[55vh] grid-cols-2 gap-3 overflow-y-auto sm:grid-cols-3 lg:grid-cols-2",
                                         )}
                                     >
-                                        <GlassButton
-                                            type="button"
-                                            aria-pressed={selection.includes(page.id)}
-                                            aria-label={`Show page ${index + 1}`}
-                                            className={cx("block w-full rounded-lg text-left")}
-                                            onClick={(event) => toggle(page, event)}
-                                        >
-                                            <PageCanvas page={page} source={sources.get(page.sourceId)} />
-                                            <span className={cx("mt-2 block truncate text-xs font-medium")}>
-                                                {index + 1}. {sources.get(page.sourceId)?.file.name}
-                                            </span>
-                                        </GlassButton>
-                                        <div className={cx("mt-1 flex items-center justify-between gap-1")}>
-                                            <label className={cx("flex items-center gap-1 text-xs")}>
-                                                <input
-                                                    type="checkbox"
-                                                    checked={selection.includes(page.id)}
-                                                    aria-label={`Select page ${index + 1}`}
-                                                    onChange={() => {
-                                                        setActiveId(page.id);
-                                                        setSelection((current) =>
-                                                            current.includes(page.id)
-                                                                ? current.filter((id) => id !== page.id)
-                                                                : [...current, page.id],
-                                                        );
-                                                    }}
-                                                />
-                                                Select
-                                            </label>
-                                            <GlassButton
-                                                className={cx(controlClass, "min-h-8 px-2")}
-                                                aria-label={`Move page ${index + 1} earlier`}
-                                                disabled={!!busy || index === 0}
-                                                onClick={() => move(page.id, index - 1)}
+                                        {pages.map((page, index) => (
+                                            <div
+                                                key={page.id}
+                                                draggable={!busy}
+                                                onDragStart={() => setDragId(page.id)}
+                                                onDragEnd={() => setDragId(null)}
+                                                onDragOver={(event) => event.preventDefault()}
+                                                onDrop={(event) => {
+                                                    if (dragId) {
+                                                        event.preventDefault();
+                                                        event.stopPropagation();
+                                                        move(dragId, index);
+                                                        setDragId(null);
+                                                    }
+                                                }}
+                                                className={cx(
+                                                    "min-w-0 rounded-xl border p-2",
+                                                    selection.includes(page.id)
+                                                        ? "border-primary bg-primary/10"
+                                                        : "border-border bg-background/60",
+                                                )}
                                             >
-                                                <ArrowUp size={14} />
-                                            </GlassButton>
-                                            <GlassButton
-                                                className={cx(controlClass, "min-h-8 px-2")}
-                                                aria-label={`Move page ${index + 1} later`}
-                                                disabled={!!busy || index === pages.length - 1}
-                                                onClick={() => move(page.id, index + 1)}
-                                            >
-                                                <ArrowDown size={14} />
-                                            </GlassButton>
-                                        </div>
+                                                <GlassButton
+                                                    type="button"
+                                                    aria-pressed={selection.includes(page.id)}
+                                                    aria-label={`Show page ${index + 1}`}
+                                                    className={cx("block w-full rounded-lg text-left")}
+                                                    onClick={(event) => toggle(page, event)}
+                                                >
+                                                    <PageCanvas page={page} source={sources.get(page.sourceId)} />
+                                                    <span className={cx("mt-2 block truncate text-xs font-medium")}>
+                                                        {index + 1}. {sources.get(page.sourceId)?.file.name}
+                                                    </span>
+                                                </GlassButton>
+                                                <div className={cx("mt-1 flex items-center justify-between gap-1")}>
+                                                    <label className={cx("flex items-center gap-1 text-xs")}>
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={selection.includes(page.id)}
+                                                            aria-label={`Select page ${index + 1}`}
+                                                            onChange={() => {
+                                                                setActiveId(page.id);
+                                                                setSelection((current) =>
+                                                                    current.includes(page.id)
+                                                                        ? current.filter((id) => id !== page.id)
+                                                                        : [...current, page.id],
+                                                                );
+                                                            }}
+                                                        />
+                                                        Select
+                                                    </label>
+                                                    <GlassButton
+                                                        className={cx(controlClass, "min-h-8 px-2")}
+                                                        aria-label={`Move page ${index + 1} earlier`}
+                                                        disabled={!!busy || index === 0}
+                                                        onClick={() => move(page.id, index - 1)}
+                                                    >
+                                                        <ArrowUp size={14} />
+                                                    </GlassButton>
+                                                    <GlassButton
+                                                        className={cx(controlClass, "min-h-8 px-2")}
+                                                        aria-label={`Move page ${index + 1} later`}
+                                                        disabled={!!busy || index === pages.length - 1}
+                                                        onClick={() => move(page.id, index + 1)}
+                                                    >
+                                                        <ArrowDown size={14} />
+                                                    </GlassButton>
+                                                </div>
+                                            </div>
+                                        ))}
                                     </div>
-                                ))}
-                            </div>
-                        </section>
-                        <section
-                            aria-label="Page preview"
-                            className={cx(
-                                "flex min-h-80 flex-col items-center gap-3 rounded-2xl border border-border bg-card/60 p-4",
-                            )}
-                        >
-                            <div className={cx("flex w-full items-center justify-between text-sm")}>
-                                <h2 className={cx("font-semibold")}>Preview</h2>
-                                <span className={cx("text-muted-foreground")}>{selected.length} selected</span>
-                            </div>
-                            {active ? (
-                                <div className={cx("w-full max-w-3xl")}>
-                                    <PageCanvas
-                                        key={active.id}
-                                        page={active}
-                                        source={sources.get(active.sourceId)}
-                                        preview
-                                    />
-                                </div>
-                            ) : (
-                                <div
+                                </section>
+                                <section
+                                    aria-label="Page preview"
                                     className={cx(
-                                        "m-auto flex flex-col items-center gap-2 text-sm text-muted-foreground",
+                                        "flex min-h-80 flex-col items-center gap-3 rounded-2xl border border-border bg-card/60 p-4",
                                     )}
                                 >
-                                    <FileText />
-                                    No pages remaining. Undo or add a PDF.
-                                </div>
-                            )}
-                        </section>
-                    </div>
-                    </>}
+                                    <div className={cx("flex w-full items-center justify-between text-sm")}>
+                                        <h2 className={cx("font-semibold")}>Preview</h2>
+                                        <span className={cx("text-muted-foreground")}>{selected.length} selected</span>
+                                    </div>
+                                    {active ? (
+                                        <div className={cx("w-full max-w-3xl")}>
+                                            <PageCanvas
+                                                key={active.id}
+                                                page={active}
+                                                source={sources.get(active.sourceId)}
+                                                preview
+                                            />
+                                        </div>
+                                    ) : (
+                                        <div
+                                            className={cx(
+                                                "m-auto flex flex-col items-center gap-2 text-sm text-muted-foreground",
+                                            )}
+                                        >
+                                            <FileText />
+                                            No pages remaining. Undo or add a PDF.
+                                        </div>
+                                    )}
+                                </section>
+                            </div>
+                        </>
+                    )}
                 </>
             )}
         </div>
