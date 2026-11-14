@@ -27,9 +27,8 @@ const Sheet = lazy(() => import("./pages/Sheet"));
 const StorageImages = lazy(() => import("./pages/StorageImages"));
 const Attendance = lazy(() => import("./pages/Attendance"));
 const Documentation = lazy(() => import("./pages/Documentation"));
-const SpeedTest = import.meta.env.VITE_SPEED_TEST_LAN_ENABLED === "true"
-    ? lazy(() => import("./pages/SpeedTest"))
-    : null;
+const SpeedTest =
+    import.meta.env.VITE_SPEED_TEST_LAN_ENABLED === "true" ? lazy(() => import("./pages/SpeedTest")) : null;
 const NetworkMonitor = lazy(() => import("./pages/NetworkMonitor"));
 
 function LoginRoute({ page, setPage }) {
@@ -104,14 +103,22 @@ function PageLoading() {
 }
 
 const pageTitles = {
-    "/": "Home", "/login": "Login", "/dashboard": "Dashboard", "/report": "Report Issue",
-    "/issues": "Issues", "/attendance": "Attendance", "/sheet": "Asset inventory",
-    "/storage/images": "Image Storage", "/network-monitor": "Network Monitoring",
+    "/": "Home",
+    "/login": "Login",
+    "/dashboard": "Dashboard",
+    "/report": "Report Issue",
+    "/issues": "Issues",
+    "/attendance": "Attendance",
+    "/sheet": "Asset inventory",
+    "/storage/images": "Image Storage",
+    "/network-monitor": "Network Monitoring",
     "/documentation": "Documentation",
     ...(SpeedTest && { "/speed-test": "Speed Test" }),
     "/image-converter": "Image Converter",
-    "/video-converter": "Video Converter", "/pdf-studio": "PDF Studio",
-    "/qr-studio": "QR Code Studio", "/qr-studio/links": "QR Code Studio",
+    "/video-converter": "Video Converter",
+    "/pdf-studio": "PDF Studio",
+    "/qr-studio": "QR Code Studio",
+    "/qr-studio/links": "QR Code Studio",
     "/qr-studio/saved": "QR Code Studio",
 };
 
@@ -123,10 +130,13 @@ function App() {
     const issue = matchPath("/issues/:ticketNumber", pathname);
     const track = matchPath("/track/:ticketNumber", pathname);
     const routeTitle = Object.entries(pageTitles).find(([path]) => matchPath({ path, end: true }, pathname))?.[1];
-    const title = issue ? `Issue #${issue.params.ticketNumber}`
-        : track ? `Track ${track.params.ticketNumber}`
-        : routeTitle === "Login" && loginPage === "register" ? "Register"
-        : routeTitle || "Page not found";
+    const title = issue
+        ? `Issue #${issue.params.ticketNumber}`
+        : track
+          ? `Track ${track.params.ticketNumber}`
+          : routeTitle === "Login" && loginPage === "register"
+            ? "Register"
+            : routeTitle || "Page not found";
     useDocumentTitle(title);
 
     return (
@@ -173,7 +183,14 @@ function App() {
                         </ProtectedRoute>
                     }
                 />
-                <Route path="/video-converter" element={<ProtectedRoute><VideoConverter /></ProtectedRoute>} />
+                <Route
+                    path="/video-converter"
+                    element={
+                        <ProtectedRoute>
+                            <VideoConverter />
+                        </ProtectedRoute>
+                    }
+                />
                 <Route
                     path="/pdf-studio"
                     element={
@@ -234,13 +251,20 @@ function App() {
                     <Route
                         path="/speed-test"
                         element={
-                            <ProtectedRoute requiredRole="admin">
+                            <ProtectedRoute>
                                 <SpeedTest />
                             </ProtectedRoute>
                         }
                     />
                 )}
-                <Route path="/documentation" element={<ProtectedRoute requiredRole="admin"><Documentation /></ProtectedRoute>} />
+                <Route
+                    path="/documentation"
+                    element={
+                        <ProtectedRoute requiredRole="admin">
+                            <Documentation />
+                        </ProtectedRoute>
+                    }
+                />
                 <Route path="/track/:ticketNumber" element={<TrackTicket />} />
                 <Route path="/report" element={<ReportIssue />} />
                 <Route
