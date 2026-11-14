@@ -15,7 +15,7 @@ function agentClient(origin, token, access) {
             signal: AbortSignal.any([signal, AbortSignal.timeout(3000)]),
         });
         if (response.status === 409 && command.action === "complete") return;
-        if (!response.ok) throw new Error("Control request failed");
+        if (!response.ok) throw new Error(`Control request failed (HTTP ${response.status})`);
         return response.json();
     };
 }
@@ -57,10 +57,18 @@ export async function processJob({ call, run, signal, pollInterval = pollMs, tim
         execution.throwIfAborted();
         outcome = { state: "complete", result };
     } catch (error) {
-        outcome = remoteCancelled ? { state: "cancelled" }
-            : { state: "failed", error: deadline.aborted ? "timeout"
-                : stop.signal.aborted ? "agent_disconnected"
-                : error.message === "invalid_result" ? "invalid_result" : "cli_failed" };
+        outcome = remoteCancelled
+            ? { state: "cancelled" }
+            : {
+                  state: "failed",
+                  error: deadline.aborted
+                      ? "timeout"
+                      : stop.signal.aborted
+                        ? "agent_disconnected"
+                        : error.message === "invalid_result"
+                          ? "invalid_result"
+                          : "cli_failed",
+              };
     } finally {
         stop.abort();
         await watcher;
@@ -72,15 +80,23 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     const env = process.env;
     const origin = env.SPEED_TEST_SERVER_ISSUEDESK_ORIGIN;
     const token = env.SPEED_TEST_SERVER_AGENT_TOKEN;
-    if (env.SPEED_TEST_SERVER_TARGET_APPROVED !== "true" || !origin || new URL(origin).origin !== origin ||
-        !origin.startsWith("https://") || !/^[a-f0-9]{64}$/i.test(token ?? "")) {
+    if (
+        env.SPEED_TEST_SERVER_TARGET_APPROVED !== "true" ||
+        !origin ||
+        new URL(origin).origin !== origin ||
+        !origin.startsWith("https://") ||
+        !/^[a-f0-9]{64}$/i.test(token ?? "")
+    ) {
         throw new Error("Configure an approved HTTPS target, IssueDesk HTTPS origin and agent token");
     }
     const target = readTarget({
-        origin: env.SPEED_TEST_SERVER_TARGET_ORIGIN, name: env.SPEED_TEST_SERVER_TARGET_NAME,
+        origin: env.SPEED_TEST_SERVER_TARGET_ORIGIN,
+        name: env.SPEED_TEST_SERVER_TARGET_NAME,
         paths: {
-            download: env.SPEED_TEST_SERVER_DOWNLOAD_PATH, upload: env.SPEED_TEST_SERVER_UPLOAD_PATH,
-            ping: env.SPEED_TEST_SERVER_PING_PATH, ip: env.SPEED_TEST_SERVER_IP_PATH,
+            download: env.SPEED_TEST_SERVER_DOWNLOAD_PATH,
+            upload: env.SPEED_TEST_SERVER_UPLOAD_PATH,
+            ping: env.SPEED_TEST_SERVER_PING_PATH,
+            ip: env.SPEED_TEST_SERVER_IP_PATH,
         },
     });
     const binary = env.SPEED_TEST_SERVER_CLI ?? "/usr/local/bin/librespeed-cli";
@@ -98,9 +114,16 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     while (!lifetime.signal.aborted) {
         try {
             await processJob({ call, signal: lifetime.signal, run: (signal) => runCli({ binary, target, signal }) });
-        } catch {
-            if (!lifetime.signal.aborted) console.error("Server Speed Test control request failed");
+        } catch (error) {
+            if (!lifetime.signal.aborted) {
+                console.error("Server Speed Test control request failed", {
+                    name: error?.name,
+                    message: error?.message,
+                    code: error?.code,
+                    status: error?.status,
+                    causeCode: error?.cause?.code,
+                });
+            }
         }
-        await delay(pollMs, undefined, { signal: lifetime.signal }).catch(() => {});
     }
 }
