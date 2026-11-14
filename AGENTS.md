@@ -190,3 +190,8 @@ The separate Nexora checkout owns the opt-in acceptance runner; see `garage/stor
 ## Shared Storage Phase 5.1 downloads
 
 See `garage/storage/RANGE_DOWNLOADS.md`. v3 GET/HEAD download uses authoritative HEAD + conditional S3 GET, opaque identity validators, strict206/416 geometry/length checks, streaming byte counts and connection/inactivity deadlines. Preserve app/project/logical ownership, no-store and safe errors/filenames. Range capability is explicit; upload flags unchanged. Do not infer real Garage acceptance from mock S3/loopback tests. v2 remains legacy. No deploy/migration/production changes authorized by validation.
+
+## LAN Speed Test PoC
+
+- `/speed-test` and `POST /api/speed-test/grant` are opt-in and Admin-only. Keep grant signing keys server-side and destination origins server-configured. The browser sends measurements directly to the separate Ubuntu HTTPS Agent. Keep its private bind/CIDR checks, exact origin matching, short-lived grants, in-memory reservation and byte/time limits. Preserve the pinned LibreSpeed worker license and modification notice with its distributed source.
+- See `garage/speed-test-agent/README.md` for isolated test setup and use `node --test scripts/speed-test-checks.mjs` for local regression checks. Browser loopback results do not establish Ubuntu Docker performance or public-to-private Local Network Access behavior.

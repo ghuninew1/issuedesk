@@ -27,6 +27,9 @@ const Sheet = lazy(() => import("./pages/Sheet"));
 const StorageImages = lazy(() => import("./pages/StorageImages"));
 const Attendance = lazy(() => import("./pages/Attendance"));
 const Documentation = lazy(() => import("./pages/Documentation"));
+const SpeedTest = import.meta.env.VITE_SPEED_TEST_LAN_ENABLED === "true"
+    ? lazy(() => import("./pages/SpeedTest"))
+    : null;
 const NetworkMonitor = lazy(() => import("./pages/NetworkMonitor"));
 
 function LoginRoute({ page, setPage }) {
@@ -104,7 +107,9 @@ const pageTitles = {
     "/": "Home", "/login": "Login", "/dashboard": "Dashboard", "/report": "Report Issue",
     "/issues": "Issues", "/attendance": "Attendance", "/sheet": "Asset inventory",
     "/storage/images": "Image Storage", "/network-monitor": "Network Monitoring",
-    "/documentation": "Documentation", "/image-converter": "Image Converter",
+    "/documentation": "Documentation",
+    ...(SpeedTest && { "/speed-test": "Speed Test" }),
+    "/image-converter": "Image Converter",
     "/video-converter": "Video Converter", "/pdf-studio": "PDF Studio",
     "/qr-studio": "QR Code Studio", "/qr-studio/links": "QR Code Studio",
     "/qr-studio/saved": "QR Code Studio",
@@ -225,6 +230,16 @@ function App() {
                         </ProtectedRoute>
                     }
                 />
+                {SpeedTest && (
+                    <Route
+                        path="/speed-test"
+                        element={
+                            <ProtectedRoute requiredRole="admin">
+                                <SpeedTest />
+                            </ProtectedRoute>
+                        }
+                    />
+                )}
                 <Route path="/documentation" element={<ProtectedRoute requiredRole="admin"><Documentation /></ProtectedRoute>} />
                 <Route path="/track/:ticketNumber" element={<TrackTicket />} />
                 <Route path="/report" element={<ReportIssue />} />

@@ -1,0 +1,21 @@
+services:
+    speed-test-agent:
+        build:
+            context: /root/garage/speed-test-agent
+            dockerfile: Dockerfile
+        # Ubuntu/Linux host networking preserves the actual peer IP for the LAN allowlist.
+        network_mode: host
+        container_name: speed-test-agent
+        init: true
+        read_only: true
+        cap_drop: [ALL]
+        security_opt: [no-new-privileges:true]
+        cpus: 2.0
+        mem_limit: 192m
+        pids_limit: 64
+        env_file: .env
+        environment:
+            SPEED_TEST_TLS_CERT: /run/tls/server.pem
+            SPEED_TEST_TLS_KEY: /run/tls/server.key
+        volumes:
+            - /opt/speed-test/tls:/run/tls:ro

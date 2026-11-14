@@ -5,7 +5,7 @@ import reactRefresh from "eslint-plugin-react-refresh";
 
 export default [
     {
-        ignores: ["dist/**", ".wrangler/**", "node_modules/**"],
+        ignores: ["dist/**", "public/vendor/librespeed/speedtest_worker.js", ".wrangler/**", "node_modules/**"],
     },
     {
         files: ["**/*.{js,jsx}"],

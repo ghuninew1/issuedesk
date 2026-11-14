@@ -63,6 +63,7 @@ pnpm preview
 | `pnpm lint` | ตรวจโค้ดด้วย ESLint |
 | `pnpm build` | สร้าง frontend bundle ใน `dist/` |
 | `pnpm preview` | Build และเปิด Pages Functions ในเครื่อง |
+| `node --test scripts/speed-test-checks.mjs` | ทดสอบการออกสิทธิ์และ HTTPS Agent ของ LAN Speed Test ในเครื่อง |
 | `pnpm test:qr` | ทดสอบ QR APIs ด้วย SQLite ในหน่วยความจำและ mock Storage |
 | `pnpm dev:qr` | เปิด QR Studio sandbox ที่ `127.0.0.1:5174` |
 | `pnpm --dir garage/storage test` | ทดสอบ Storage service แยกต่างหาก |
@@ -91,6 +92,7 @@ Secrets ของ Storage, OAuth และ Resend อยู่ฝั่ง serve
 - [Release notes v1.4.0](docs/releases/V1.4.0_RELEASE.md) และ [v1.3.4](docs/releases/V1.3.4_RELEASE.md) — ความสามารถและขอบเขตของแต่ละเวอร์ชัน
 - [Project handoff](PROJECT_HANDOFF.md) — ประวัติการเปลี่ยนแปลง ผลตรวจ และงานที่ยังค้าง
 - [Storage guide](docs/storage/STORAGE_README.md) และ [Storage API documentation](docs/storage/STORAGE_DOCS_API_REFERENCE.md)
+- [LAN Speed Test PoC](garage/speed-test-agent/README.md) — หน้า Admin `/speed-test` สำหรับวัดถึง Ubuntu Agent ในสภาพแวดล้อมทดสอบ เปิดใช้ผ่าน test flags
 - [Network Monitoring API](docs/network/NETWORK_MONITORING_API.md) และ [agent guide](garage/network-monitor/README_NETWORK_MONITOR.md)
 - [QR Studio Storage documentation](docs/features/QR_STUDIO_STORAGE_DOCS.md)
 - [AGENTS.md](AGENTS.md) — แนวทางทำงานใน repository

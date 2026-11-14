@@ -30,6 +30,9 @@ const Header = ({ isHeaderVisible = true, onOpenMobileSidebar }) => {
     const pageInfo = {
         "/": { title: "Home", description: "Internal IT Support" },
         "/attendance": { title: "Attendance", description: "View and manage your attendance" },
+        ...(import.meta.env.VITE_SPEED_TEST_LAN_ENABLED === "true" && {
+            "/speed-test": { title: "Speed Test", description: "Measure your local network connection" },
+        }),
         "/network-monitor": { title: "Network Monitoring", description: "Monitor network health and activity" },
         "/documentation": { title: "Documentation", description: "Browse your team’s IT knowledge" },
         "/qr-studio": { title: "QR Code Studio", description: "Create and manage QR codes" },

@@ -12,6 +12,7 @@ import {
     FileSpreadsheet,
     Clock3,
     Network,
+    Gauge,
     QrCode,
     Image,
     Video,
@@ -38,6 +39,8 @@ const navGroups = [
             { icon: ClipboardList, label: "Issues", to: "/issues", requiredRole: "admin" },
             { icon: Images, label: "Storage", to: "/storage/images", requiredRole: "admin" },
             { icon: BookOpen, label: "Documentation", to: "/documentation", requiredRole: "admin" },
+            ...(import.meta.env.VITE_SPEED_TEST_LAN_ENABLED === "true"
+                ? [{ icon: Gauge, label: "Speed Test", to: "/speed-test", requiredRole: "admin" }] : []),
             { icon: Network, label: "Network Monitor", to: "/network-monitor", requiredRole: "admin" },
         ],
     },
