@@ -3,7 +3,7 @@ import { api } from "../utils/api";
 const stages = ["Preparing…", "Measuring download…", "Measuring latency and jitter…", "Measuring upload…"];
 const timeoutMs = 18_000;
 
-function measure(endpoint, token, signal, onStage) {
+function measure(endpoint, token, signal, onStage, invalidResultMessage) {
     return new Promise((resolve, reject) => {
         const worker = new Worker("/vendor/librespeed/speedtest_worker.js");
         function finish(error, result) {
@@ -29,7 +29,7 @@ function measure(endpoint, token, signal, onStage) {
                 const values = [status.dlStatus, status.ulStatus, status.pingStatus, status.jitterStatus];
                 if (values.some((value) => value === "" || !Number.isFinite(Number(value)) || Number(value) < 0) ||
                     Number(values[0]) === 0 || Number(values[1]) === 0) {
-                    return finish(new Error("No valid measurement. Check the LAN connection and wait for any previous test to expire."));
+                    return finish(new Error(invalidResultMessage));
                 }
                 const [download, upload, latency, jitter] = values.map(Number);
                 return finish(null, { download, upload, latency, jitter });
@@ -63,13 +63,48 @@ function measure(endpoint, token, signal, onStage) {
     });
 }
 
-export async function runLanTest({ signal, onEndpoint, onStage }) {
-    if (!window.isSecureContext) throw new Error("Open IssueDesk over HTTPS to run a LAN test.");
+const lanProfile = {
+    label: "LAN",
+    grantPath: "/api/speed-test/grant",
+    target: "LAN agent",
+    busy: "A LAN test is already reserved. Wait up to 45 seconds and retry.",
+    unreachable: "Cannot reach the LAN agent. Check local network permission, DNS, TLS and CORS.",
+    invalidResult: "No valid measurement. Check the LAN connection and wait for any previous test to expire.",
+};
+
+const internetProfile = {
+    label: "Internet",
+    grantPath: "/api/speed-test/internet/grant",
+    target: "Internet endpoint",
+    busy: "The Internet endpoint is busy. Try again later.",
+    unreachable: "Cannot reach the Internet endpoint. Check your connection and try again.",
+    invalidResult: "No valid Internet measurement. Check your connection and try again.",
+};
+
+export async function getInternetTarget(signal) {
+    const deadline = AbortSignal.any([signal, AbortSignal.timeout(5_000)]);
+    const { endpoint } = await api("/api/speed-test/internet/status", { signal: deadline });
+    if (!endpoint) return null;
+
+    const response = await fetch(`${endpoint}/ready`, {
+        credentials: "omit", cache: "no-store", redirect: "error", signal: deadline,
+    });
+    if (response.status !== 204 || response.headers.get("X-IssueDesk-Speed-Test") !== "1") {
+        throw new Error("Internet endpoint readiness check failed.");
+    }
+    return endpoint;
+}
+
+async function runTest(profile, { signal, onEndpoint, onStage }, expectedEndpoint) {
+    if (!window.isSecureContext) throw new Error(`Open IssueDesk over HTTPS to run a ${profile.label} test.`);
     const deadline = AbortSignal.any([signal, AbortSignal.timeout(timeoutMs)]);
     try {
-        const { endpoint, token } = await api("/api/speed-test/grant", { method: "POST", signal: deadline });
+        const { endpoint, token } = await api(profile.grantPath, { method: "POST", signal: deadline });
+        if (expectedEndpoint && expectedEndpoint !== endpoint) {
+            throw new Error("The Internet endpoint changed. Reopen the Internet Test tab to check it again.");
+        }
         onEndpoint(endpoint);
-        // Request LAN access from the document before the worker uses the connection.
+        // Probe from the document first, including the LAN permission prompt when needed.
         let probe;
         try {
             probe = await fetch(`${endpoint}/ping`, {
@@ -78,14 +113,25 @@ export async function runLanTest({ signal, onEndpoint, onStage }) {
             });
         } catch (error) {
             if (deadline.aborted) throw error;
-            throw new Error("Cannot reach the LAN agent. Check local network permission, DNS, TLS and CORS.", { cause: error });
+            throw new Error(profile.unreachable, { cause: error });
         }
-        if (probe.status === 409) throw new Error("A LAN test is already reserved. Wait up to 45 seconds and retry.");
-        if (!probe.ok) throw new Error(`The LAN agent refused the test (HTTP ${probe.status}).`);
+        if (probe.status === 409) throw new Error(profile.busy);
+        if (expectedEndpoint && probe.status === 429) {
+            throw new Error("The Internet endpoint is at its traffic limit. Try again later.");
+        }
+        if (!probe.ok) throw new Error(`The ${profile.target} refused the test (HTTP ${probe.status}).`);
         deadline.throwIfAborted();
-        return await measure(endpoint, token, deadline, onStage);
+        return await measure(endpoint, token, deadline, onStage, profile.invalidResult);
     } catch (error) {
-        if (deadline.reason?.name === "TimeoutError") throw new Error("The LAN test timed out.", { cause: error });
+        if (deadline.reason?.name === "TimeoutError") throw new Error(`The ${profile.label} test timed out.`, { cause: error });
         throw error;
     }
+}
+
+export function runLanTest(options) {
+    return runTest(lanProfile, options);
+}
+
+export function runInternetTest(options, endpoint) {
+    return runTest(internetProfile, options, endpoint);
 }

@@ -65,10 +65,10 @@ function request(path, { token, method = "GET", from = origin, headers, body } =
     });
 }
 
-test("grant requires same origin and admin and is disabled by default", async () => {
+test("LAN grant requires same origin and an authenticated member and is disabled by default", async () => {
     assert.equal((await onRequestPost(context({ role: "admin", from: "https://other.test" }))).status, 403);
     assert.equal((await onRequestPost(context())).status, 401);
-    assert.equal((await onRequestPost(context({ role: "user" }))).status, 403);
+    assert.equal((await onRequestPost(context({ role: "user" }))).status, 200);
     for (const config of [
         { SPEED_TEST_LAN_ENABLED: undefined },
         { SPEED_TEST_GRANT_KEY: "invalid" },

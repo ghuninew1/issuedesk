@@ -193,5 +193,7 @@ See `garage/storage/RANGE_DOWNLOADS.md`. v3 GET/HEAD download uses authoritative
 
 ## LAN Speed Test PoC
 
-- `/speed-test` and `POST /api/speed-test/grant` are opt-in and Admin-only. Keep grant signing keys server-side and destination origins server-configured. The browser sends measurements directly to the separate Ubuntu HTTPS Agent. Keep its private bind/CIDR checks, exact origin matching, short-lived grants, in-memory reservation and byte/time limits. Preserve the pinned LibreSpeed worker license and modification notice with its distributed source.
+- `/speed-test` and the existing LAN `POST /api/speed-test/grant` are opt-in and require a session. Keep grant signing keys server-side and destination origins server-configured. The browser sends measurements directly to the separate Ubuntu HTTPS Agent. Keep its private bind/CIDR checks, exact origin matching, short-lived grants, in-memory reservation and byte/time limits. Preserve the pinned LibreSpeed worker license and modification notice with its distributed source.
 - See `garage/speed-test-agent/README.md` for isolated test setup and use `node --test scripts/speed-test-checks.mjs` for local regression checks. Browser loopback results do not establish Ubuntu Docker performance or public-to-private Local Network Access behavior.
+
+- The Client Internet pilot uses separate Admin-only `/api/speed-test/internet/*` endpoints, runtime settings, grant key and D1 admission quota. Keep it off until an authorized HTTPS origin enforces independent traffic caps. Measurements go directly from the browser to that origin. See `docs/network/CLIENT_INTERNET_SPEED_TEST.md`.
