@@ -92,7 +92,7 @@ Secrets ของ Storage, OAuth และ Resend อยู่ฝั่ง serve
 - [Release notes v1.4.0](docs/releases/V1.4.0_RELEASE.md) และ [v1.3.4](docs/releases/V1.3.4_RELEASE.md) — ความสามารถและขอบเขตของแต่ละเวอร์ชัน
 - [Project handoff](PROJECT_HANDOFF.md) — ประวัติการเปลี่ยนแปลง ผลตรวจ และงานที่ยังค้าง
 - [Storage guide](docs/storage/STORAGE_README.md) และ [Storage API documentation](docs/storage/STORAGE_DOCS_API_REFERENCE.md)
-- [LAN Speed Test PoC](garage/speed-test-agent/README.md) — หน้า Admin `/speed-test` สำหรับวัดถึง Ubuntu Agent ในสภาพแวดล้อมทดสอบ เปิดใช้ผ่าน test flags
+- [LAN Speed Test PoC](garage/speed-test-agent/README.md) — หน้า Admin `/speed-test` แสดง Gauge และผลวัดถึง Ubuntu Agent ในแท็บ Server Test ส่วน Internet Test แสดง Coming Soon เปิดหน้าได้ผ่าน test flags
 - [Network Monitoring API](docs/network/NETWORK_MONITORING_API.md) และ [agent guide](garage/network-monitor/README_NETWORK_MONITOR.md)
 - [QR Studio Storage documentation](docs/features/QR_STUDIO_STORAGE_DOCS.md)
 - [AGENTS.md](AGENTS.md) — แนวทางทำงานใน repository
