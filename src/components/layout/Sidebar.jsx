@@ -40,7 +40,8 @@ const navGroups = [
             { icon: Images, label: "Storage", to: "/storage/images", requiredRole: "admin" },
             { icon: BookOpen, label: "Documentation", to: "/documentation", requiredRole: "admin" },
             ...(import.meta.env.VITE_SPEED_TEST_LAN_ENABLED === "true"
-                ? [{ icon: Gauge, label: "Speed Test", to: "/speed-test", requiredRole: "admin" }] : []),
+                ? [{ icon: Gauge, label: "Speed Test", to: "/speed-test", requiresSession: true }]
+                : []),
             { icon: Network, label: "Network Monitor", to: "/network-monitor", requiredRole: "admin" },
         ],
     },
@@ -64,14 +65,16 @@ const handleGlowMove = (e) => {
 
 const SidebarContent = ({ isCollapsed, onNavigate, onToggleSidebar, mobile = false }) => {
     const { user, isLoading } = useAuth();
-    const visibleGroups = navGroups.map((group) => ({
-        ...group,
-        links: group.links.filter((link) => {
-            if (link.requiredRole) return !isLoading && user?.role === link.requiredRole;
-            if (link.requiresSession) return !isLoading && Boolean(user);
-            return true;
-        }),
-    })).filter((group) => group.links.length > 0);
+    const visibleGroups = navGroups
+        .map((group) => ({
+            ...group,
+            links: group.links.filter((link) => {
+                if (link.requiredRole) return !isLoading && user?.role === link.requiredRole;
+                if (link.requiresSession) return !isLoading && Boolean(user);
+                return true;
+            }),
+        }))
+        .filter((group) => group.links.length > 0);
 
     return (
         <>
@@ -96,11 +99,7 @@ const SidebarContent = ({ isCollapsed, onNavigate, onToggleSidebar, mobile = fal
                     onPointerMove={handleGlowMove}
                 >
                     {mobile || !isCollapsed ? (
-                        <img
-                            src={logoFull}
-                            alt="IssueDesk"
-                            className="p-6 w-auto object-contain"
-                        />
+                        <img src={logoFull} alt="IssueDesk" className="p-6 w-auto object-contain" />
                     ) : (
                         <img src={logo} alt="IssueDesk" width={32} height={32} className="size-8 object-cover" />
                     )}
@@ -142,7 +141,9 @@ const SidebarContent = ({ isCollapsed, onNavigate, onToggleSidebar, mobile = fal
                                             glassHover,
                                             "glass-sidebar-nav",
                                             "relative flex min-h-11 items-center rounded-xl px-3 py-2.5",
-                                            mobile || !isCollapsed ? "w-full gap-3" : "mx-auto size-11 justify-center px-0",
+                                            mobile || !isCollapsed
+                                                ? "w-full gap-3"
+                                                : "mx-auto size-11 justify-center px-0",
                                             "animate-fadeInLeft",
                                             "focus-visible:outline-none focus-visible:ring-2",
                                             "focus-visible:ring-inset focus-visible:ring-ring/50",
@@ -153,7 +154,12 @@ const SidebarContent = ({ isCollapsed, onNavigate, onToggleSidebar, mobile = fal
                                     }
                                 >
                                     <link.icon className={cx("relative size-5 shrink-0")} aria-hidden="true" />
-                                    <span className={cx("relative text-sm", mobile || !isCollapsed ? "inline" : "sr-only")}>
+                                    <span
+                                        className={cx(
+                                            "relative text-sm",
+                                            mobile || !isCollapsed ? "inline" : "sr-only",
+                                        )}
+                                    >
                                         {link.label}
                                     </span>
                                 </NavLink>
