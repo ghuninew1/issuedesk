@@ -44,8 +44,10 @@ export async function onRequestPost({ request, env }) {
         return jsonResponse({ message: "Invalid agent command" }, 400);
     }
     const now = Date.now();
+    let operation = "expire";
     try {
         await expireJob(env.DB, now);
+        operation = body.action;
         if (body.action === "claim") {
             const lease = crypto.randomUUID();
             const job = await env.DB.prepare(`
@@ -73,7 +75,13 @@ export async function onRequestPost({ request, env }) {
             WHERE slot = 1 AND id = ? AND lease = ? AND expires_at > ? AND state IN ('running', 'cancelling')
         `).bind(body.state, output.result, output.error, body.id, body.lease, now).run();
         return updated.meta?.changes === 1 ? jsonResponse({ accepted: true }) : jsonResponse({ message: "Job lease closed" }, 409);
-    } catch {
+    } catch (error) {
+        const detail = [error?.message, error?.cause?.message].filter((value) => typeof value === "string").join("\n");
+        let reason = "unexpected_error";
+        if (typeof env.DB?.prepare !== "function") reason = "missing_db_binding";
+        else if (/\b(?:no such table|no such column|has no column named)\b/i.test(detail)) reason = "schema_mismatch";
+        else if (/\bD1_ERROR\b/.test(detail)) reason = "d1_error";
+        console.error("Server Speed Test agent command failed", { operation, reason });
         return unavailable();
     }
 }

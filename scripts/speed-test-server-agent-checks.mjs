@@ -78,6 +78,32 @@ test("admin and agent boundaries reject browser parameters, outsiders and bogus 
     assert.deepEqual((await (await job("GET")).json()).job.result, result);
 });
 
+test("claim logs only the failed operation and a fixed error category", async (t) => {
+    const { command, env } = fixture(t);
+    const log = t.mock.method(console, "error", () => {});
+    assert.equal((await command({ action: "diagnostic" })).status, 400);
+    assert.equal(log.mock.callCount(), 0);
+
+    env.DB = undefined;
+    const response = await command({ action: "claim" });
+    assert.equal(response.status, 503);
+    assert.deepEqual(await response.json(), { message: "Server Internet Test is unavailable" });
+    assert.deepEqual(log.mock.calls[0].arguments, [
+        "Server Speed Test agent command failed", { operation: "expire", reason: "missing_db_binding" },
+    ]);
+
+    env.DB = {
+        prepare: () => ({ bind: () => ({
+            run: async () => {},
+            first: async () => { throw new Error("D1_ERROR", { cause: new Error("no such column: private_fixture") }); },
+        }) }),
+    };
+    assert.equal((await command({ action: "claim", ignored: "private_request" })).status, 503);
+    assert.deepEqual(log.mock.calls[1].arguments, [
+        "Server Speed Test agent command failed", { operation: "claim", reason: "schema_mismatch" },
+    ]);
+});
+
 test("start and claim are atomic; queued and running cancellation hold correct reservations", async (t) => {
     const { job, call } = fixture(t);
     const starts = await Promise.all(Array.from({ length: 6 }, () => job("POST")));
