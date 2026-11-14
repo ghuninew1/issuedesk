@@ -16,8 +16,9 @@ does not establish permission to run tests against community-operated endpoints.
 The existing worker is pinned at LibreSpeed v6.3.1; see the
 [worker notices](../../public/vendor/librespeed/NOTICE.md) and
 [upstream backend guidance](https://github.com/librespeed/speedtest/blob/v6.3.1/doc.md).
-The public host needs an authorization and quota layer around its measurement
-handlers. A standalone default LibreSpeed backend does not implement this contract.
+The [Public Agent prototype](../../garage/speed-test-public-agent/README.md) implements
+this contract for local testing. Public ingress, provider budget controls, and
+the approved VPS deployment plan are separate acceptance steps.
 
 ## Public endpoint contract
 

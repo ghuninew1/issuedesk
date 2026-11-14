@@ -1,0 +1,24 @@
+services:
+    speed-test-public-agent:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        init: true
+        read_only: true
+        cap_drop: [ALL]
+        security_opt: ["no-new-privileges:true"]
+        cpus: 2.0
+        mem_limit: 192m
+        pids_limit: 64
+        ports:
+            - "127.0.0.1:${SPEED_TEST_INTERNET_PORT:-8443}:8443"
+        environment:
+            SPEED_TEST_INTERNET_BIND: 0.0.0.0
+            SPEED_TEST_INTERNET_PORT: 8443
+            SPEED_TEST_INTERNET_ISSUEDESK_ORIGIN: ${SPEED_TEST_INTERNET_ISSUEDESK_ORIGIN:?Set the IssueDesk HTTPS origin}
+            SPEED_TEST_INTERNET_ORIGIN: ${SPEED_TEST_INTERNET_ORIGIN:?Set this agent HTTPS origin}
+            SPEED_TEST_INTERNET_GRANT_KEY: ${SPEED_TEST_INTERNET_GRANT_KEY:?Set an Internet-only grant key}
+            SPEED_TEST_INTERNET_TLS_CERT: /run/tls/server.pem
+            SPEED_TEST_INTERNET_TLS_KEY: /run/tls/server.key
+        volumes:
+            - "${SPEED_TEST_INTERNET_TLS_DIR:?Set the test TLS directory}:/run/tls:ro"

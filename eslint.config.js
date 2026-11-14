@@ -32,6 +32,11 @@ export default [
         },
     },
     {
+        ...js.configs.recommended,
+        files: ["garage/speed-test{,-public,-server}-agent/*.mjs", "scripts/speed-test-{public,server}-agent-checks.mjs"],
+        languageOptions: { globals: globals.node },
+    },
+    {
         files: ["vite.config.js", "eslint.config.js", "garage/storage/**/*.js"],
         languageOptions: {
             globals: {

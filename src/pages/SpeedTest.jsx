@@ -1,13 +1,15 @@
 import { useEffect, useRef, useState } from "react";
 import { Activity, ArrowDown, ArrowUp, Check, CircleAlert, Gauge, Globe, Server, Timer } from "lucide-react";
 import GlassButton from "../components/GlassButton";
-import { getInternetTarget, runInternetTest, runLanTest } from "../services/lanSpeedTest";
+import { runLanTest } from "../services/lanSpeedTest";
+import { api } from "../utils/api";
 import { useAuth } from "../auth/useAuth";
 import { cx } from "../utils/cx";
 
 const tabs = [
     { id: "server", label: "Server Test", icon: Server },
-    { id: "internet", label: "Internet Test", icon: Globe },
+    { id: "server-internet", label: "Server Internet Test", icon: Server },
+    { id: "internet", label: "Client Internet Test", icon: Globe },
 ];
 
 const metrics = [
@@ -91,12 +93,14 @@ function TestProgress({ currentStage, completed }) {
 
 const initialTest = { phase: "idle", stage: -1, endpoint: null, result: null, error: null };
 
-function TestDashboard({ test, internet = false, blocked, start, cancel }) {
+function TestDashboard({ test, internet = false, pendingAction = false, start, cancel }) {
     const { phase, stage, endpoint, result, error } = test;
     const TargetIcon = internet ? Globe : Server;
-    const running = phase === "running";
+    const running = ["queued", "running", "cancelling"].includes(phase);
     const completed = phase === "complete";
-    const status = running && stage === 0 && internet ? "Connecting to the Internet endpoint…"
+    const status = phase === "queued" ? "Waiting for the Ubuntu agent…"
+        : phase === "cancelling" ? "Stopping the Ubuntu test…"
+        : running && internet ? "Ubuntu is running LibreSpeed CLI…"
         : running ? stages[stage].message
         : completed ? "Test complete"
         : phase === "cancelled" ? "Test cancelled"
@@ -115,7 +119,8 @@ function TestDashboard({ test, internet = false, blocked, start, cancel }) {
                     </span>
                     <div className={cx("min-w-0")}>
                         <p className={cx("text-xs font-medium text-muted-foreground")}>{internet ? "Internet target" : "Server target"}</p>
-                        <h2 className={cx("font-semibold tracking-tight")}>{internet ? "Public HTTPS Endpoint" : "Ubuntu LAN Agent"}</h2>
+                        <h2 className={cx("font-semibold tracking-tight")}>{internet ? "Ubuntu Server → Internet" : "Ubuntu LAN Agent"}</h2>
+                        {internet && result?.serverName && <p className={cx("mt-0.5 text-xs break-all text-muted-foreground")}>Test server · {result.serverName}</p>}
                         {endpoint && <p className={cx("mt-0.5 text-xs break-all text-muted-foreground")}>{endpoint}</p>}
                     </div>
                 </div>
@@ -145,7 +150,7 @@ function TestDashboard({ test, internet = false, blocked, start, cancel }) {
             </div>
 
             <div className={cx("space-y-4 border-t border-border px-4 py-4 sm:px-6")}>
-                <TestProgress currentStage={running ? stage : -1} completed={completed} />
+                {!internet && <TestProgress currentStage={running ? stage : -1} completed={completed} />}
                 {error && (
                     <div role="alert" className={cx("flex items-start gap-2 rounded-xl border border-destructive/25 bg-destructive/5 p-3 text-sm text-destructive")}>
                         <CircleAlert size={18} className={cx("mt-0.5 shrink-0")} aria-hidden="true" />
@@ -156,9 +161,9 @@ function TestDashboard({ test, internet = false, blocked, start, cancel }) {
                     </div>
                 )}
                 <div className={cx("flex flex-wrap items-center justify-between gap-3")}>
-                    <p role="status" className={cx("text-sm text-muted-foreground")}>{blocked ? "A test is running in the other tab." : error ? "" : status}</p>
-                    <GlassButton type="button" disabled={blocked} onClick={running ? cancel : start}
-                        className={cx("inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border px-4 text-sm font-semibold disabled:opacity-50",
+                    <p role="status" className={cx("text-sm text-muted-foreground")}>{error ? "" : status}</p>
+                    <GlassButton type="button" disabled={pendingAction || phase === "cancelling"} onClick={running ? cancel : start}
+                        className={cx("inline-flex min-h-10 flex-1 items-center justify-center gap-2 rounded-lg border px-4 text-sm font-semibold disabled:opacity-50",
                             running ? "border-border bg-background" : "border-primary/45 bg-primary/10 text-primary")}>
                         {!running && <Gauge size={17} aria-hidden="true" />}
                         {running ? "Cancel" : "Start Speed Test"}
@@ -169,100 +174,143 @@ function TestDashboard({ test, internet = false, blocked, start, cancel }) {
     );
 }
 
+const serverJobPath = "/api/speed-test/server/job";
+const jobErrors = {
+    timeout: "The Server Internet Test timed out.",
+    agent_disconnected: "The Ubuntu agent lost its control connection.",
+    invalid_result: "LibreSpeed returned no valid measurement.",
+    cli_failed: "LibreSpeed CLI could not finish the test.",
+};
+
+function ServerInternetDashboard() {
+    const [data, setData] = useState(null);
+    const [pollError, setPollError] = useState(null);
+    const [actionError, setActionError] = useState(null);
+    const [pendingAction, setPendingAction] = useState(false);
+    const mutating = useRef(false);
+    const revision = useRef(0);
+
+    useEffect(() => {
+        const controller = new AbortController();
+        let timer;
+        async function poll() {
+            const requestedRevision = revision.current;
+            try {
+                const response = await api(serverJobPath, {
+                    signal: AbortSignal.any([controller.signal, AbortSignal.timeout(5000)]),
+                });
+                if (!controller.signal.aborted && !mutating.current && requestedRevision === revision.current) {
+                    setData(response);
+                    setPollError(null);
+                }
+            } catch {
+                if (!controller.signal.aborted) setPollError("Cannot check the server test status. Retrying…");
+            }
+            if (!controller.signal.aborted) timer = setTimeout(poll, 2000);
+        }
+        void poll();
+        return () => {
+            clearTimeout(timer);
+            controller.abort();
+        };
+    }, []);
+
+    async function change(method) {
+        if (mutating.current) return;
+        mutating.current = true;
+        revision.current++;
+        setPendingAction(true);
+        setActionError(null);
+        try {
+            const path = method === "DELETE" ? `${serverJobPath}?id=${encodeURIComponent(data.job.id)}` : serverJobPath;
+            const { job } = await api(path, { method, signal: AbortSignal.timeout(5000) });
+            setData((previous) => ({ ...previous, job }));
+        } catch (error) {
+            setActionError(error.message);
+        } finally {
+            mutating.current = false;
+            setPendingAction(false);
+        }
+    }
+
+    if (!data?.enabled) {
+        return <p role="status" className={cx("rounded-2xl border border-border bg-card p-6 text-sm text-muted-foreground")}>
+            {pollError ?? (data ? "Server Internet Test is disabled." : "Checking Server Internet Test…")}
+        </p>;
+    }
+    const job = data.job;
+    const phase = ["failed", "expired"].includes(job?.state) ? "error" : job?.state ?? "idle";
+    return (
+        <div className={cx("space-y-3")}>
+            {(actionError || pollError) && <p role="alert" className={cx("text-sm text-destructive")}>{actionError ?? pollError}</p>}
+            <TestDashboard
+                test={{ ...initialTest, phase, result: job?.result, error: jobErrors[job?.error] }}
+                internet pendingAction={pendingAction}
+                start={() => change("POST")} cancel={() => change("DELETE")}
+            />
+        </div>
+    );
+}
+
 export default function SpeedTest() {
     const active = useRef(null);
     const [selectedTab, setSelectedTab] = useState("server");
     const { user } = useAuth();
-    const [tests, setTests] = useState({ server: initialTest, internet: initialTest });
-    const [availability, setAvailability] = useState(null);
-    const runningMode = tests.server.phase === "running" ? "server"
-        : tests.internet.phase === "running" ? "internet" : null;
-    const checkingInternet = selectedTab === "internet" && user?.role === "admin";
+    const [test, setTest] = useState(initialTest);
+    const visibleTabs = tabs.filter(({ id }) => id !== "server-internet" || user?.role === "admin");
 
     useEffect(() => () => active.current?.controller.abort(), []);
 
-    useEffect(() => {
-        if (!checkingInternet) return;
+    async function start() {
+        if (active.current) return;
         const controller = new AbortController();
-        getInternetTarget(controller.signal)
-            .then((endpoint) => {
-                if (!controller.signal.aborted) setAvailability({ endpoint });
-            })
-            .catch(() => {
-                if (!controller.signal.aborted) setAvailability({ error: true });
-            });
-        return () => controller.abort();
-    }, [checkingInternet]);
-
-    function updateTest(mode, update) {
-        setTests((previous) => ({ ...previous, [mode]: update(previous[mode]) }));
-    }
-
-    async function start(mode) {
-        if (active.current || (mode === "internet" && !availability?.endpoint)) return;
-        const controller = new AbortController();
-        active.current = { mode, controller };
-        updateTest(mode, () => ({ ...initialTest, phase: "running", stage: 0 }));
+        active.current = { controller };
+        setTest({ ...initialTest, phase: "running", stage: 0 });
         try {
-            const options = {
+            const result = await runLanTest({
                 signal: controller.signal,
-                onEndpoint: (target) => {
-                    if (!controller.signal.aborted) updateTest(mode, (previous) => ({ ...previous, endpoint: target }));
+                onEndpoint: (endpoint) => {
+                    if (!controller.signal.aborted) setTest((previous) => ({ ...previous, endpoint }));
                 },
                 onStage: (message) => {
-                    const next = stages.findIndex((item) => item.message === message);
-                    if (next > 0 && !controller.signal.aborted) {
-                        updateTest(mode, (previous) => ({ ...previous, stage: next }));
-                    }
+                    const stage = stages.findIndex((item) => item.message === message);
+                    if (stage > 0 && !controller.signal.aborted) setTest((previous) => ({ ...previous, stage }));
                 },
-            };
-            const measured = mode === "internet"
-                ? await runInternetTest(options, availability.endpoint)
-                : await runLanTest(options);
-            if (!controller.signal.aborted) {
-                updateTest(mode, (previous) => ({ ...previous, phase: "complete", result: measured }));
-            }
+            });
+            if (!controller.signal.aborted) setTest((previous) => ({ ...previous, phase: "complete", result }));
         } catch (failure) {
-            if (!controller.signal.aborted) {
-                updateTest(mode, (previous) => ({ ...previous, phase: "error", error: failure.message }));
-            }
+            if (!controller.signal.aborted) setTest((previous) => ({ ...previous, phase: "error", error: failure.message }));
         } finally {
             if (active.current?.controller === controller) active.current = null;
         }
     }
 
     function cancel() {
-        const current = active.current;
-        if (!current) return;
-        current.controller.abort();
+        active.current?.controller.abort();
         active.current = null;
-        updateTest(current.mode, (previous) => ({ ...previous, phase: "cancelled" }));
-    }
-
-    function selectTab(tab) {
-        if (tab === selectedTab) return;
-        if (tab === "internet" && runningMode !== "internet") setAvailability(null);
-        setSelectedTab(tab);
+        setTest((previous) => ({ ...previous, phase: "cancelled" }));
     }
 
     function navigateTabs(event) {
         if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
         event.preventDefault();
-        const next = event.key === "Home" ? "server"
-            : event.key === "End" ? "internet"
-            : selectedTab === "server" ? "internet" : "server";
-        selectTab(next);
+        const index = visibleTabs.findIndex(({ id }) => id === selectedTab);
+        const count = visibleTabs.length;
+        const nextIndex = event.key === "Home" ? 0 : event.key === "End" ? count - 1
+            : (index + (event.key === "ArrowRight" ? 1 : -1) + count) % count;
+        const next = visibleTabs[nextIndex].id;
+        setSelectedTab(next);
         event.currentTarget.querySelector(`#speed-test-tab-${next}`)?.focus();
     }
 
     return (
         <section className={cx("mx-auto w-full max-w-5xl space-y-4 text-card-foreground")}>
-            <div role="tablist" aria-label="Speed test mode" onKeyDown={navigateTabs} className={cx("grid w-full grid-cols-2 gap-1 rounded-xl border border-border bg-muted p-1 sm:w-fit")}>
-                {tabs.map(({ id, label, icon: Icon }) => (
+            <div role="tablist" aria-label="Speed test mode" onKeyDown={navigateTabs} className={cx("flex w-full flex-wrap gap-1 rounded-xl border border-border bg-muted p-1 sm:w-fit")}>
+                {visibleTabs.map(({ id, label, icon: Icon }) => (
                     <GlassButton key={id} id={`speed-test-tab-${id}`} type="button" role="tab"
                         aria-selected={selectedTab === id} aria-controls={`speed-test-panel-${id}`}
-                        tabIndex={selectedTab === id ? 0 : -1} onClick={() => selectTab(id)}
-                        className={cx("flex min-h-10 items-center justify-center gap-2 rounded-lg px-2 text-sm font-medium sm:px-5",
+                        tabIndex={selectedTab === id ? 0 : -1} onClick={() => setSelectedTab(id)}
+                        className={cx("flex min-h-10 flex-1 items-center justify-center gap-2 rounded-lg px-2 text-sm font-medium sm:px-5",
                             selectedTab === id ? "bg-card text-card-foreground shadow-sm ring-1 ring-border" : "text-muted-foreground")}>
                         <Icon size={16} aria-hidden="true" />
                         {label}
@@ -271,29 +319,21 @@ export default function SpeedTest() {
             </div>
 
             <div role="tabpanel" id="speed-test-panel-server" aria-labelledby="speed-test-tab-server" hidden={selectedTab !== "server"} className={cx("space-y-4")}>
-                <TestDashboard test={tests.server} blocked={runningMode === "internet"} start={() => start("server")} cancel={cancel} />
+                <TestDashboard test={test} start={start} cancel={cancel} />
             </div>
 
+            {user?.role === "admin" && (
+                <div role="tabpanel" id="speed-test-panel-server-internet" aria-labelledby="speed-test-tab-server-internet" hidden={selectedTab !== "server-internet"}>
+                    {selectedTab === "server-internet" && <ServerInternetDashboard />}
+                </div>
+            )}
+
             <div role="tabpanel" id="speed-test-panel-internet" aria-labelledby="speed-test-tab-internet" hidden={selectedTab !== "internet"}>
-                {user?.role === "admin" && (availability?.endpoint || runningMode === "internet") ? (
-                    <TestDashboard
-                        test={tests.internet.endpoint ? tests.internet : { ...tests.internet, endpoint: availability?.endpoint }}
-                        internet blocked={runningMode === "server"} start={() => start("internet")} cancel={cancel}
-                    />
-                ) : (
-                    <div className={cx("grid justify-items-center rounded-2xl border border-border bg-card px-4 py-12 text-center shadow-sm sm:py-16")}>
-                        <span className={cx("grid size-12 place-items-center rounded-xl border border-border bg-muted text-primary")}>
-                            <Globe size={23} aria-hidden="true" />
-                        </span>
-                        <h2 className={cx("mt-4 text-xl font-semibold tracking-tight")}>Internet Test</h2>
-                        <p role="status" className={cx("mt-1 text-sm text-muted-foreground")}>
-                            {user?.role !== "admin" ? "Internet testing is available to pilot administrators."
-                                : !availability ? "Checking endpoint availability…"
-                                : availability.error ? "Internet endpoint unavailable. Reopen this tab to retry."
-                                : "Coming Soon"}
-                        </p>
-                    </div>
-                )}
+                <div className={cx("grid justify-items-center rounded-2xl border border-border bg-card px-4 py-12 text-center shadow-sm sm:py-16")}>
+                    <Globe size={23} aria-hidden="true" />
+                    <h2 className={cx("mt-4 text-xl font-semibold tracking-tight")}>Client Internet Test</h2>
+                    <p className={cx("mt-1 text-sm text-muted-foreground")}>Coming Soon</p>
+                </div>
             </div>
         </section>
     );
