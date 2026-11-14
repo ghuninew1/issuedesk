@@ -602,3 +602,11 @@ README.md, AGENTS.md and MULTIPART_UPLOADS.md were reviewed and synced. Next: op
 - Added v3 GET/HEAD single-range streaming, opaque validators/If-Range fallback, conditional S3 identity checks,206/416 geometry and length verification, streaming truncation errors, cancellation and idle deadlines; preserved v2/copy/upload paths and auth. No dependency/version edits were made by this task. Separate concurrent changes appeared in service package.json/.gitignore/lock; preserved.
 - Local regression uses mocked S3, in-memory SQLite and Hono loopback disconnect; not real Garage. Final command/counts recorded in Nexora PROJECT_HANDOFF.md and garage/storage/RANGE_DOWNLOADS.md. Initial failures (incomplete local dependency links, updated capability assertions and fixture status enum) were resolved; no production data was touched.
 - Required real Garage/large-file checks, Node22, reverse proxy/Cloudflare/Tunnel, native browsers and deployment remain NOT RUN/BLOCKED pending separately approved test resources. No production flags/config/migrations/deploy changed.
+
+## 2026-11-09 — Nexora Local filesystem native gate
+
+Added a standalone Linux Node-API addon candidate and disposable test configuration
+under `garage/storage/native/local-fs`. The existing Storage API does not load it.
+Local JavaScript syntax and whitespace checks passed. The existing Storage test
+suite passed 49 tests using in-memory SQLite, mock S3 and loopback HTTP. Native
+build and security assertions still need Ubuntu validation.

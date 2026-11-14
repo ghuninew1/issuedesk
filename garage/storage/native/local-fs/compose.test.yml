@@ -1,0 +1,17 @@
+services:
+  local-fs-gate:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    network_mode: none
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    tmpfs:
+      - /tmp:rw,nosuid,nodev,mode=1777,size=64m
+      - /fixture:rw,nosuid,nodev,mode=0755,size=8m
+      - /fixture/nested:ro,nosuid,nodev,mode=0755,size=8m
+    environment:
+      NESTED_ROOT: /fixture
