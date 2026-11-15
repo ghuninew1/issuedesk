@@ -33,7 +33,7 @@ export default [
     },
     {
         ...js.configs.recommended,
-        files: ["garage/speed-test{,-public,-server}-agent/*.mjs", "scripts/speed-test-{public,server}-agent-checks.mjs"],
+        files: ["garage/speed-test-agent/*.mjs", "scripts/speed-test{,-network}-checks.mjs"],
         languageOptions: { globals: globals.node },
     },
     {

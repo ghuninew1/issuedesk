@@ -31,7 +31,7 @@ const Header = ({ isHeaderVisible = true, onOpenMobileSidebar }) => {
         "/": { title: "Home", description: "Internal IT Support" },
         "/attendance": { title: "Attendance", description: "View and manage your attendance" },
         ...(import.meta.env.VITE_SPEED_TEST_LAN_ENABLED === "true" && {
-            "/speed-test": { title: "Speed Test", description: "Measure your local network connection" },
+            "/speed-test": { title: "Speed Test", description: "Measure connection speed and latency" },
         }),
         "/network-monitor": { title: "Network Monitoring", description: "Monitor network health and activity" },
         "/documentation": { title: "Documentation", description: "Browse your team’s IT knowledge" },

@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@cloudflare/speedtest':
+        specifier: 1.17.0
+        version: 1.17.0
       '@ffmpeg/core':
         specifier: ^0.12.10
         version: 0.12.10
@@ -303,6 +306,10 @@ packages:
   '@cloudflare/kv-asset-handler@0.5.0':
     resolution: {integrity: sha512-jxQYkj8dSIzc0cD6cMMNdOc1UVjqSqu8BZdor5s8cGjW2I8BjODt/kWPVdY+u9zj3ms75Q5qaZgnxUad83+eAg==}
     engines: {node: '>=22.0.0'}
+
+  '@cloudflare/speedtest@1.17.0':
+    resolution: {integrity: sha512-u8iEX2VnGItFzZlYsx0tNovR8MDBiPcarCXlRFL+paqQMycqPZrFohIMQ47PEnal+tFPJubYFxxpAFg8ZaCYUQ==}
+    engines: {node: '>=18'}
 
   '@cloudflare/unenv-preset@2.16.2':
     resolution: {integrity: sha512-JBP1+Z7ZSNG/d4mRP+y8VC5dka3tZVMLEZRvS+rzQ4DGV1EoxRFQckcJTTkXbHSQiTj0DtNI01Zwb/V2fX0mvQ==}
@@ -3376,6 +3383,8 @@ snapshots:
   '@chevrotain/utils@13.2.0': {}
 
   '@cloudflare/kv-asset-handler@0.5.0': {}
+
+  '@cloudflare/speedtest@1.17.0': {}
 
   '@cloudflare/unenv-preset@2.16.2(unenv@2.0.0-rc.24)(workerd@1.20261113.1)':
     dependencies:

@@ -1,86 +1,60 @@
-# Client Internet Speed Test pilot
+# Client Internet Speed Test
 
-Internet Test measures the current browser's path to one authorized public
-HTTPS origin. The existing Server Test tab still measures the browser's path
-to the LAN Agent. The two tabs have separate targets, grants, and results.
-The browser sends measurement traffic directly to the configured endpoint.
-IssueDesk Pages only validates the session, checks configuration and quotas,
-and issues the signed grant.
+Open `/speed-test` and select **Client Internet Test** as an Admin. The existing
+`VITE_SPEED_TEST_LAN_ENABLED=true` build flag exposes the page. **Server Test**
+continues to measure the LAN path from the browser to the
+[Ubuntu LAN Agent](../../garage/speed-test-agent/README.md) for signed-in users.
 
-## Endpoint decision
+## Measurement
 
-No authorized public origin was identified for this pilot. Use a dedicated origin
-on a test VM or service the team operates, or obtain explicit operator permission
-and a documented traffic allowance from a provider. LibreSpeed's software license
-does not establish permission to run tests against community-operated endpoints.
-The existing worker is pinned at LibreSpeed v6.3.1; see the
-[worker notices](../../public/vendor/librespeed/NOTICE.md) and
-[upstream backend guidance](https://github.com/librespeed/speedtest/blob/v6.3.1/doc.md).
-The [Public Agent prototype](../../garage/speed-test-public-agent/README.md) implements
-this contract for local testing. Public ingress, provider budget controls, and
-the approved VPS deployment plan are separate acceptance steps.
+The browser lazy-loads [`@cloudflare/speedtest`](https://github.com/cloudflare/speedtest)
+(1.17.0, MIT) on Start and connects directly to `speed.cloudflare.com`. The
+dashboard updates when the engine produces samples and displays the final
+download and upload in Mbps, plus idle HTTP latency and jitter in ms. Missing
+measurements stay blank. Test results live in the page for the current visit.
 
-## Public endpoint contract
+The engine uses timed HTTP transfers and reports a percentile across usable
+samples. It estimates performance on the path to Cloudflare and may undershoot
+peak link capacity. Browser timing precision, routing, VPNs and competing
+traffic affect results. Latency is measured over HTTP. The test schedules up to
+66.6 MB of download and upload payloads combined, plus protocol overhead and any
+retries. Latency has a 20-request sample set. IssueDesk stops the run after
+60 seconds or on Cancel or navigation away. Only one test can run at a time on
+the page. The Cloudflare measurement service has no published request quota in
+the library documentation. IssueDesk handles rate-limit responses and keeps
+each run finite. See [Cloudflare's measurement methodology](https://blog.cloudflare.com/how-does-cloudflares-speed-test-really-work/).
 
-- Serve a dedicated HTTPS origin with a trusted certificate. Use the exact
-  IssueDesk origin for CORS. When permitted, preflight must allow the relevant
-  method and `Authorization`, `Content-Type`, and `Content-Encoding` headers.
-  Keep routes direct and avoid redirects, caching, compression, and upload buffering.
-- `GET /ready` returns an empty `204` with `X-IssueDesk-Speed-Test: 1` and exposes
-  that header via CORS, only while the service is accepting tests. It sends no
-  measurement bytes and requires no browser grant. Rate-limit it separately.
-  The browser checks it when entering the Internet tab. It reports availability,
-  not guaranteed capacity or an end-to-end test.
-- Authenticate `GET /ping`, `GET /download`, and `POST /upload` (including
-  LibreSpeed cache-busting query strings). Verify the existing HMAC-SHA256 grant
-  format with an Internet-only key. Require the exact IssueDesk origin, dedicated
-  endpoint audience, and valid expiry before accepting payloads. The grant lasts
-  at most 45 seconds, with synchronized clocks. CORS and Origin filtering are
-  supplemental to grant validation. Never log bearer tokens or IssueDesk cookies.
-- Return an empty `204` for successful ping and upload. Download returns
-  `200` and non-compressible binary data. The worker uploads 4 MiB per request,
-  uses one measurement stream per direction, and polls results over the existing
-  worker interface. Set a 4 MiB per-request limit, a hard deadline, a bounded
-  connection count, ping limits, and cumulative per-grant bytes in each direction.
-  Reserve bytes before transferring even when a transfer is cancelled or retried.
-  Reject exhausted budgets with `429` and the CORS headers. Apply aggregate egress
-  and ingress caps plus ingress request limits at the public service; the IssueDesk
-  grant quota alone cannot control direct network traffic or old grants.
-- Suggested pilot ceiling is 384 MiB per direction per grant, as used for the
-  LAN regression fixture. At 10 grants/day this allows at most 3.75 GiB of
-  outgoing measurement payload plus 3.75 GiB incoming, before protocol overhead.
-  Price depends on host, region and traffic. Set an approved billing/egress budget
-  and validate actual counters before use. A fast link can hit the cap during
-  the measurement and yield a limit error instead of a result.
+## Network information and privacy
 
-## IssueDesk configuration and acceptance
+- Public IP, ASN organization (shown as ISP), estimated city and country come
+  from inbound [Cloudflare request metadata](https://developers.cloudflare.com/workers/runtime-apis/request/#incomingrequestcfproperties)
+  and [CF-Connecting-IP](https://developers.cloudflare.com/fundamentals/reference/http-headers/#cf-connecting-ip).
+  The Admin-only Pages Function reads metadata on the IssueDesk request and
+  returns it with `Cache-Control: no-store`. It uses the existing Pages service
+  terms and plan limits. No separate geolocation dataset, license, token, or
+  cross-origin API is needed. On the Free plan the request counts toward the
+  [shared Pages Functions and Workers quota](https://developers.cloudflare.com/pages/functions/pricing/).
+- The Cloudflare server code comes from a separate
+  [trace request](https://developers.cloudflare.com/support/troubleshooting/general-troubleshooting/geographic-traffic-routing/)
+  to the measurement origin after the test. That code identifies the edge
+  that answered the trace. Cloudflare anycast routing can vary between requests.
+  The metadata requests time out after five seconds. Unavailable values are
+  shown as dashes, with successful measurement results kept visible.
+- Cloudflare sees the public IP and the measurement requests under its
+  [Speed Test privacy notice](https://speed.cloudflare.com/) and
+  [Privacy Policy](https://www.cloudflare.com/privacypolicy/). The client omits
+  credentials on the trace request and disables the engine's result and
+  measurement-log submissions. IssueDesk does not persist the metadata or test
+  results. IP geolocation and ASN ownership reflect the connection's egress
+  and may describe a VPN, proxy or carrier.
 
-Use a dedicated test environment. Keep the page's existing
-`VITE_SPEED_TEST_LAN_ENABLED` build gate. For Internet only, set the following
-runtime configuration after endpoint ownership/permission and budget are approved.
+## Local checks
 
-| Variable | Purpose |
-| --- | --- |
-| `SPEED_TEST_INTERNET_ENABLED` | Explicit opt-in, defaults off |
-| `SPEED_TEST_INTERNET_ORIGIN` | Exact HTTPS origin, different from IssueDesk and the LAN Agent |
-| `SPEED_TEST_INTERNET_GRANT_KEY` | Separate 32-byte random hex secret shared with the authorized endpoint |
+```sh
+node --test scripts/speed-test-checks.mjs scripts/speed-test-network-checks.mjs
+VITE_SPEED_TEST_LAN_ENABLED=true pnpm build
+```
 
-Apply `0014_speed_test_internet_admissions.sql` to the test D1 before enabling.
-It stores recent admission timestamps and Admin IDs for an atomic quota of
-one grant per Admin per rolling minute and 10 total grants per rolling 24 hours.
-Rows outside the window are pruned on subsequent admission. Results are not
-stored. Cancel and failed transport attempts still consume a successfully issued
-grant. The browser cancels its transfers or times out at 18 seconds. The public
-endpoint must independently stop streams at its own deadline or grant expiry.
-
-Before opening the pilot, validate a real browser against the approved origin
-with normal TLS and exact CORS. Verify that no payload traverses Pages, the endpoint
-rejects missing, expired and wrong-audience credentials, concurrent traffic respects
-caps, cancel stops transfers, and retries/429s disclose no grant. Confirm that the
-tabs retain distinct measurements and that outgoing bandwidth/cost remains within
-the approved limit. Disable the Internet flag to stop further grant issuance;
-previously issued grants expire naturally. LAN remains available under its own settings.
-
-`node --test scripts/speed-test-checks.mjs scripts/speed-test-internet-checks.mjs`
-uses local HTTPS and SQLite fixtures. The browser PoC uses separate loopback origins.
-No public speed-test service is contacted during those checks.
+The API tests use local authentication and edge metadata fixtures. Live Pages
+metadata and real LAN Agent connectivity require a deployed environment and
+a browser on the intended network.

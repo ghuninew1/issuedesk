@@ -72,37 +72,12 @@ const lanProfile = {
     invalidResult: "No valid measurement. Check the LAN connection and wait for any previous test to expire.",
 };
 
-const internetProfile = {
-    label: "Internet",
-    grantPath: "/api/speed-test/internet/grant",
-    target: "Internet endpoint",
-    busy: "The Internet endpoint is busy. Try again later.",
-    unreachable: "Cannot reach the Internet endpoint. Check your connection and try again.",
-    invalidResult: "No valid Internet measurement. Check your connection and try again.",
-};
-
-export async function getInternetTarget(signal) {
-    const deadline = AbortSignal.any([signal, AbortSignal.timeout(5_000)]);
-    const { endpoint } = await api("/api/speed-test/internet/status", { signal: deadline });
-    if (!endpoint) return null;
-
-    const response = await fetch(`${endpoint}/ready`, {
-        credentials: "omit", cache: "no-store", redirect: "error", signal: deadline,
-    });
-    if (response.status !== 204 || response.headers.get("X-IssueDesk-Speed-Test") !== "1") {
-        throw new Error("Internet endpoint readiness check failed.");
-    }
-    return endpoint;
-}
-
-async function runTest(profile, { signal, onEndpoint, onStage }, expectedEndpoint) {
+export async function runLanTest({ signal, onEndpoint, onStage }) {
+    const profile = lanProfile;
     if (!window.isSecureContext) throw new Error(`Open IssueDesk over HTTPS to run a ${profile.label} test.`);
     const deadline = AbortSignal.any([signal, AbortSignal.timeout(timeoutMs)]);
     try {
         const { endpoint, token } = await api(profile.grantPath, { method: "POST", signal: deadline });
-        if (expectedEndpoint && expectedEndpoint !== endpoint) {
-            throw new Error("The Internet endpoint changed. Reopen the Internet Test tab to check it again.");
-        }
         onEndpoint(endpoint);
         // Probe from the document first, including the LAN permission prompt when needed.
         let probe;
@@ -116,9 +91,6 @@ async function runTest(profile, { signal, onEndpoint, onStage }, expectedEndpoin
             throw new Error(profile.unreachable, { cause: error });
         }
         if (probe.status === 409) throw new Error(profile.busy);
-        if (expectedEndpoint && probe.status === 429) {
-            throw new Error("The Internet endpoint is at its traffic limit. Try again later.");
-        }
         if (!probe.ok) throw new Error(`The ${profile.target} refused the test (HTTP ${probe.status}).`);
         deadline.throwIfAborted();
         return await measure(endpoint, token, deadline, onStage, profile.invalidResult);
@@ -126,12 +98,4 @@ async function runTest(profile, { signal, onEndpoint, onStage }, expectedEndpoin
         if (deadline.reason?.name === "TimeoutError") throw new Error(`The ${profile.label} test timed out.`, { cause: error });
         throw error;
     }
-}
-
-export function runLanTest(options) {
-    return runTest(lanProfile, options);
-}
-
-export function runInternetTest(options, endpoint) {
-    return runTest(internetProfile, options, endpoint);
 }

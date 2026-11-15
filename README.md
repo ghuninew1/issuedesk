@@ -63,7 +63,7 @@ pnpm preview
 | `pnpm lint` | ตรวจโค้ดด้วย ESLint |
 | `pnpm build` | สร้าง frontend bundle ใน `dist/` |
 | `pnpm preview` | Build และเปิด Pages Functions ในเครื่อง |
-| `node --test scripts/speed-test-checks.mjs` | ทดสอบการออกสิทธิ์และ HTTPS Agent ของ LAN Speed Test ในเครื่อง |
+| `node --test scripts/speed-test-checks.mjs scripts/speed-test-network-checks.mjs` | ทดสอบสิทธิ์, HTTPS Agent ของ LAN และข้อมูลเครือข่ายของ Client Internet ในเครื่อง |
 | `pnpm test:qr` | ทดสอบ QR APIs ด้วย SQLite ในหน่วยความจำและ mock Storage |
 | `pnpm dev:qr` | เปิด QR Studio sandbox ที่ `127.0.0.1:5174` |
 | `pnpm --dir garage/storage test` | ทดสอบ Storage service แยกต่างหาก |
@@ -92,10 +92,8 @@ Secrets ของ Storage, OAuth และ Resend อยู่ฝั่ง serve
 - [Release notes v1.4.0](docs/releases/V1.4.0_RELEASE.md) และ [v1.3.4](docs/releases/V1.3.4_RELEASE.md) — ความสามารถและขอบเขตของแต่ละเวอร์ชัน
 - [Project handoff](PROJECT_HANDOFF.md) — ประวัติการเปลี่ยนแปลง ผลตรวจ และงานที่ยังค้าง
 - [Storage guide](docs/storage/STORAGE_README.md) และ [Storage API documentation](docs/storage/STORAGE_DOCS_API_REFERENCE.md)
-- [LAN Speed Test PoC](garage/speed-test-agent/README.md) — หน้า `/speed-test` สำหรับสมาชิกที่เข้าสู่ระบบ ใช้ Server Test วัดถึง Ubuntu Agent เมื่อเปิด feature flag
-- [Public Speed Test Agent prototype](garage/speed-test-public-agent/README.md) — HTTPS Agent แยกสำหรับทดสอบ Client Internet ในเครื่อง
-- [Client Internet Speed Test pilot](docs/network/CLIENT_INTERNET_SPEED_TEST.md) — เอกสาร Client Internet pilot ที่ยังแสดง Coming Soon ใน Dashboard
-- [Server Internet Speed Test](garage/speed-test-server-agent/README.md) — Admin สั่งวัดจาก Ubuntu ด้วย LibreSpeed CLI เมื่อเปิดใช้และตั้งค่าปลายทางที่ได้รับอนุญาต
+- [LAN Speed Test](garage/speed-test-agent/README.md) — หน้า `/speed-test` สำหรับสมาชิกที่เข้าสู่ระบบ ใช้แท็บ Server Test วัดจาก Browser ถึง Ubuntu LAN Agent เมื่อเปิด feature flag
+- [Client Internet Speed Test](docs/network/CLIENT_INTERNET_SPEED_TEST.md) — Admin วัดจาก Browser ถึง Cloudflare โดยตรง แสดง Download, Upload, HTTP Latency, Jitter และข้อมูลเครือข่ายที่มีจริง
 - [Network Monitoring API](docs/network/NETWORK_MONITORING_API.md) และ [agent guide](garage/network-monitor/README_NETWORK_MONITOR.md)
 - [QR Studio Storage documentation](docs/features/QR_STUDIO_STORAGE_DOCS.md)
 - [AGENTS.md](AGENTS.md) — แนวทางทำงานใน repository
